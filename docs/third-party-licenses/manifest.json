@@ -1,0 +1,2475 @@
+{
+  "scope": "Scoped evidence collection, NOT a complete inventory or release clearance",
+  "collected": "2026-10-09",
+  "files": [
+    {
+      "file": "caniuse-lite-1.0.30001815-LICENSE",
+      "sha256": "fd3a263fe19ed8faa9068b43abaebafc02c77897b0c6fc09abc04bb592e5f16e",
+      "bytes": 18651,
+      "component": "caniuse-lite",
+      "version": "1.0.30001815",
+      "license": "CC-BY-4.0",
+      "kind": "unmodified upstream file",
+      "copiedFrom": "node_modules/caniuse-lite/LICENSE",
+      "source": "https://registry.npmjs.org/caniuse-lite/-/caniuse-lite-1.0.30001815.tgz",
+      "integrity": "sha512-uDybUEyfgbyJJ93J1vikTylBX31AkdVYeVPeffMQpf8XN7hSfr0oZOn4VFOIMNvtU5+rHvC5Udg2TgtJKHm23Q==",
+      "repository": "browserslist/caniuse-lite"
+    },
+    {
+      "file": "eslint--js-10.0.1-LICENSE",
+      "sha256": "3b6be04f862a077a4b97929dbf247299360824d9365f8603c263769303ace18c",
+      "bytes": 1094,
+      "component": "@eslint/js",
+      "version": "10.0.1",
+      "license": "MIT",
+      "kind": "unmodified upstream file",
+      "copiedFrom": "node_modules/@eslint/js/LICENSE",
+      "source": "https://registry.npmjs.org/@eslint/js/-/js-10.0.1.tgz",
+      "integrity": "sha512-zeR9k5pd4gxjZ0abRoIaxdc7I3nDktoXZk2qOv9gCNWx3mVwEn32VRhyLaRsDiJjTs0xq/T8mfPtyuXu7GWBcA==",
+      "repository": {
+        "type": "git",
+        "url": "https://github.com/eslint/eslint.git",
+        "directory": "packages/js"
+      }
+    },
+    {
+      "file": "eslint-10.12.0-LICENSE",
+      "sha256": "3b6be04f862a077a4b97929dbf247299360824d9365f8603c263769303ace18c",
+      "bytes": 1094,
+      "component": "eslint",
+      "version": "10.12.0",
+      "license": "MIT",
+      "kind": "unmodified upstream file",
+      "copiedFrom": "node_modules/eslint/LICENSE",
+      "source": "https://registry.npmjs.org/eslint/-/eslint-10.12.0.tgz",
+      "integrity": "sha512-npHjrHb2o4ehH3mE+YuxABR+0gyb0aVWCIolgJDArwCiHEIsonBm3ZKjel5b0U5+a+MbEvIyRCGCzD3eKKK2NA==",
+      "repository": "eslint/eslint"
+    },
+    {
+      "file": "eslint-plugin-react-hooks-7.1.1-LICENSE",
+      "sha256": "da6d3703ed11cbe42bd212c725957c98da23cbff1998c05fa4b3d976d1a58e93",
+      "bytes": 1088,
+      "component": "eslint-plugin-react-hooks",
+      "version": "7.1.1",
+      "license": "MIT",
+      "kind": "unmodified upstream file",
+      "copiedFrom": "node_modules/eslint-plugin-react-hooks/LICENSE",
+      "source": "https://registry.npmjs.org/eslint-plugin-react-hooks/-/eslint-plugin-react-hooks-7.1.1.tgz",
+      "integrity": "sha512-f2I7Gw6JbvCexzIInuSbZpfdQ44D7iqdWX01FKLvrPgqxoE7oMj8clOfto8U6vYiz4yd5oKu39rRSVOe1zRu0g==",
+      "repository": {
+        "type": "git",
+        "url": "https://github.com/facebook/react.git",
+        "directory": "packages/eslint-plugin-react-hooks"
+      }
+    },
+    {
+      "file": "esrecurse-4.3.0-source-license-header.txt",
+      "sha256": "93a2af4d556efacc486b1b5863376a874463de44ae6f7e3e3d3d454a0589a374",
+      "bytes": 1330,
+      "component": "esrecurse",
+      "version": "4.3.0",
+      "license": "BSD-2-Clause",
+      "kind": "verbatim source-license header excerpt",
+      "copiedFrom": "node_modules/esrecurse/esrecurse.js",
+      "source": "https://registry.npmjs.org/esrecurse/-/esrecurse-4.3.0.tgz",
+      "integrity": "sha512-KmfKL3b6G+RXvP8N1vr3Tq1kL/oCFgn2NYXEtqP8/L3pKapUA4G8cFVaoF3SU323CD4XypR/ffioHmkti6/Tag==",
+      "repository": {
+        "type": "git",
+        "url": "https://github.com/estools/esrecurse.git"
+      },
+      "sourceFileSha256": "aa99847033c240a621fe987f0e06b754f388f22abd11a05bdf9cdd00794b7350"
+    },
+    {
+      "file": "FreeType-2.14.3-FTL.TXT",
+      "sha256": "5a5ee54c5001bbad1cdc1a57cc3dd4c42199b2da09d39c7ee41fab002d02967f",
+      "bytes": 6743,
+      "component": "FreeType",
+      "version": "2.14.3",
+      "kind": "unmodified upstream file",
+      "source": "https://raw.githubusercontent.com/freetype/freetype/VER-2-14-3/docs/FTL.TXT"
+    },
+    {
+      "file": "Geist-OFL-1.1.txt",
+      "sha256": "c683bfbcc7e087f5d37a54ef628f10387c451a83ddc459b151403a164ac46c90",
+      "bytes": 4383,
+      "component": "Geist fonts",
+      "version": "bundled in Next 16.4.0; font release version unknown",
+      "kind": "upstream OFL corroborating embedded font license",
+      "source": "https://raw.githubusercontent.com/vercel/geist-font/c40c1aec7e72b9ebdce65a4fccd03cb3950a359b/OFL.txt",
+      "commit": "c40c1aec7e72b9ebdce65a4fccd03cb3950a359b"
+    },
+    {
+      "file": "GPL-3.0-or-later.txt",
+      "component": "License text accompanying native LGPL components",
+      "version": "3.0",
+      "license": "GPL-3.0-or-later",
+      "kind": "unmodified SPDX license-list text; not a library-specific notice",
+      "source": "https://raw.githubusercontent.com/spdx/license-list-data/v3.26.0/text/GPL-3.0-or-later.txt",
+      "sha256": "fb981668c18a279e285fc4d83fba1e836cc84dd4daa73c9697d3cfd2d8aca6e0",
+      "bytes": 34674
+    },
+    {
+      "file": "humanfs--core-0.19.2-LICENSE",
+      "sha256": "c71d239df91726fc519c6eb72d318ec65820627232b2f796219e87dcf35d0ab4",
+      "bytes": 11357,
+      "component": "@humanfs/core",
+      "version": "0.19.2",
+      "license": "Apache-2.0",
+      "kind": "unmodified upstream file",
+      "copiedFrom": "node_modules/@humanfs/core/LICENSE",
+      "source": "https://registry.npmjs.org/@humanfs/core/-/core-0.19.2.tgz",
+      "integrity": "sha512-UhXNm+CFMWcbChXywFwkmhqjs3PRCmcSa/hfBgLIb7oQ5HNb1wS0icWsGtSAUNgefHeI+eBrA8I1fxmbHsGdvA==",
+      "repository": {
+        "type": "git",
+        "url": "git+https://github.com/humanwhocodes/humanfs.git"
+      }
+    },
+    {
+      "file": "humanfs--types-0.15.0-README.md",
+      "sha256": "e1076e47ea96eef79e05496912ad03a9fa8031e1bf4847aab1a9554aef5cc5c0",
+      "bytes": 497,
+      "component": "@humanfs/types",
+      "version": "0.15.0",
+      "license": "Apache-2.0",
+      "kind": "unmodified upstream file",
+      "copiedFrom": "node_modules/@humanfs/types/README.md",
+      "source": "https://registry.npmjs.org/@humanfs/types/-/types-0.15.0.tgz",
+      "integrity": "sha512-ZZ1w0aoQkwuUuC7Yf+7sdeaNfqQiiLcSRbfI08oAxqLtpXQr9AIVX7Ay7HLDuiLYAaFPu8oBYNq/QIi9URHJ3Q==",
+      "repository": {
+        "type": "git",
+        "url": "git+https://github.com/humanwhocodes/humanfs.git"
+      }
+    },
+    {
+      "file": "humanfs-types-0.15.0-upstream-README.md",
+      "sha256": "e1076e47ea96eef79e05496912ad03a9fa8031e1bf4847aab1a9554aef5cc5c0",
+      "bytes": 497,
+      "component": "@humanfs/types",
+      "version": "0.15.0",
+      "kind": "unmodified upstream file",
+      "source": "https://raw.githubusercontent.com/humanwhocodes/humanfs/85069f193cbacc371c3beb649ce746f8c5a493be/packages/types/README.md"
+    },
+    {
+      "file": "img--sharp-win32-x64-0.35.5-LICENSE",
+      "sha256": "dc1f5d2d43c5531dfe0acaf4e950ea5dbe3e61e1850cf0e983bda7efc10d6693",
+      "bytes": 10464,
+      "component": "@img/sharp-win32-x64",
+      "version": "0.35.5",
+      "license": "Apache-2.0 AND LGPL-3.0-or-later",
+      "kind": "unmodified upstream file",
+      "copiedFrom": "node_modules/@img/sharp-win32-x64/LICENSE",
+      "source": "https://registry.npmjs.org/@img/sharp-win32-x64/-/sharp-win32-x64-0.35.5.tgz",
+      "integrity": "sha512-x76eH0vEiHlcMQu8Y8IenntaACtddpT6W0wmXtWrnKcnKI7ME5DdgqhAD6SEWOEl1v2zDvkZDhFA9KnURwpfqg==",
+      "repository": {
+        "type": "git",
+        "url": "git+https://github.com/lovell/sharp.git",
+        "directory": "npm/win32-x64"
+      }
+    },
+    {
+      "file": "img--sharp-win32-x64-0.35.5-README.md",
+      "sha256": "3d083ada5ebafe1e6c227daa7b061d4254b61df4a3901c359ffdeac817ce5866",
+      "bytes": 4913,
+      "component": "@img/sharp-win32-x64",
+      "version": "0.35.5",
+      "license": "Apache-2.0 AND LGPL-3.0-or-later",
+      "kind": "unmodified upstream file",
+      "copiedFrom": "node_modules/@img/sharp-win32-x64/README.md",
+      "source": "https://registry.npmjs.org/@img/sharp-win32-x64/-/sharp-win32-x64-0.35.5.tgz",
+      "integrity": "sha512-x76eH0vEiHlcMQu8Y8IenntaACtddpT6W0wmXtWrnKcnKI7ME5DdgqhAD6SEWOEl1v2zDvkZDhFA9KnURwpfqg==",
+      "repository": {
+        "type": "git",
+        "url": "git+https://github.com/lovell/sharp.git",
+        "directory": "npm/win32-x64"
+      }
+    },
+    {
+      "file": "img--sharp-win32-x64-0.35.5-versions.json",
+      "sha256": "e2611d5d854815a8b33c8a3d2ec649511a9596ccf16844e8eae7cf81e79881c4",
+      "bytes": 596,
+      "component": "@img/sharp-win32-x64",
+      "version": "0.35.5",
+      "license": "Apache-2.0 AND LGPL-3.0-or-later",
+      "kind": "unmodified upstream file",
+      "copiedFrom": "node_modules/@img/sharp-win32-x64/versions.json",
+      "source": "https://registry.npmjs.org/@img/sharp-win32-x64/-/sharp-win32-x64-0.35.5.tgz",
+      "integrity": "sha512-x76eH0vEiHlcMQu8Y8IenntaACtddpT6W0wmXtWrnKcnKI7ME5DdgqhAD6SEWOEl1v2zDvkZDhFA9KnURwpfqg==",
+      "repository": {
+        "type": "git",
+        "url": "git+https://github.com/lovell/sharp.git",
+        "directory": "npm/win32-x64"
+      }
+    },
+    {
+      "file": "imurmurhash-0.1.4-README.md",
+      "sha256": "4491517f7deb68d0b2a3bb590e785e276a60f12448447a9650d0bd50161a101c",
+      "bytes": 4763,
+      "component": "imurmurhash",
+      "version": "0.1.4",
+      "license": "MIT",
+      "kind": "unmodified upstream file",
+      "copiedFrom": "node_modules/imurmurhash/README.md",
+      "source": "https://registry.npmjs.org/imurmurhash/-/imurmurhash-0.1.4.tgz",
+      "integrity": "sha512-JmXMZ6wuvDmLiHEml9ykzqO6lwFbof0GG4IkcGaENdCRDDmMVnny7s5HsIgHCbaq0w2MyPhDqkhTUgS2LU2PHA==",
+      "repository": {
+        "type": "git",
+        "url": "https://github.com/jensyt/imurmurhash-js"
+      }
+    },
+    {
+      "file": "LGPL-3.0-or-later.txt",
+      "component": "License text accompanying native LGPL components",
+      "version": "3.0",
+      "license": "LGPL-3.0-or-later",
+      "kind": "unmodified SPDX license-list text; not a library-specific notice",
+      "source": "https://raw.githubusercontent.com/spdx/license-list-data/v3.26.0/text/LGPL-3.0-or-later.txt",
+      "sha256": "996af0513df21f7496288951c41428a03c174e9e4a9d63665c57d670f845ccb1",
+      "bytes": 42098
+    },
+    {
+      "file": "lightningcss-1.33.0-LICENSE",
+      "sha256": "5eba353fe5076ac3432177f8ab1cf75e3afcd0584251e37c3bfead5f447d040e",
+      "bytes": 15648,
+      "component": "lightningcss",
+      "version": "1.33.0",
+      "license": "MPL-2.0",
+      "kind": "unmodified upstream file",
+      "copiedFrom": "node_modules/lightningcss/LICENSE",
+      "source": "https://registry.npmjs.org/lightningcss/-/lightningcss-1.33.0.tgz",
+      "integrity": "sha512-WkUDrojuJs0xkgGf2udWxa3yGBRxPtxUkB79i6aCZLRgc7PM8fZe9TosfPDcvEpQZbuFASnHYmRLBLUbmLOIIA==",
+      "repository": {
+        "type": "git",
+        "url": "https://github.com/parcel-bundler/lightningcss.git"
+      }
+    },
+    {
+      "file": "lightningcss-win32-x64-msvc-1.33.0-LICENSE",
+      "sha256": "5eba353fe5076ac3432177f8ab1cf75e3afcd0584251e37c3bfead5f447d040e",
+      "bytes": 15648,
+      "component": "lightningcss-win32-x64-msvc",
+      "version": "1.33.0",
+      "license": "MPL-2.0",
+      "kind": "unmodified upstream file",
+      "copiedFrom": "node_modules/lightningcss-win32-x64-msvc/LICENSE",
+      "source": "https://registry.npmjs.org/lightningcss-win32-x64-msvc/-/lightningcss-win32-x64-msvc-1.33.0.tgz",
+      "integrity": "sha512-OlEICDx/Xl0FqSp4bry8zFnCvGpig3Gl4gCquvYwHuqJKEC1+n9NgDniFvqHGmMv1ZkqDJrDqKKSykTDX+ehuA==",
+      "repository": {
+        "type": "git",
+        "url": "https://github.com/parcel-bundler/lightningcss.git"
+      }
+    },
+    {
+      "file": "minimatch-10.2.6-LICENSE.md",
+      "sha256": "2c7c5d22ed5a8ee968c64757710979afcd77438c48b4a265b94e615babd8a901",
+      "bytes": 1550,
+      "component": "minimatch",
+      "version": "10.2.6",
+      "license": "BlueOak-1.0.0",
+      "kind": "unmodified upstream file",
+      "copiedFrom": "node_modules/minimatch/LICENSE.md",
+      "source": "https://registry.npmjs.org/minimatch/-/minimatch-10.2.6.tgz",
+      "integrity": "sha512-vpLQEs+VLCr1nU0BXS07maYoFwlDAH0gngQuuttxIwutDFEMHq2blX+8vpgxDdK3J1PwjCJiep77OitTZ4Ll1A==",
+      "repository": {
+        "type": "git",
+        "url": "git@github.com:isaacs/minimatch"
+      }
+    },
+    {
+      "file": "MPL-1.1.txt",
+      "sha256": "f849fc26a7a99981611a3a370e83078deb617d12a45776d6c4cada4d338be469",
+      "bytes": 25755,
+      "component": "Cairo applicable license text",
+      "version": "1.1",
+      "kind": "unmodified upstream file",
+      "source": "https://www.mozilla.org/media/MPL/1.1/index.txt"
+    },
+    {
+      "file": "natural-compare-1.4.0-README.md",
+      "sha256": "ced6cb1fe6ee15a32c63ea8c7e0425454e80456a890c6df3909429530566d40a",
+      "bytes": 3352,
+      "component": "natural-compare",
+      "version": "1.4.0",
+      "license": "MIT",
+      "kind": "unmodified upstream file",
+      "copiedFrom": "node_modules/natural-compare/README.md",
+      "source": "https://registry.npmjs.org/natural-compare/-/natural-compare-1.4.0.tgz",
+      "integrity": "sha512-OWND8ei3VtNC9h7V60qff3SVobHr996CTwgxubgyQYEpg290h9J0buyECNNJexkFm5sOajh5G116RYA1c8ZMSw==",
+      "repository": "git://github.com/litejs/natural-compare-lite.git"
+    },
+    {
+      "file": "natural-compare-author-MIT.txt",
+      "sha256": "353fe762ba595bf1ffe786acf0f5984bb164205901d74f258af195fc8228c67d",
+      "bytes": 1087,
+      "component": "natural-compare author license",
+      "version": "license text; package version recorded separately",
+      "kind": "unmodified upstream file",
+      "source": "https://lauri.rooden.ee/mit-license.txt"
+    },
+    {
+      "file": "next-16.4.0--og-1.0.1--LICENSE",
+      "sha256": "1f256ecad192880510e84ad60474eab7589218784b9a50bc7ceee34c2b91f1d5",
+      "bytes": 16725,
+      "component": "Next bundled @vercel/og",
+      "version": "1.0.1",
+      "license": "MPL-2.0",
+      "kind": "unmodified upstream file",
+      "copiedFrom": "node_modules/next/dist/compiled/@vercel/og/LICENSE",
+      "source": "https://github.com/vercel/next.js/blob/v16.4.0/packages/next/src/compiled/@vercel/og/LICENSE"
+    },
+    {
+      "file": "next-16.4.0--og-1.0.1--satori--LICENSE",
+      "sha256": "1f256ecad192880510e84ad60474eab7589218784b9a50bc7ceee34c2b91f1d5",
+      "bytes": 16725,
+      "component": "Satori bundled within @vercel/og",
+      "version": "not established",
+      "license": "MPL-2.0",
+      "kind": "unmodified upstream file",
+      "copiedFrom": "node_modules/next/dist/compiled/@vercel/og/satori/LICENSE",
+      "source": "https://github.com/vercel/next.js/blob/v16.4.0/packages/next/src/compiled/@vercel/og/satori/LICENSE"
+    },
+    {
+      "file": "next-16.4.0-license.md",
+      "sha256": "ee765244e2d59f5234d474f62e0766fa0c8b99af967fdd4c0cb8dcb0c76ea224",
+      "bytes": 1079,
+      "component": "next",
+      "version": "16.4.0",
+      "license": "MIT",
+      "kind": "unmodified upstream file",
+      "copiedFrom": "node_modules/next/license.md",
+      "source": "https://registry.npmjs.org/next/-/next-16.4.0.tgz",
+      "integrity": "sha512-N2C+9q89Z/oLrsepSRS4jRMtwmUZAoZuAHU0e9T6+sAB5DdhADmrnOW+zjYijlrYFmVfmQhGVGy9eMFoB7UgKg==",
+      "repository": "vercel/next.js"
+    },
+    {
+      "file": "playwright--test-1.64.0-LICENSE",
+      "sha256": "45873d00a0dd243596deb4aa23b2493b3d1f0671921bf2538ea431d7380220eb",
+      "bytes": 11601,
+      "component": "@playwright/test",
+      "version": "1.64.0",
+      "license": "Apache-2.0",
+      "kind": "unmodified upstream file",
+      "copiedFrom": "node_modules/@playwright/test/LICENSE",
+      "source": "https://registry.npmjs.org/@playwright/test/-/test-1.64.0.tgz",
+      "integrity": "sha512-oTN9FNYuN6bqQMwiho6jJKLCG2/QOYCixGXuCjRmzOq23eODeukuY2XiAVoVpAECbuezMt1MHQjAiQxK8F+Y+g==",
+      "repository": {
+        "type": "git",
+        "url": "git+https://github.com/microsoft/playwright.git"
+      }
+    },
+    {
+      "file": "playwright--test-1.64.0-NOTICE",
+      "sha256": "6d602191187b35b9b01d2cffa01c8469c2c8d9de8a96f1bf868e0f264f51c81d",
+      "bytes": 254,
+      "component": "@playwright/test",
+      "version": "1.64.0",
+      "license": "Apache-2.0",
+      "kind": "unmodified upstream file",
+      "copiedFrom": "node_modules/@playwright/test/NOTICE",
+      "source": "https://registry.npmjs.org/@playwright/test/-/test-1.64.0.tgz",
+      "integrity": "sha512-oTN9FNYuN6bqQMwiho6jJKLCG2/QOYCixGXuCjRmzOq23eODeukuY2XiAVoVpAECbuezMt1MHQjAiQxK8F+Y+g==",
+      "repository": {
+        "type": "git",
+        "url": "git+https://github.com/microsoft/playwright.git"
+      }
+    },
+    {
+      "file": "playwright-core-1.64.0-NOTICE",
+      "sha256": "6d602191187b35b9b01d2cffa01c8469c2c8d9de8a96f1bf868e0f264f51c81d",
+      "bytes": 254,
+      "component": "playwright-core",
+      "version": "1.64.0",
+      "license": "Apache-2.0",
+      "kind": "unmodified upstream file",
+      "copiedFrom": "node_modules/playwright-core/NOTICE",
+      "source": "https://registry.npmjs.org/playwright-core/-/playwright-core-1.64.0.tgz",
+      "integrity": "sha512-T9r+MZkTECl2+oUcZ26YgZzTrYidTsIhYYkJix+6iDOymOb1FB2RLLSOxRGnZGv5DStt+aduIVbt+E8WygXYpg==",
+      "repository": {
+        "type": "git",
+        "url": "git+https://github.com/microsoft/playwright.git"
+      }
+    },
+    {
+      "file": "react-19.3.0-LICENSE",
+      "sha256": "da6d3703ed11cbe42bd212c725957c98da23cbff1998c05fa4b3d976d1a58e93",
+      "bytes": 1088,
+      "component": "react",
+      "version": "19.3.0",
+      "license": "MIT",
+      "kind": "unmodified upstream file",
+      "copiedFrom": "node_modules/react/LICENSE",
+      "source": "https://registry.npmjs.org/react/-/react-19.3.0.tgz",
+      "integrity": "sha512-E8LUcbtBWt20bbl2YoHfx4ZDBdxVTfOKtCZn9cDSJ4l6/nuoApcpIBcj47t2wZoVX8g2ZHuMHbiShgCR1T5Sog==",
+      "repository": {
+        "type": "git",
+        "url": "https://github.com/react/react.git",
+        "directory": "packages/react"
+      }
+    },
+    {
+      "file": "react-dom-19.3.0-LICENSE",
+      "sha256": "da6d3703ed11cbe42bd212c725957c98da23cbff1998c05fa4b3d976d1a58e93",
+      "bytes": 1088,
+      "component": "react-dom",
+      "version": "19.3.0",
+      "license": "MIT",
+      "kind": "unmodified upstream file",
+      "copiedFrom": "node_modules/react-dom/LICENSE",
+      "source": "https://registry.npmjs.org/react-dom/-/react-dom-19.3.0.tgz",
+      "integrity": "sha512-JDk8dgif51OjFoDE70+OT9ICyYr+69HlmihNwp1+Nsfbna3t5sIiCa9ZJktDmQ4/1b/rn26hIAR2uYXDMr5r0Q==",
+      "repository": {
+        "type": "git",
+        "url": "https://github.com/react/react.git",
+        "directory": "packages/react-dom"
+      }
+    },
+    {
+      "file": "rolldown-1.2.13-LICENSE",
+      "sha256": "23ecfff35a5a2e80d92142f75228912c3b1abc4b5a8337a821ff4397e2f9f734",
+      "bytes": 1302,
+      "component": "rolldown",
+      "version": "1.2.13",
+      "license": "MIT",
+      "kind": "unmodified upstream file",
+      "copiedFrom": "node_modules/rolldown/LICENSE",
+      "source": "https://registry.npmjs.org/rolldown/-/rolldown-1.2.13.tgz",
+      "integrity": "sha512-/5apOkwWxtACcQtZ5WlrAsKS4JwXVThQPJZ3RqIruRY9UG9M8e0VlXN068xum/JRKA4aIUoJ13ghe/kGCvidiQ==",
+      "repository": {
+        "type": "git",
+        "url": "git+https://github.com/rolldown/rolldown.git",
+        "directory": "packages/rolldown"
+      }
+    },
+    {
+      "file": "rolldown-1.2.13-THIRD-PARTY-LICENSE",
+      "sha256": "a877291d800ed43692f3f9ae09d8e01cc6f7293ad39d43896059c188ffbb8b7c",
+      "bytes": 2209,
+      "component": "rolldown",
+      "version": "1.2.13",
+      "license": "MIT",
+      "kind": "unmodified upstream file",
+      "copiedFrom": "node_modules/rolldown/THIRD-PARTY-LICENSE",
+      "source": "https://registry.npmjs.org/rolldown/-/rolldown-1.2.13.tgz",
+      "integrity": "sha512-/5apOkwWxtACcQtZ5WlrAsKS4JwXVThQPJZ3RqIruRY9UG9M8e0VlXN068xum/JRKA4aIUoJ13ghe/kGCvidiQ==",
+      "repository": {
+        "type": "git",
+        "url": "git+https://github.com/rolldown/rolldown.git",
+        "directory": "packages/rolldown"
+      }
+    },
+    {
+      "file": "sharp-0.35.5-LICENSE",
+      "sha256": "73ba74dfaa520b49a401b5d21459a8523a146f3b7518a833eea5efa85130bf68",
+      "bytes": 10273,
+      "component": "sharp",
+      "version": "0.35.5",
+      "license": "Apache-2.0",
+      "kind": "unmodified upstream file",
+      "copiedFrom": "node_modules/sharp/LICENSE",
+      "source": "https://registry.npmjs.org/sharp/-/sharp-0.35.5.tgz",
+      "integrity": "sha512-Ywn4OnzGukp7CDMrp08RQ50YKmuwG47brZgIVPTvBaaAfQlRlygrRqSrxdCiL9M+LlzLBiJ68IR1QqvzHyjC7g==",
+      "repository": {
+        "type": "git",
+        "url": "git+https://github.com/lovell/sharp.git"
+      }
+    },
+    {
+      "file": "sharp-libvips-1.3.4-THIRD-PARTY-NOTICES.md",
+      "sha256": "6f0d5086e3bcbee12bcdacf5878b31d1104002aeecaeb241d3fff466108082fe",
+      "bytes": 4230,
+      "component": "sharp-libvips",
+      "version": "1.3.4",
+      "kind": "unmodified upstream file",
+      "source": "https://raw.githubusercontent.com/lovell/sharp-libvips/v1.3.4/THIRD-PARTY-NOTICES.md"
+    },
+    {
+      "file": "sharp-libvips-1.3.4-versions.properties",
+      "sha256": "c0ad634f7c2ac8994f831dd0bcb5c60043db7ba4ddd9cc2dbc3703b15f4ec7e5",
+      "bytes": 594,
+      "component": "sharp-libvips",
+      "version": "1.3.4",
+      "kind": "unmodified upstream file",
+      "source": "https://raw.githubusercontent.com/lovell/sharp-libvips/v1.3.4/versions.properties"
+    },
+    {
+      "file": "types--node-24.19.1-LICENSE",
+      "sha256": "c2cfccb812fe482101a8f04597dfc5a9991a6b2748266c47ac91b6a5aae15383",
+      "bytes": 1141,
+      "component": "@types/node",
+      "version": "24.19.1",
+      "license": "MIT",
+      "kind": "unmodified upstream file",
+      "copiedFrom": "node_modules/@types/node/LICENSE",
+      "source": "https://registry.npmjs.org/@types/node/-/node-24.19.1.tgz",
+      "integrity": "sha512-aS3/DG0oM05K0RIXXP+hKjinGG5IgSSVGzswZxW3O0sS3pH4/fycXundUC9XsszgKCk4gHXylTEK6hyFxVxnoQ==",
+      "repository": {
+        "type": "git",
+        "url": "https://github.com/DefinitelyTyped/DefinitelyTyped.git",
+        "directory": "types/node"
+      }
+    },
+    {
+      "file": "types--react-19.3.0-LICENSE",
+      "sha256": "c2cfccb812fe482101a8f04597dfc5a9991a6b2748266c47ac91b6a5aae15383",
+      "bytes": 1141,
+      "component": "@types/react",
+      "version": "19.3.0",
+      "license": "MIT",
+      "kind": "unmodified upstream file",
+      "copiedFrom": "node_modules/@types/react/LICENSE",
+      "source": "https://registry.npmjs.org/@types/react/-/react-19.3.0.tgz",
+      "integrity": "sha512-N0rFCuH9YoxG9/m61l9MfpJKfmLOVU0em7ipIz6TRgSSkvReLB9vL85GB+yr8Bs5leqpvg96JSwF4ZS1s4viQg==",
+      "repository": {
+        "type": "git",
+        "url": "https://github.com/DefinitelyTyped/DefinitelyTyped.git",
+        "directory": "types/react"
+      }
+    },
+    {
+      "file": "types--react-dom-19.3.0-LICENSE",
+      "sha256": "c2cfccb812fe482101a8f04597dfc5a9991a6b2748266c47ac91b6a5aae15383",
+      "bytes": 1141,
+      "component": "@types/react-dom",
+      "version": "19.3.0",
+      "license": "MIT",
+      "kind": "unmodified upstream file",
+      "copiedFrom": "node_modules/@types/react-dom/LICENSE",
+      "source": "https://registry.npmjs.org/@types/react-dom/-/react-dom-19.3.0.tgz",
+      "integrity": "sha512-ZI7bU42mZXXKHn/qNLEw2IrbiINU7X5+vfgdixBHkCNpYWXjKgfQ/P+uyGb5CjOLB9UcnTeg3rylQtV2hym44Q==",
+      "repository": {
+        "type": "git",
+        "url": "https://github.com/DefinitelyTyped/DefinitelyTyped.git",
+        "directory": "types/react-dom"
+      }
+    },
+    {
+      "file": "typescript-6.0.3-LICENSE.txt",
+      "sha256": "a7d00bfd54525bc694b6e32f64c7ebcf5e6b7ae3657be5cc12767bce74654a47",
+      "bytes": 9197,
+      "component": "typescript",
+      "version": "6.0.3",
+      "license": "Apache-2.0",
+      "kind": "unmodified upstream file",
+      "copiedFrom": "node_modules/typescript/LICENSE.txt",
+      "source": "https://registry.npmjs.org/typescript/-/typescript-6.0.3.tgz",
+      "integrity": "sha512-y2TvuxSZPDyQakkFRPZHKFm+KKVqIisdg9/CZwm9ftvKXLP8NRWj38/ODjNbr43SsoXqNuAisEf1GdCxqWcdBw==",
+      "repository": {
+        "type": "git",
+        "url": "https://github.com/microsoft/TypeScript.git"
+      }
+    },
+    {
+      "file": "typescript-eslint-8.71.1-LICENSE",
+      "sha256": "2eb5c7a0bba9deb77a98c81bf6b9d3fb1c67118eebf968b6b1a787b3f8928ee0",
+      "bytes": 1097,
+      "component": "typescript-eslint",
+      "version": "8.71.1",
+      "license": "MIT",
+      "kind": "unmodified upstream file",
+      "copiedFrom": "node_modules/typescript-eslint/LICENSE",
+      "source": "https://registry.npmjs.org/typescript-eslint/-/typescript-eslint-8.71.1.tgz",
+      "integrity": "sha512-oiNVPC3/NbV1FpaHU07l8O6ynqG9v4PAiW2WvTrAmZdR0f2HI/gE668ElMLCK7Xbsu5k2fK5C4fXNiq05j7/nQ==",
+      "repository": {
+        "type": "git",
+        "url": "https://github.com/typescript-eslint/typescript-eslint.git",
+        "directory": "packages/typescript-eslint"
+      }
+    },
+    {
+      "file": "vercel--og-1.0.1-archive-LICENSE",
+      "sha256": "1f256ecad192880510e84ad60474eab7589218784b9a50bc7ceee34c2b91f1d5",
+      "bytes": 16725,
+      "component": "@vercel/og",
+      "version": "1.0.1",
+      "kind": "unmodified file from integrity-verified npm archive",
+      "source": "https://registry.npmjs.org/@vercel/og/-/og-1.0.1.tgz",
+      "archiveMember": "package/LICENSE",
+      "integrity": "sha512-uLTgu6ZIYuPuDnPpwkYhJsOjogqIhMnjjLREFpRAXjsMpCIQ2RmNX8Iz/5shDXfva1A2V0kC5j+KFVUSc4TVew=="
+    },
+    {
+      "file": "vercel--og-1.0.1-archive-README.md",
+      "sha256": "1af264db7a2452676b29c69de043b404c2dbc7675fc32a59d692e8ae2ed92fa1",
+      "bytes": 4288,
+      "component": "@vercel/og",
+      "version": "1.0.1",
+      "kind": "unmodified file from integrity-verified npm archive",
+      "source": "https://registry.npmjs.org/@vercel/og/-/og-1.0.1.tgz",
+      "archiveMember": "package/README.md",
+      "integrity": "sha512-uLTgu6ZIYuPuDnPpwkYhJsOjogqIhMnjjLREFpRAXjsMpCIQ2RmNX8Iz/5shDXfva1A2V0kC5j+KFVUSc4TVew=="
+    },
+    {
+      "file": "vite-8.3.4-LICENSE.md",
+      "sha256": "a47172e44a86a7e2cd1c16282341f7726ec60caafe3a6166fe3e0602005b6fa6",
+      "bytes": 108786,
+      "component": "vite",
+      "version": "8.3.4",
+      "license": "MIT",
+      "kind": "unmodified upstream file",
+      "copiedFrom": "node_modules/vite/LICENSE.md",
+      "source": "https://registry.npmjs.org/vite/-/vite-8.3.4.tgz",
+      "integrity": "sha512-IftLE8phJhdNRIGNEV4JCCvfNScoZQVfcXaN8TQropWGJtOHcu+iAB9pHcuGvmEb/kddw0LBe/jS8ztdC6xdiQ==",
+      "repository": {
+        "type": "git",
+        "url": "git+https://github.com/vitejs/vite.git",
+        "directory": "packages/vite"
+      }
+    },
+    {
+      "file": "vitest-5.0.3-LICENSE.md",
+      "sha256": "c8f14eea9df88b94c4710b4c476d8642e080832d7de0d861eba1337746494b4d",
+      "bytes": 45233,
+      "component": "vitest",
+      "version": "5.0.3",
+      "license": "MIT",
+      "kind": "unmodified upstream file",
+      "copiedFrom": "node_modules/vitest/LICENSE.md",
+      "source": "https://registry.npmjs.org/vitest/-/vitest-5.0.3.tgz",
+      "integrity": "sha512-xMw97S3rjdtj5dkVat7jCsqWBpvchs3RlpQctUqwJD0KkERk40vz2fJ77lDwW/Vzh/pk18eItYAzkodhSes3jQ==",
+      "repository": {
+        "type": "git",
+        "url": "git+https://github.com/vitest-dev/vitest.git",
+        "directory": "packages/vitest"
+      }
+    }
+  ],
+  "provenanceAttempt": [
+    {
+      "package": "client-only",
+      "version": "0.0.1",
+      "metadataSource": "https://registry.npmjs.org/client-only/0.0.1",
+      "archiveSource": "https://registry.npmjs.org/client-only/-/client-only-0.0.1.tgz",
+      "integrity": "sha512-IV3Ou0jSMzZrd3pZ48nLkT9DA7Ag1pnPzaiQhpW7c3RbcqqzvzzVu+L8gfqMp/8IM2MQtSiqaCxrrcfu8I8rMA==",
+      "archiveSha256": "dcd7bc3868e2d3518d08944559952e4a68f581d89a84b6892de9fd8f40860b19",
+      "repository": null,
+      "gitHead": null,
+      "archiveFiles": [
+        "package/error.js",
+        "package/index.js",
+        "package/package.json"
+      ],
+      "noticeSourceFiles": [],
+      "compared": [
+        {
+          "file": "index.js",
+          "archiveSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "installedSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "identical": true
+        },
+        {
+          "file": "error.js",
+          "archiveSha256": "7d211552731db17e1ff8635eea0970ef57ecc91b04b95536b9fa5abbfafaec26",
+          "installedSha256": "7d211552731db17e1ff8635eea0970ef57ecc91b04b95536b9fa5abbfafaec26",
+          "identical": true
+        }
+      ]
+    },
+    {
+      "package": "@vercel/og",
+      "version": "1.0.1",
+      "metadataSource": "https://registry.npmjs.org/%40vercel%2Fog/1.0.1",
+      "archiveSource": "https://registry.npmjs.org/@vercel/og/-/og-1.0.1.tgz",
+      "integrity": "sha512-uLTgu6ZIYuPuDnPpwkYhJsOjogqIhMnjjLREFpRAXjsMpCIQ2RmNX8Iz/5shDXfva1A2V0kC5j+KFVUSc4TVew==",
+      "archiveSha256": "c7f0946ae4b90f4a38615f69ceacfb5990e865c847b96475752b100b93e4e27f",
+      "repository": {
+        "url": "git+https://github.com/vercel/og.git",
+        "type": "git"
+      },
+      "gitHead": "6c0c54f328a745f9cf4f4faa66566e93b51a1079",
+      "archiveFiles": [
+        "package/LICENSE",
+        "package/dist/index.edge.js",
+        "package/dist/index.node.js",
+        "package/package.json",
+        "package/dist/index.edge.js.map",
+        "package/dist/index.node.js.map",
+        "package/README.md",
+        "package/dist/index.edge.d.ts",
+        "package/dist/index.node.d.ts",
+        "package/dist/types.d.ts",
+        "package/dist/Geist-Regular.ttf",
+        "package/dist/resvg.wasm",
+        "package/dist/yoga.wasm"
+      ],
+      "noticeSourceFiles": [
+        {
+          "file": "package/LICENSE",
+          "bytes": 16725,
+          "sha256": "1f256ecad192880510e84ad60474eab7589218784b9a50bc7ceee34c2b91f1d5"
+        },
+        {
+          "file": "package/dist/index.edge.js.map",
+          "bytes": 1809749,
+          "sha256": "73e10e28d4032f6df87272f845d62515de8e612c58128f8cfb5abc94ca75ed7f"
+        },
+        {
+          "file": "package/dist/index.node.js.map",
+          "bytes": 1902123,
+          "sha256": "6f217cd934085fc6ec432660c8f50d41515b63bcd352128f8375cc313ef67d63"
+        },
+        {
+          "file": "package/README.md",
+          "bytes": 4288,
+          "sha256": "1af264db7a2452676b29c69de043b404c2dbc7675fc32a59d692e8ae2ed92fa1"
+        },
+        {
+          "file": "package/dist/index.edge.d.ts",
+          "bytes": 358,
+          "sha256": "f4a9e57aa696c97c66f7549e05499f53afc014c0128329e1c689bc2bacfdc7e5"
+        },
+        {
+          "file": "package/dist/index.node.d.ts",
+          "bytes": 1171,
+          "sha256": "4944565f853a8aa9bad2fd69068bb413cd31b09f5c0c1e7881a6d6e31d8e132b"
+        },
+        {
+          "file": "package/dist/types.d.ts",
+          "bytes": 1905,
+          "sha256": "00c5533cc08969a7cd06012669fc63db9f9bcd6abafd868904997eb930cdc1b2"
+        }
+      ],
+      "compared": [
+        {
+          "file": "index.node.js",
+          "archiveSha256": "8488724bbb696225faa1612e2240b98e99d7bc845891fa6ea36d3aa2c034c914",
+          "installedSha256": "ea30837b18ace5bdec33fe45fb90e238752f128f57364da08238980d43212ccb",
+          "identical": false
+        },
+        {
+          "file": "index.edge.js",
+          "archiveSha256": "e0092a4c78283ec9695592b30c9d34e0e3bb85e35d07f682b6852d9a7b3e6cce",
+          "installedSha256": "fb80f4fc38dec1b6a517810d19dd5cf69e6c6c318432ea8347a936b8e1a3b5f6",
+          "identical": false
+        },
+        {
+          "file": "resvg.wasm",
+          "archiveSha256": "9c1f8f54b842fcda3b72b06eba94a20b907958c443d73178da32b21ccb57b9bb",
+          "installedSha256": "9c1f8f54b842fcda3b72b06eba94a20b907958c443d73178da32b21ccb57b9bb",
+          "identical": true
+        },
+        {
+          "file": "yoga.wasm",
+          "archiveSha256": "7ba9c9483c8c38a468e9aef4a95ed72fad8a43594be8e5123eb3bdb6479edf5b",
+          "installedSha256": "7ba9c9483c8c38a468e9aef4a95ed72fad8a43594be8e5123eb3bdb6479edf5b",
+          "identical": true
+        },
+        {
+          "file": "Geist-Regular.ttf",
+          "archiveSha256": "bde046ddd9f20be35b0bd56cc79eb752b967fb6661a3fe76cb067bb09f871d76",
+          "installedSha256": "bde046ddd9f20be35b0bd56cc79eb752b967fb6661a3fe76cb067bb09f871d76",
+          "identical": true
+        }
+      ],
+      "sourceMapInspection": [
+        {
+          "kind": "node",
+          "sources": 201,
+          "embedded": 201,
+          "ownSources": [
+            "../src/index.node.ts",
+            "../src/emoji/index.ts",
+            "../src/language/index.ts",
+            "../src/og.ts"
+          ],
+          "wasmSources": [
+            "../node_modules/.pnpm/satori@0.29.0/node_modules/satori/node_modules/.pnpm/yoga-layout@3.2.1_patch_hash=7591c1773fe3dfdcc65257d2ea478c1f665ef46b4f5089e60926b05b0854807c/node_modules/yoga-layout/src/generated/YGEnums.ts",
+            "../node_modules/.pnpm/satori@0.29.0/node_modules/satori/node_modules/.pnpm/yoga-layout@3.2.1_patch_hash=7591c1773fe3dfdcc65257d2ea478c1f665ef46b4f5089e60926b05b0854807c/node_modules/yoga-layout/src/wrapAssembly.ts",
+            "../node_modules/.pnpm/satori@0.29.0/node_modules/satori/node_modules/.pnpm/yoga-layout@3.2.1_patch_hash=7591c1773fe3dfdcc65257d2ea478c1f665ef46b4f5089e60926b05b0854807c/node_modules/yoga-layout/dist/binaries/yoga-wasm-base64-esm.js",
+            "../node_modules/.pnpm/satori@0.29.0/node_modules/satori/node_modules/.pnpm/yoga-layout@3.2.1_patch_hash=7591c1773fe3dfdcc65257d2ea478c1f665ef46b4f5089e60926b05b0854807c/node_modules/yoga-layout/src/load.ts",
+            "../node_modules/.pnpm/satori@0.29.0/node_modules/satori/src/yoga.bundled.ts",
+            "../node_modules/.pnpm/satori@0.29.0/node_modules/satori/src/yoga.ts",
+            "../node_modules/.pnpm/@resvg+resvg-wasm@2.4.1/node_modules/@resvg/resvg-wasm/index.mjs"
+          ],
+          "sameWithoutSourceMap": false,
+          "originalTail": "v0.2.1\n   * @link http://github.com/noeldelgado/parse-css-color/\n   * @license MIT\n   *)\n*/\n//# sourceMappingURL=index.node.js.map",
+          "installedTail": "v0.2.1\n   * @link http://github.com/noeldelgado/parse-css-color/\n   * @license MIT\n   *)\n*/\n//# sourceMappingURL=index.node.js.map",
+          "firstDifference": {
+            "offset": 1471,
+            "archive": "\", { value: mod, enumerable: true }) : target,\n  mod\n));\n\n// node_modules/.pnpm/tiny-inflate@1.0.3/node_modules/tiny-inflate/index.js\nvar require_tiny_inflate = __commonJS({\n  \"node_modules/.pnpm/tiny-inflate@1.0.3/node_modules/tiny-inflate/index.js\"(exports2,",
+            "installed": "\", { value: mod, enumerable: true }) : target,\n  mod\n));\n\n// node_modules/.pnpm/escape-html@1.0.3/node_modules/escape-html/index.js\nvar require_escape_html = __commonJS({\n  \"node_modules/.pnpm/escape-html@1.0.3/node_modules/escape-html/index.js\"(exports2, modu"
+          },
+          "equalAfterCRLFNormalization": false,
+          "sourceContentHashes": [
+            {
+              "source": "../node_modules/.pnpm/tiny-inflate@1.0.3/node_modules/tiny-inflate/index.js",
+              "sha256": "203ccaa89e30ec4d6f9467a91758b0f55597424a817ea2107510bbadaab1b90d"
+            },
+            {
+              "source": "../node_modules/.pnpm/unicode-trie@2.0.0/node_modules/unicode-trie/swap.js",
+              "sha256": "396e7304db6c698496668e7e872a6a68e5ce4bcaeef3c8af818dedb6bb4bb76c"
+            },
+            {
+              "source": "../node_modules/.pnpm/unicode-trie@2.0.0/node_modules/unicode-trie/index.js",
+              "sha256": "f91bee244cdd4622152ab582210b7586f1552e12c3b53d2c7d4240af4f161e99"
+            },
+            {
+              "source": "../node_modules/.pnpm/base64-js@0.0.8/node_modules/base64-js/lib/b64.js",
+              "sha256": "4965d2f7e04e7986eacd077bb7398c14364375bfccc67e8a599fd29ac10c96d8"
+            },
+            {
+              "source": "../node_modules/.pnpm/postcss-value-parser@4.2.0/node_modules/postcss-value-parser/lib/parse.js",
+              "sha256": "7f57d3c73010b7a5f11cd5fd1b49fc61043a0a2b430f090b6eb9220b0b27e4f2"
+            },
+            {
+              "source": "../node_modules/.pnpm/postcss-value-parser@4.2.0/node_modules/postcss-value-parser/lib/walk.js",
+              "sha256": "f954705a5401ddf0401d500088ed668a0307bd19259f2af104377704899cd09f"
+            },
+            {
+              "source": "../node_modules/.pnpm/postcss-value-parser@4.2.0/node_modules/postcss-value-parser/lib/stringify.js",
+              "sha256": "bea6103af615bb9d65a2fc6dff1b2ab8a32b5ca33e263b5a2c8d458c4eff19fc"
+            },
+            {
+              "source": "../node_modules/.pnpm/postcss-value-parser@4.2.0/node_modules/postcss-value-parser/lib/unit.js",
+              "sha256": "728de375616da4672cd8a2d0b1713fd9b61ec5774075b4d1ad3ef1076cbbd740"
+            },
+            {
+              "source": "../node_modules/.pnpm/postcss-value-parser@4.2.0/node_modules/postcss-value-parser/lib/index.js",
+              "sha256": "b72197f798b185efdd013e8d9b9b405e9a940dd9c5e9c53931684474f447af92"
+            },
+            {
+              "source": "../node_modules/.pnpm/camelize@1.0.1/node_modules/camelize/index.js",
+              "sha256": "6beae6a2e5d89afaae6d989e52733708ef90b672db0cae8e7951db7ef5d68e57"
+            },
+            {
+              "source": "../node_modules/.pnpm/css-color-keywords@1.0.0/node_modules/css-color-keywords/colors.json",
+              "sha256": "354f1816e82e3aa407d5493a59ff75f6d073d18e39db48e792b3bde951419ff5"
+            },
+            {
+              "source": "../node_modules/.pnpm/css-color-keywords@1.0.0/node_modules/css-color-keywords/index.js",
+              "sha256": "73f63dd96a077e7c0eec89348d7a7ed4282df769e47a222ee3039c7904306ac5"
+            },
+            {
+              "source": "../node_modules/.pnpm/css-to-react-native@3.2.0/node_modules/css-to-react-native/index.js",
+              "sha256": "43b3e5558ea2c9c37ecdbb40b00f9284034d1e6d10e3d0eeb9dc2e87bd3a3ece"
+            },
+            {
+              "source": "../node_modules/.pnpm/css-background-parser@0.1.0/node_modules/css-background-parser/index.js",
+              "sha256": "d08ff4ec9c749d3f0f2336ef8ac8cf96672bcd556c4a6cacc1cb7861e777d401"
+            },
+            {
+              "source": "../node_modules/.pnpm/css-box-shadow@1.0.0-3/node_modules/css-box-shadow/index.js",
+              "sha256": "007e3ba655fdd3224359922f2e040c07f127a44c4340ba547025fb500a5a2fe7"
+            },
+            {
+              "source": "../node_modules/.pnpm/color-name@1.1.4/node_modules/color-name/index.js",
+              "sha256": "97dabd7ebb70c33c19ccfa6956377fc722d9769924903f42a3bede30d83a8592"
+            },
+            {
+              "source": "../node_modules/.pnpm/hex-rgb@4.3.0/node_modules/hex-rgb/index.js",
+              "sha256": "a76283cc2b4715f0780d50f24ee8056958f169f36cfbc6c3c9363fcf7df3fb31"
+            },
+            {
+              "source": "../node_modules/.pnpm/escape-html@1.0.3/node_modules/escape-html/index.js",
+              "sha256": "42a7f91883d0c5ce9292dda4e017e1f8664d34b09276d89fb6f3859c29d1ca9b"
+            },
+            {
+              "source": "../node_modules/.pnpm/linebreak@1.1.0/node_modules/linebreak/dist/src/linebreaker.js",
+              "sha256": "77119ac9301f1fd4d0c0945be418d342fdf2f7ffdf6d8dac4f205f751885c345"
+            },
+            {
+              "source": "../node_modules/.pnpm/linebreak@1.1.0/node_modules/linebreak/dist/node_modules/@parcel/node-resolver-core/lib/_empty.js",
+              "sha256": "5ecf2f4d83e6260dabd6ec48e76d8ddebccf956563f34072221bf960d3b8c255"
+            },
+            {
+              "source": "../node_modules/.pnpm/linebreak@1.1.0/node_modules/linebreak/dist/src/classes.js",
+              "sha256": "ab7632ddd76daef8ac456008e64c388a61ddd1b5cb8dc2fed50adac854254baf"
+            },
+            {
+              "source": "../node_modules/.pnpm/linebreak@1.1.0/node_modules/linebreak/dist/src/pairs.js",
+              "sha256": "b05ea2f49cc0b8ffe7df78de69a30c1dcf058981bc5fcd7f16b416339b1d40dc"
+            },
+            {
+              "source": "../node_modules/.pnpm/satori@0.29.0/node_modules/satori/node_modules/.pnpm/yoga-layout@3.2.1_patch_hash=7591c1773fe3dfdcc65257d2ea478c1f665ef46b4f5089e60926b05b0854807c/node_modules/yoga-layout/src/generated/YGEnums.ts",
+              "sha256": "bc7ef97509d5572e0a2db12e14a830c5da5d916c17d09977c7d257f6144b650b"
+            },
+            {
+              "source": "../node_modules/.pnpm/satori@0.29.0/node_modules/satori/node_modules/.pnpm/yoga-layout@3.2.1_patch_hash=7591c1773fe3dfdcc65257d2ea478c1f665ef46b4f5089e60926b05b0854807c/node_modules/yoga-layout/src/wrapAssembly.ts",
+              "sha256": "e063db4e80e7cc381a17c5c12306fdb753ba96d6f9dbf95bb07a98241cf81fe5"
+            },
+            {
+              "source": "../node_modules/.pnpm/satori@0.29.0/node_modules/satori/node_modules/.pnpm/yoga-layout@3.2.1_patch_hash=7591c1773fe3dfdcc65257d2ea478c1f665ef46b4f5089e60926b05b0854807c/node_modules/yoga-layout/dist/binaries/yoga-wasm-base64-esm.js",
+              "sha256": "2cfeda49ae87f57bcd4a5fe433940edefc531a69bd0f83e32759fb5837df205c"
+            },
+            {
+              "source": "../node_modules/.pnpm/satori@0.29.0/node_modules/satori/node_modules/.pnpm/yoga-layout@3.2.1_patch_hash=7591c1773fe3dfdcc65257d2ea478c1f665ef46b4f5089e60926b05b0854807c/node_modules/yoga-layout/src/load.ts",
+              "sha256": "c5656438fc842e10cfdb12bf314ed89da3e5f8366479900190ba292b8eaae3bd"
+            },
+            {
+              "source": "../node_modules/.pnpm/satori@0.29.0/node_modules/satori/src/yoga.bundled.ts",
+              "sha256": "128a2d85543ae68275239a28b5715e6dd24a867d369e2e54b95c16fe0619067b"
+            },
+            {
+              "source": "../node_modules/.pnpm/satori@0.29.0/node_modules/satori/node_modules/.pnpm/tailwindcss@3.1.8_postcss@8.4.21/node_modules/tailwindcss/lib/util/negateValue.js",
+              "sha256": "74a1f9186b49de855ed631591d0cf79904303bc34aa5f14c344162b347c38c48"
+            },
+            {
+              "source": "../node_modules/.pnpm/satori@0.29.0/node_modules/satori/node_modules/.pnpm/tailwindcss@3.1.8_postcss@8.4.21/node_modules/tailwindcss/lib/corePluginList.js",
+              "sha256": "1c4232d7a1d98a4691105e18e444947f7421317605685718cb195bb667344860"
+            },
+            {
+              "source": "../node_modules/.pnpm/satori@0.29.0/node_modules/satori/node_modules/.pnpm/tailwindcss@3.1.8_postcss@8.4.21/node_modules/tailwindcss/lib/util/configurePlugins.js",
+              "sha256": "cc5c436f86b35954d35d10e01052141cee6fdae8b02fb0a33742088c29d909a4"
+            },
+            {
+              "source": "../node_modules/.pnpm/satori@0.29.0/node_modules/satori/node_modules/.pnpm/tailwindcss@3.1.8_postcss@8.4.21/node_modules/tailwindcss/stubs/defaultConfig.stub.js",
+              "sha256": "70cdbab1462e1213746807f24075d1dddac6632f8a31ad962efe18a0ddcc0c79"
+            },
+            {
+              "source": "../node_modules/.pnpm/satori@0.29.0/node_modules/satori/src/vendor/twrnc/log.js",
+              "sha256": "e9c1928e7f530b0c6d40c0d619cd7efef62a8c8a07cc1c1385927e4e7c5ddce0"
+            },
+            {
+              "source": "../node_modules/.pnpm/satori@0.29.0/node_modules/satori/node_modules/.pnpm/tailwindcss@3.1.8_postcss@8.4.21/node_modules/tailwindcss/lib/public/colors.js",
+              "sha256": "af3d666b21d049ce522b2f0bbc7dca80f65f60709742ba6562499246f3affb46"
+            },
+            {
+              "source": "../node_modules/.pnpm/satori@0.29.0/node_modules/satori/node_modules/.pnpm/tailwindcss@3.1.8_postcss@8.4.21/node_modules/tailwindcss/lib/util/defaults.js",
+              "sha256": "ef2a4a87fef5c6212c0cd5c7ed9d6247e07466ce14c8a7af3535283c02e84fde"
+            },
+            {
+              "source": "../node_modules/.pnpm/satori@0.29.0/node_modules/satori/node_modules/.pnpm/tailwindcss@3.1.8_postcss@8.4.21/node_modules/tailwindcss/lib/util/toPath.js",
+              "sha256": "d77696a351635e0d64fef254dccc10b90ada9a5a7d51382aca8e3a0c516c9651"
+            },
+            {
+              "source": "../node_modules/.pnpm/satori@0.29.0/node_modules/satori/node_modules/.pnpm/tailwindcss@3.1.8_postcss@8.4.21/node_modules/tailwindcss/lib/util/normalizeConfig.js",
+              "sha256": "d891786f5c2c977f0c6cb78caa302000b078899136a71542ff40c1f52d295444"
+            },
+            {
+              "source": "../node_modules/.pnpm/satori@0.29.0/node_modules/satori/node_modules/.pnpm/tailwindcss@3.1.8_postcss@8.4.21/node_modules/tailwindcss/lib/util/isPlainObject.js",
+              "sha256": "dc5c446d5403f03ca8a9290cd12aa7f9e5bece576aa6b16ee296190dcaa6a8bd"
+            },
+            {
+              "source": "../node_modules/.pnpm/satori@0.29.0/node_modules/satori/node_modules/.pnpm/tailwindcss@3.1.8_postcss@8.4.21/node_modules/tailwindcss/lib/util/cloneDeep.js",
+              "sha256": "5443dc4b35c145347d5db4a36e1579fc45a2e9070fc908be4382cc551f899dec"
+            },
+            {
+              "source": "../node_modules/.pnpm/satori@0.29.0/node_modules/satori/node_modules/.pnpm/postcss-selector-parser@6.0.10/node_modules/postcss-selector-parser/dist/util/unesc.js",
+              "sha256": "78b7dff846be5408fb5da1b2f09a1eda35d5a844ea3fcf66e3efee852d99153c"
+            },
+            {
+              "source": "../node_modules/.pnpm/satori@0.29.0/node_modules/satori/node_modules/.pnpm/postcss-selector-parser@6.0.10/node_modules/postcss-selector-parser/dist/util/getProp.js",
+              "sha256": "c5fa18b7cb18ab8953672a3a43324fc22d3a0b46b705bfd6e7f9e5853fcd244d"
+            },
+            {
+              "source": "../node_modules/.pnpm/satori@0.29.0/node_modules/satori/node_modules/.pnpm/postcss-selector-parser@6.0.10/node_modules/postcss-selector-parser/dist/util/ensureObject.js",
+              "sha256": "6490d34cef50b92bbdde71cf4855cb11804ec308a898565b3234ab09aa4085ec"
+            },
+            {
+              "source": "../node_modules/.pnpm/satori@0.29.0/node_modules/satori/node_modules/.pnpm/postcss-selector-parser@6.0.10/node_modules/postcss-selector-parser/dist/util/stripComments.js",
+              "sha256": "6c87c87bba484a858e651b40e1896b47ac6038ab13e5c75862af3ba504671703"
+            },
+            {
+              "source": "../node_modules/.pnpm/satori@0.29.0/node_modules/satori/node_modules/.pnpm/postcss-selector-parser@6.0.10/node_modules/postcss-selector-parser/dist/util/index.js",
+              "sha256": "ac0a4dfac05495ef1080716d4e6289b27d25ee1012066b53822de89189577cd3"
+            },
+            {
+              "source": "../node_modules/.pnpm/satori@0.29.0/node_modules/satori/node_modules/.pnpm/postcss-selector-parser@6.0.10/node_modules/postcss-selector-parser/dist/selectors/node.js",
+              "sha256": "4f00d6d6258c15524d454791b2366b3d2e9d4685f85c76744c45fe1e46996446"
+            },
+            {
+              "source": "../node_modules/.pnpm/satori@0.29.0/node_modules/satori/node_modules/.pnpm/postcss-selector-parser@6.0.10/node_modules/postcss-selector-parser/dist/selectors/types.js",
+              "sha256": "00e7ff653625c285b408d782a91b1ee5e6a341f76529e2153e5c53120173aec8"
+            },
+            {
+              "source": "../node_modules/.pnpm/satori@0.29.0/node_modules/satori/node_modules/.pnpm/postcss-selector-parser@6.0.10/node_modules/postcss-selector-parser/dist/selectors/container.js",
+              "sha256": "dcf2666c09a477d23b7d0b329e92272e4cf8b406f702995146392fab434273b4"
+            },
+            {
+              "source": "../node_modules/.pnpm/satori@0.29.0/node_modules/satori/node_modules/.pnpm/postcss-selector-parser@6.0.10/node_modules/postcss-selector-parser/dist/selectors/root.js",
+              "sha256": "1c761a92299b6a01fc51c23a467c948e3275944966daa613f259160ae929c424"
+            },
+            {
+              "source": "../node_modules/.pnpm/satori@0.29.0/node_modules/satori/node_modules/.pnpm/postcss-selector-parser@6.0.10/node_modules/postcss-selector-parser/dist/selectors/selector.js",
+              "sha256": "e8d662300b704f94fa0d18d13b143162019722ddad6f314ac688c2112e8e74ec"
+            },
+            {
+              "source": "../node_modules/.pnpm/satori@0.29.0/node_modules/satori/node_modules/.pnpm/cssesc@3.0.0/node_modules/cssesc/cssesc.js",
+              "sha256": "e80b6f193be7dafddc6d4c8eb4e0b0c1e3cfabe8d9e65f1ae309d45bebd63a91"
+            },
+            {
+              "source": "../node_modules/.pnpm/satori@0.29.0/node_modules/satori/node_modules/.pnpm/postcss-selector-parser@6.0.10/node_modules/postcss-selector-parser/dist/selectors/className.js",
+              "sha256": "da4a229409e1259db2d261572eddac2d52ebb958072a35cf1a4f23c6bac8da88"
+            },
+            {
+              "source": "../node_modules/.pnpm/satori@0.29.0/node_modules/satori/node_modules/.pnpm/postcss-selector-parser@6.0.10/node_modules/postcss-selector-parser/dist/selectors/comment.js",
+              "sha256": "fe213a7ce2dc97bb8bf252c3727ce7f7b1affa78d772a942ff980162b29b7c20"
+            },
+            {
+              "source": "../node_modules/.pnpm/satori@0.29.0/node_modules/satori/node_modules/.pnpm/postcss-selector-parser@6.0.10/node_modules/postcss-selector-parser/dist/selectors/id.js",
+              "sha256": "21b21787bdf62d0f939d95e700b57d7d661694bdded0b89298aea67de61435fd"
+            },
+            {
+              "source": "../node_modules/.pnpm/satori@0.29.0/node_modules/satori/node_modules/.pnpm/postcss-selector-parser@6.0.10/node_modules/postcss-selector-parser/dist/selectors/namespace.js",
+              "sha256": "9c57b1ed3c6b21de531c85bd1fec583f8147ee3e020393a4fb74fea873032b02"
+            },
+            {
+              "source": "../node_modules/.pnpm/satori@0.29.0/node_modules/satori/node_modules/.pnpm/postcss-selector-parser@6.0.10/node_modules/postcss-selector-parser/dist/selectors/tag.js",
+              "sha256": "575f612b87228e0b51b561f72cad0e8567195471c486d5d6c733e3761773d8dd"
+            },
+            {
+              "source": "../node_modules/.pnpm/satori@0.29.0/node_modules/satori/node_modules/.pnpm/postcss-selector-parser@6.0.10/node_modules/postcss-selector-parser/dist/selectors/string.js",
+              "sha256": "351e53f3466fa1a93fcedd5e337f3efda8e4cc4b5e3d7482a70141ed124d5291"
+            },
+            {
+              "source": "../node_modules/.pnpm/satori@0.29.0/node_modules/satori/node_modules/.pnpm/postcss-selector-parser@6.0.10/node_modules/postcss-selector-parser/dist/selectors/pseudo.js",
+              "sha256": "14519d7aa920b2bcac7b2c45af2da2471fbd63d20fb9429e6a065be17c2027d1"
+            },
+            {
+              "source": "../node_modules/.pnpm/satori@0.29.0/node_modules/satori/src/vendor/twrnc/deprecate.js",
+              "sha256": "8bc3cccb95adbc5459d754e371fb970449f03c2e4a054b0b01b1e645855f493d"
+            },
+            {
+              "source": "../node_modules/.pnpm/satori@0.29.0/node_modules/satori/node_modules/.pnpm/postcss-selector-parser@6.0.10/node_modules/postcss-selector-parser/dist/selectors/attribute.js",
+              "sha256": "da5376599f4cb885596803f73bf96442d773f9935b89fbdd084ef24785f80c98"
+            },
+            {
+              "source": "../node_modules/.pnpm/satori@0.29.0/node_modules/satori/node_modules/.pnpm/postcss-selector-parser@6.0.10/node_modules/postcss-selector-parser/dist/selectors/universal.js",
+              "sha256": "eb3025fa3de6423b3b0963b22d4a5f787185c6f70fa77f5b731ecb3165d539fa"
+            },
+            {
+              "source": "../node_modules/.pnpm/satori@0.29.0/node_modules/satori/node_modules/.pnpm/postcss-selector-parser@6.0.10/node_modules/postcss-selector-parser/dist/selectors/combinator.js",
+              "sha256": "abab7b4f7ea59125ffcd4371dc1f933192f0ef590940a88f3c6655d478f38122"
+            },
+            {
+              "source": "../node_modules/.pnpm/satori@0.29.0/node_modules/satori/node_modules/.pnpm/postcss-selector-parser@6.0.10/node_modules/postcss-selector-parser/dist/selectors/nesting.js",
+              "sha256": "2ab818bba04f8418fa4dd5a82af8dd18b371d54983a6a85f45d03af2c173917e"
+            },
+            {
+              "source": "../node_modules/.pnpm/satori@0.29.0/node_modules/satori/node_modules/.pnpm/postcss-selector-parser@6.0.10/node_modules/postcss-selector-parser/dist/sortAscending.js",
+              "sha256": "4ba01d7abff065d6c60c016a4ef78562b7763ef4daafb542a6513b810b0c3d79"
+            },
+            {
+              "source": "../node_modules/.pnpm/satori@0.29.0/node_modules/satori/node_modules/.pnpm/postcss-selector-parser@6.0.10/node_modules/postcss-selector-parser/dist/tokenTypes.js",
+              "sha256": "1d170f1c5e8aa7fc3072b5dd523284b07e50c3f3fa83dc76fcbdd61c07236a8f"
+            },
+            {
+              "source": "../node_modules/.pnpm/satori@0.29.0/node_modules/satori/node_modules/.pnpm/postcss-selector-parser@6.0.10/node_modules/postcss-selector-parser/dist/tokenize.js",
+              "sha256": "88f8d53281e7e2f6aa394575766d9329e235c3c4a09913ab938ead13900d3758"
+            },
+            {
+              "source": "../node_modules/.pnpm/satori@0.29.0/node_modules/satori/node_modules/.pnpm/postcss-selector-parser@6.0.10/node_modules/postcss-selector-parser/dist/parser.js",
+              "sha256": "3f97ae98bbe1b6e100042c033411fc0e62de26536d3bbcac6e87f561e4be8891"
+            },
+            {
+              "source": "../node_modules/.pnpm/satori@0.29.0/node_modules/satori/node_modules/.pnpm/postcss-selector-parser@6.0.10/node_modules/postcss-selector-parser/dist/processor.js",
+              "sha256": "334ec387e33408caff2830763a62f01c80ea89660ab7dbfc89e14fc8f7e0c397"
+            },
+            {
+              "source": "../node_modules/.pnpm/satori@0.29.0/node_modules/satori/node_modules/.pnpm/postcss-selector-parser@6.0.10/node_modules/postcss-selector-parser/dist/selectors/constructors.js",
+              "sha256": "8f8c7dd911da751a77f48f94493804b0466d5ebc2eeb17f9251ec766073be155"
+            },
+            {
+              "source": "../node_modules/.pnpm/satori@0.29.0/node_modules/satori/node_modules/.pnpm/postcss-selector-parser@6.0.10/node_modules/postcss-selector-parser/dist/selectors/guards.js",
+              "sha256": "d9e07b78950d957130a1ac832d2ed7f4505ab28fff71cac3d8dee0aa5925e75b"
+            },
+            {
+              "source": "../node_modules/.pnpm/satori@0.29.0/node_modules/satori/node_modules/.pnpm/postcss-selector-parser@6.0.10/node_modules/postcss-selector-parser/dist/selectors/index.js",
+              "sha256": "03ae6f17c40850dc442fa5e517130312798f6a6c1679b281908e0c7c75f09a4a"
+            },
+            {
+              "source": "../node_modules/.pnpm/satori@0.29.0/node_modules/satori/node_modules/.pnpm/postcss-selector-parser@6.0.10/node_modules/postcss-selector-parser/dist/index.js",
+              "sha256": "3155c696272cefc7692cde38b6ac516e22c032b47e08335bd1f195d57777252f"
+            },
+            {
+              "source": "../node_modules/.pnpm/satori@0.29.0/node_modules/satori/node_modules/.pnpm/tailwindcss@3.1.8_postcss@8.4.21/node_modules/tailwindcss/lib/util/escapeCommas.js",
+              "sha256": "cebe833370345a9e8c389d02b9c556424626d1eea3609b9c1a70de65656954e1"
+            },
+            {
+              "source": "../node_modules/.pnpm/satori@0.29.0/node_modules/satori/node_modules/.pnpm/color-name@1.1.4/node_modules/color-name/index.js",
+              "sha256": "97dabd7ebb70c33c19ccfa6956377fc722d9769924903f42a3bede30d83a8592"
+            },
+            {
+              "source": "../node_modules/.pnpm/satori@0.29.0/node_modules/satori/node_modules/.pnpm/tailwindcss@3.1.8_postcss@8.4.21/node_modules/tailwindcss/lib/util/color.js",
+              "sha256": "a83cd8d03b240163dd8475582bd40ad3ce34b9e0a878706bbdbb4ea34aa97de2"
+            },
+            {
+              "source": "../node_modules/.pnpm/satori@0.29.0/node_modules/satori/node_modules/.pnpm/tailwindcss@3.1.8_postcss@8.4.21/node_modules/tailwindcss/lib/util/withAlphaVariable.js",
+              "sha256": "91e0975c23a4bc64507955305c31e0ee53e029686b60296fef537ce7a6e98aef"
+            },
+            {
+              "source": "../node_modules/.pnpm/satori@0.29.0/node_modules/satori/node_modules/.pnpm/tailwindcss@3.1.8_postcss@8.4.21/node_modules/tailwindcss/lib/lib/regex.js",
+              "sha256": "eb270d800ed0f45d1bc342fb3fb825d1c43da531d43d634eea655c58b187b2a2"
+            },
+            {
+              "source": "../node_modules/.pnpm/satori@0.29.0/node_modules/satori/node_modules/.pnpm/tailwindcss@3.1.8_postcss@8.4.21/node_modules/tailwindcss/lib/util/splitAtTopLevelOnly.js",
+              "sha256": "4b1ad574f4f76fecc874eafe44a43e2cc8ada5ea8de6f823fc7e5d829d8601ea"
+            },
+            {
+              "source": "../node_modules/.pnpm/satori@0.29.0/node_modules/satori/node_modules/.pnpm/tailwindcss@3.1.8_postcss@8.4.21/node_modules/tailwindcss/lib/util/parseBoxShadowValue.js",
+              "sha256": "1b58d34cb8fb34b92e90f03f8761df11e201f3b392e1cd3a4bcad6c104bcaab4"
+            },
+            {
+              "source": "../node_modules/.pnpm/satori@0.29.0/node_modules/satori/node_modules/.pnpm/tailwindcss@3.1.8_postcss@8.4.21/node_modules/tailwindcss/lib/util/dataTypes.js",
+              "sha256": "6dbb842168802bd07ddb377a56b468874f4abebdfdb4484028ffd8cf7b6094e5"
+            },
+            {
+              "source": "../node_modules/.pnpm/satori@0.29.0/node_modules/satori/node_modules/.pnpm/tailwindcss@3.1.8_postcss@8.4.21/node_modules/tailwindcss/lib/util/pluginUtils.js",
+              "sha256": "415a0bf985bd54c55641e72d0b8d000b5471f37e8071af694fc50a771104c4da"
+            },
+            {
+              "source": "../node_modules/.pnpm/satori@0.29.0/node_modules/satori/node_modules/.pnpm/tailwindcss@3.1.8_postcss@8.4.21/node_modules/tailwindcss/lib/util/toColorValue.js",
+              "sha256": "b593caf05c50d7d4559349f61e5483c85cd88457d7033b5f1c60a44004544b88"
+            },
+            {
+              "source": "../node_modules/.pnpm/satori@0.29.0/node_modules/satori/node_modules/.pnpm/tailwindcss@3.1.8_postcss@8.4.21/node_modules/tailwindcss/lib/util/resolveConfig.js",
+              "sha256": "c86e5f1683acb11cee59edaea53db3e4558310a3ecf92ab117ad63f2017913b0"
+            },
+            {
+              "source": "../node_modules/.pnpm/satori@0.29.0/node_modules/satori/src/vendor/twrnc/picocolors.js",
+              "sha256": "5d0c55ec0d2e9decac63c9d44e6d905e0c144bdadc0f4872adbc4df9cf38d97a"
+            },
+            {
+              "source": "../node_modules/.pnpm/satori@0.29.0/node_modules/satori/node_modules/.pnpm/tailwindcss@3.1.8_postcss@8.4.21/node_modules/tailwindcss/lib/featureFlags.js",
+              "sha256": "92f53657788445300d4a7dac3d34a0202d37c61eb60b5ef05c21f6c748a2f637"
+            },
+            {
+              "source": "../node_modules/.pnpm/satori@0.29.0/node_modules/satori/node_modules/.pnpm/tailwindcss@3.1.8_postcss@8.4.21/node_modules/tailwindcss/lib/util/getAllConfigs.js",
+              "sha256": "73a19e3f045181b6aec0c7ba0f703ecbd32cc3975dfd172428337b7f2dbfa18c"
+            },
+            {
+              "source": "../node_modules/.pnpm/satori@0.29.0/node_modules/satori/node_modules/.pnpm/tailwindcss@3.1.8_postcss@8.4.21/node_modules/tailwindcss/lib/public/resolve-config.js",
+              "sha256": "1538ad7b67895b741bc32e41c052cd39d5e2a277dd7016839cdc8681542e9776"
+            },
+            {
+              "source": "../node_modules/.pnpm/satori@0.29.0/node_modules/satori/node_modules/.pnpm/tailwindcss@3.1.8_postcss@8.4.21/node_modules/tailwindcss/resolveConfig.js",
+              "sha256": "c314898034e9b664168635218078ac577c7a620d27b6427940590b8b53585fe3"
+            },
+            {
+              "source": "../node_modules/.pnpm/satori@0.29.0/node_modules/satori/src/utils.ts",
+              "sha256": "300e8aaf1711384a9e4d6d44bdb53bf940f0f3ba0d40fe4a6a287722203490c0"
+            },
+            {
+              "source": "../node_modules/.pnpm/satori@0.29.0/node_modules/satori/src/vendor/parse-css-dimension/index.js",
+              "sha256": "a8e24c14cb0de006af34c1110395a2acd031778bdde78748c76789630107bf05"
+            },
+            {
+              "source": "../node_modules/.pnpm/satori@0.29.0/node_modules/satori/src/yoga.ts",
+              "sha256": "e43a16fb84b9ba023b6479c2df4f7ca1ee183a887a1402e219ad25e32f24e674"
+            },
+            {
+              "source": "../node_modules/.pnpm/satori@0.29.0/node_modules/satori/src/jsx/jsx-runtime.ts",
+              "sha256": "5ba3294992a43b935dc4bf9a3eebf27d034b864ae88f0b783ae2b955887b06b9"
+            },
+            {
+              "source": "../node_modules/.pnpm/satori@0.29.0/node_modules/satori/src/handler/url-safety.ts",
+              "sha256": "9f06f14d3a025ac5f4ea2b545be7e42c8ad846e693b07a96269942681ec2cd18"
+            },
+            {
+              "source": "../node_modules/.pnpm/satori@0.29.0/node_modules/satori/src/handler/image.ts",
+              "sha256": "b111f4dad229deabfe5ca01a83e8b7b05ac9602a416a9f298bb7959eec20be21"
+            },
+            {
+              "source": "../node_modules/.pnpm/satori@0.29.0/node_modules/satori/src/handler/preprocess.ts",
+              "sha256": "18f49b94be53a4a49552e851b21aaafbcb0f764de16d5203dce64e95410aa957"
+            },
+            {
+              "source": "../node_modules/.pnpm/satori@0.29.0/node_modules/satori/src/handler/presets.ts",
+              "sha256": "258eba6c2e7c3fadca70191431e6dc669024c6495ae2ec7a1c17bfef2a1664d8"
+            },
+            {
+              "source": "../node_modules/.pnpm/satori@0.29.0/node_modules/satori/src/handler/inheritable.ts",
+              "sha256": "4ad6e018a5df48da641f02a786466ea30c4651ea3297400cab33b439086db7cb"
+            },
+            {
+              "source": "../node_modules/.pnpm/satori@0.29.0/node_modules/satori/src/handler/expand.ts",
+              "sha256": "4c01bb303d59eb1be4a85ab131a82f2cfe4d8dfba9bc56dde1b007f974b1293b"
+            },
+            {
+              "source": "../node_modules/.pnpm/satori@0.29.0/node_modules/satori/src/transform-origin.ts",
+              "sha256": "d3b97c4f4a0e42b33f14b09267cbb6acb60cb5c169c1bb8ad99b57ee0372ef35"
+            },
+            {
+              "source": "../node_modules/.pnpm/satori@0.29.0/node_modules/satori/src/parser/mask.ts",
+              "sha256": "4c5eb4435b3fb3f5f41ff9e6d893de56b22072bb55899537a9fd788c5bb91f81"
+            },
+            {
+              "source": "../node_modules/.pnpm/satori@0.29.0/node_modules/satori/src/handler/variables.ts",
+              "sha256": "f196402a91eb50cdf805d59f775322675a548a210b0b4ee6bd78232d0ba817d7"
+            },
+            {
+              "source": "../node_modules/.pnpm/satori@0.29.0/node_modules/satori/src/handler/compute.ts",
+              "sha256": "6ec4b1d6be5472957a2d5a842468bedf5e33f998ffa698131b8db0143253de2f"
+            },
+            {
+              "source": "../node_modules/.pnpm/satori@0.29.0/node_modules/satori/src/builder/text.ts",
+              "sha256": "c6acd7074a3e8fa82c8366e4ecfeca6110033a35d650e05799fb6887d75ac582"
+            },
+            {
+              "source": "../node_modules/.pnpm/satori@0.29.0/node_modules/satori/src/builder/transform.ts",
+              "sha256": "e4bb680a6ed3d916f02b57d2a4a92604a8b60b81ee7b0f95fd06446b77cb8b84"
+            },
+            {
+              "source": "../node_modules/.pnpm/satori@0.29.0/node_modules/satori/src/builder/shadow.ts",
+              "sha256": "b9028e584eb35bc94943e9bf3f029bc90438ea9842d187e83201d9c175451fe9"
+            },
+            {
+              "source": "../node_modules/.pnpm/satori@0.29.0/node_modules/satori/src/builder/text-decoration.ts",
+              "sha256": "7b8c922b1e4d1bd6cb83ae1355fbf8ab6c40af209bc28a1ce8c6b2b872f8d843"
+            },
+            {
+              "source": "../node_modules/.pnpm/satori@0.29.0/node_modules/satori/src/text/characters.ts",
+              "sha256": "5166ffb112e223179e2d8fef0240e1ed678132ce87f4f0373718778ece9dd546"
+            },
+            {
+              "source": "../node_modules/.pnpm/satori@0.29.0/node_modules/satori/src/text/measurer.ts",
+              "sha256": "8878e9db579cb6870ed93e10d631fbc184d2c06cd88bc11d806a69f3d3794406"
+            },
+            {
+              "source": "../node_modules/.pnpm/satori@0.29.0/node_modules/satori/src/text/processor.ts",
+              "sha256": "baf5060efd93e054ad7c58e08de1122f85e3856848b9e6a7be4b699e8fa3541e"
+            },
+            {
+              "source": "../node_modules/.pnpm/satori@0.29.0/node_modules/satori/src/text/index.ts",
+              "sha256": "d1e64ab4b539d0f1d8558ccec6cfb157b55df4c46fb961bd1a94061fac361184"
+            },
+            {
+              "source": "../node_modules/.pnpm/satori@0.29.0/node_modules/satori/src/builder/gradient/linear.ts",
+              "sha256": "126124a49dde0848d04911b3e93411de50be38aba772296320afb4c5f49877ef"
+            },
+            {
+              "source": "../node_modules/.pnpm/satori@0.29.0/node_modules/satori/src/builder/gradient/utils.ts",
+              "sha256": "d07ecdcdfbd052a33b46e123b8b70afce38a58c2d18fc4a757dbd418f96b4e7b"
+            },
+            {
+              "source": "../node_modules/.pnpm/satori@0.29.0/node_modules/satori/src/builder/gradient/radial.ts",
+              "sha256": "74a6ddf64c62faefa4d52283c31d41df6ebc86ab0003ba019f20ba5549f667d4"
+            },
+            {
+              "source": "../node_modules/.pnpm/satori@0.29.0/node_modules/satori/src/builder/background-image.ts",
+              "sha256": "314acf697934fa216e101082e15e2d41bb2734a2a9596b9d7777af31f333662b"
+            },
+            {
+              "source": "../node_modules/.pnpm/satori@0.29.0/node_modules/satori/src/builder/border-radius.ts",
+              "sha256": "bdcc511eb9c3fa092bcd48389e868ff02e519187546ceb34497341e3190cbce5"
+            },
+            {
+              "source": "../node_modules/.pnpm/satori@0.29.0/node_modules/satori/src/builder/border.ts",
+              "sha256": "fc2a879fd22c1aa5503f575d87a26dcd03f71ab86d274f4733867b9adfa95c28"
+            },
+            {
+              "source": "../node_modules/.pnpm/satori@0.29.0/node_modules/satori/src/builder/content-mask.ts",
+              "sha256": "8db8d01bd808e77f9c62bcf4fe851bbca2c132a6a1f27d78bd16f47460484edc"
+            },
+            {
+              "source": "../node_modules/.pnpm/satori@0.29.0/node_modules/satori/src/parser/shape.ts",
+              "sha256": "2c00ddf3febbf7cb9dee2298a456d6f0bda7492b835cd6948fc72013332dab02"
+            },
+            {
+              "source": "../node_modules/.pnpm/satori@0.29.0/node_modules/satori/src/builder/clip-path.ts",
+              "sha256": "9d10b2cd0202687c9b04d36e41c0e4a32390d9d5e27c88aef0c1bdabf228bef7"
+            },
+            {
+              "source": "../node_modules/.pnpm/satori@0.29.0/node_modules/satori/src/builder/overflow.ts",
+              "sha256": "574cd47f97ada5b696e045e7891febf434d064008fea244419cc877dc3ffab5c"
+            },
+            {
+              "source": "../node_modules/.pnpm/satori@0.29.0/node_modules/satori/src/builder/mask-image.ts",
+              "sha256": "b00deb719f920447dcea5a616cddf75206d3f78903ca24d18a72150b5992c484"
+            },
+            {
+              "source": "../node_modules/.pnpm/satori@0.29.0/node_modules/satori/src/builder/rect.ts",
+              "sha256": "522d3b2952eca85ad893da9550bd9e3ab9041f6d7753491974ece9f444e2bfb2"
+            },
+            {
+              "source": "../node_modules/.pnpm/satori@0.29.0/node_modules/satori/node_modules/.pnpm/emoji-regex-xs@2.0.1/node_modules/emoji-regex-xs/index.mjs",
+              "sha256": "bcbef71ab2ea794b79dc6e590aed3b478c6edd322a574f6eaf185f1d7888c906"
+            },
+            {
+              "source": "../node_modules/.pnpm/satori@0.29.0/node_modules/satori/src/language.ts",
+              "sha256": "7c32e5ea11d68a3023a8baecbbb596d417e908e01ec794666e93dcf7b9420760"
+            },
+            {
+              "source": "../node_modules/.pnpm/satori@0.29.0/node_modules/satori/src/layout.ts",
+              "sha256": "6bde590a9783adb522433486e696500a16a406ecd68760e5224475774fffbaa1"
+            },
+            {
+              "source": "../node_modules/.pnpm/satori@0.29.0/node_modules/satori/src/font.ts",
+              "sha256": "e18f714af09c4bc9a3dc8932c4983ef3463a90e8121a5ff42cb897a9b0fbc423"
+            },
+            {
+              "source": "../node_modules/.pnpm/satori@0.29.0/node_modules/satori/src/builder/svg.ts",
+              "sha256": "b1836c2badf78e1db3666f6c51c4919e0280ff42c8cca3624d9a3fef134627eb"
+            },
+            {
+              "source": "../node_modules/.pnpm/satori@0.29.0/node_modules/satori/node_modules/.pnpm/twrnc@3.4.0_postcss@8.4.21_react-native@0.72.4_@babel+core@7.22.20_@babel+preset-env@7._3c230b22695967cdff2532887d406bc0/node_modules/twrnc/dist/esm/create.js",
+              "sha256": "9a7d252599ee2475c1676ae3d8612f6e56f482462a038b410c6d456195664612"
+            },
+            {
+              "source": "../node_modules/.pnpm/satori@0.29.0/node_modules/satori/node_modules/.pnpm/twrnc@3.4.0_postcss@8.4.21_react-native@0.72.4_@babel+core@7.22.20_@babel+preset-env@7._3c230b22695967cdff2532887d406bc0/node_modules/twrnc/dist/esm/types.js",
+              "sha256": "595f9fa9f2f39fd2bdc66d52ee568988de5016517c4371ae12a34d00d1351e96"
+            },
+            {
+              "source": "../node_modules/.pnpm/satori@0.29.0/node_modules/satori/node_modules/.pnpm/twrnc@3.4.0_postcss@8.4.21_react-native@0.72.4_@babel+core@7.22.20_@babel+preset-env@7._3c230b22695967cdff2532887d406bc0/node_modules/twrnc/dist/esm/helpers.js",
+              "sha256": "6a11b96df679d3804891a3ca119ddc041024847caa5f47f19fc0b944c928a4ef"
+            },
+            {
+              "source": "../node_modules/.pnpm/satori@0.29.0/node_modules/satori/node_modules/.pnpm/twrnc@3.4.0_postcss@8.4.21_react-native@0.72.4_@babel+core@7.22.20_@babel+preset-env@7._3c230b22695967cdff2532887d406bc0/node_modules/twrnc/dist/esm/styles.js",
+              "sha256": "1708e561ad0e6d47154a0d5fc81e72af514f91c119035d7c223afec7479b573d"
+            },
+            {
+              "source": "../node_modules/.pnpm/satori@0.29.0/node_modules/satori/node_modules/.pnpm/twrnc@3.4.0_postcss@8.4.21_react-native@0.72.4_@babel+core@7.22.20_@babel+preset-env@7._3c230b22695967cdff2532887d406bc0/node_modules/twrnc/dist/esm/cache.js",
+              "sha256": "43fc9b6faa8b6488dea2f2c11e42dc1f3fcd131328cc0bd4065e8cd6d0c3bc9d"
+            },
+            {
+              "source": "../node_modules/.pnpm/satori@0.29.0/node_modules/satori/node_modules/.pnpm/twrnc@3.4.0_postcss@8.4.21_react-native@0.72.4_@babel+core@7.22.20_@babel+preset-env@7._3c230b22695967cdff2532887d406bc0/node_modules/twrnc/dist/esm/resolve/font-size.js",
+              "sha256": "b2fd85d9044de1311251744c0886fcace2786f88d999f1f3a8eeda955e2f8f78"
+            },
+            {
+              "source": "../node_modules/.pnpm/satori@0.29.0/node_modules/satori/node_modules/.pnpm/twrnc@3.4.0_postcss@8.4.21_react-native@0.72.4_@babel+core@7.22.20_@babel+preset-env@7._3c230b22695967cdff2532887d406bc0/node_modules/twrnc/dist/esm/resolve/line-height.js",
+              "sha256": "1f3c483d297321e50c772030b22df52cd798cbb390463e8ea873f5f8accb30d0"
+            },
+            {
+              "source": "../node_modules/.pnpm/satori@0.29.0/node_modules/satori/node_modules/.pnpm/twrnc@3.4.0_postcss@8.4.21_react-native@0.72.4_@babel+core@7.22.20_@babel+preset-env@7._3c230b22695967cdff2532887d406bc0/node_modules/twrnc/dist/esm/resolve/spacing.js",
+              "sha256": "4267900655811581759aaade8e9a51f261335ec593d6a102084c6628b48e3040"
+            },
+            {
+              "source": "../node_modules/.pnpm/satori@0.29.0/node_modules/satori/node_modules/.pnpm/twrnc@3.4.0_postcss@8.4.21_react-native@0.72.4_@babel+core@7.22.20_@babel+preset-env@7._3c230b22695967cdff2532887d406bc0/node_modules/twrnc/dist/esm/screens.js",
+              "sha256": "43a555a2c830f4b3fa2f0afa346dc491c643382ec805923a1927affb1141e04a"
+            },
+            {
+              "source": "../node_modules/.pnpm/satori@0.29.0/node_modules/satori/node_modules/.pnpm/twrnc@3.4.0_postcss@8.4.21_react-native@0.72.4_@babel+core@7.22.20_@babel+preset-env@7._3c230b22695967cdff2532887d406bc0/node_modules/twrnc/dist/esm/resolve/font-family.js",
+              "sha256": "9b8fe052e1dd122706bfca845c9c717539cd6ab57960179f650f44c245b3df65"
+            },
+            {
+              "source": "../node_modules/.pnpm/satori@0.29.0/node_modules/satori/node_modules/.pnpm/twrnc@3.4.0_postcss@8.4.21_react-native@0.72.4_@babel+core@7.22.20_@babel+preset-env@7._3c230b22695967cdff2532887d406bc0/node_modules/twrnc/dist/esm/resolve/color.js",
+              "sha256": "3b48f65e611d9978a623e59ec42ee785343d4a0d8eb6c261ed52df2debb6a83c"
+            },
+            {
+              "source": "../node_modules/.pnpm/satori@0.29.0/node_modules/satori/node_modules/.pnpm/twrnc@3.4.0_postcss@8.4.21_react-native@0.72.4_@babel+core@7.22.20_@babel+preset-env@7._3c230b22695967cdff2532887d406bc0/node_modules/twrnc/dist/esm/resolve/borders.js",
+              "sha256": "b115143c654b879283df8d9484d230a4e9f5b577a764e1a4fc68888fe7c5df39"
+            },
+            {
+              "source": "../node_modules/.pnpm/satori@0.29.0/node_modules/satori/node_modules/.pnpm/twrnc@3.4.0_postcss@8.4.21_react-native@0.72.4_@babel+core@7.22.20_@babel+preset-env@7._3c230b22695967cdff2532887d406bc0/node_modules/twrnc/dist/esm/resolve/inset.js",
+              "sha256": "0df276360158401ee5f15201e83f568cccc3a02b73e196b4c52f13244eabb0b5"
+            },
+            {
+              "source": "../node_modules/.pnpm/satori@0.29.0/node_modules/satori/node_modules/.pnpm/twrnc@3.4.0_postcss@8.4.21_react-native@0.72.4_@babel+core@7.22.20_@babel+preset-env@7._3c230b22695967cdff2532887d406bc0/node_modules/twrnc/dist/esm/resolve/flex.js",
+              "sha256": "8f8e89f92758dd2d3ab5b83ca029cc8528e4b4870f28adb388e7364909a253bf"
+            },
+            {
+              "source": "../node_modules/.pnpm/satori@0.29.0/node_modules/satori/node_modules/.pnpm/twrnc@3.4.0_postcss@8.4.21_react-native@0.72.4_@babel+core@7.22.20_@babel+preset-env@7._3c230b22695967cdff2532887d406bc0/node_modules/twrnc/dist/esm/resolve/width-height.js",
+              "sha256": "20f17c485473a3bc2ee5b1fb4473910da1572fda08c9ea80eb6d556b7ec13b80"
+            },
+            {
+              "source": "../node_modules/.pnpm/satori@0.29.0/node_modules/satori/node_modules/.pnpm/twrnc@3.4.0_postcss@8.4.21_react-native@0.72.4_@babel+core@7.22.20_@babel+preset-env@7._3c230b22695967cdff2532887d406bc0/node_modules/twrnc/dist/esm/resolve/letter-spacing.js",
+              "sha256": "2bfa3a655b34e1aef4fe133ca90c30a83d666c048edaefa695739ee4920e4b4c"
+            },
+            {
+              "source": "../node_modules/.pnpm/satori@0.29.0/node_modules/satori/node_modules/.pnpm/twrnc@3.4.0_postcss@8.4.21_react-native@0.72.4_@babel+core@7.22.20_@babel+preset-env@7._3c230b22695967cdff2532887d406bc0/node_modules/twrnc/dist/esm/resolve/opacity.js",
+              "sha256": "ce6e0fecea5aa6d4955ad0493692f4b7c6bf2b1a2fe008b45a9ac400699a768e"
+            },
+            {
+              "source": "../node_modules/.pnpm/satori@0.29.0/node_modules/satori/node_modules/.pnpm/twrnc@3.4.0_postcss@8.4.21_react-native@0.72.4_@babel+core@7.22.20_@babel+preset-env@7._3c230b22695967cdff2532887d406bc0/node_modules/twrnc/dist/esm/resolve/shadow.js",
+              "sha256": "019c9d80f8fbc276dac657259d4a982b1d481b2f6cfb5fd1c26549948c3facec"
+            },
+            {
+              "source": "../node_modules/.pnpm/satori@0.29.0/node_modules/satori/node_modules/.pnpm/twrnc@3.4.0_postcss@8.4.21_react-native@0.72.4_@babel+core@7.22.20_@babel+preset-env@7._3c230b22695967cdff2532887d406bc0/node_modules/twrnc/dist/esm/ClassParser.js",
+              "sha256": "7baface3513af133bde9a32f563daac9d265f195aa331cd039e769d0bf3d8cb5"
+            },
+            {
+              "source": "../node_modules/.pnpm/satori@0.29.0/node_modules/satori/node_modules/.pnpm/twrnc@3.4.0_postcss@8.4.21_react-native@0.72.4_@babel+core@7.22.20_@babel+preset-env@7._3c230b22695967cdff2532887d406bc0/node_modules/twrnc/dist/esm/parse-inputs.js",
+              "sha256": "f9293ec8a596bb868dbaa2fdba1ce61867f2865ef11b6f72e6db6483c7ab1af8"
+            },
+            {
+              "source": "../node_modules/.pnpm/satori@0.29.0/node_modules/satori/node_modules/.pnpm/twrnc@3.4.0_postcss@8.4.21_react-native@0.72.4_@babel+core@7.22.20_@babel+preset-env@7._3c230b22695967cdff2532887d406bc0/node_modules/twrnc/dist/esm/plugin.js",
+              "sha256": "18bc889a410c42f33cf39d684b0e6fd339ec49c7ea1493fef53ec89660dbe990"
+            },
+            {
+              "source": "../node_modules/.pnpm/satori@0.29.0/node_modules/satori/src/handler/tailwind.ts",
+              "sha256": "47d885bb381cdc23b74741319de6276c96f000dc78f9edd7925dde2d6d5bad32"
+            },
+            {
+              "source": "../node_modules/.pnpm/satori@0.29.0/node_modules/satori/src/satori.ts",
+              "sha256": "cd21762de3d50dbe3279bbfcb8836c206fafe9fadb179c4ecc0cb0ea1156e416"
+            },
+            {
+              "source": "../node_modules/.pnpm/parse-css-color@0.2.1/node_modules/parse-css-color/dist/index.esm.js",
+              "sha256": "fc75da39fd4f2a5e3ff74535d2a04abadf2b1108e6bb60bfc75d5816c82f3c0f"
+            },
+            {
+              "source": "../node_modules/.pnpm/css-gradient-parser@0.0.17/node_modules/css-gradient-parser/src/utils.ts",
+              "sha256": "8f13e5afae5818e76fc026d6c7c4ea3c1bca249f5e5a1cfb0c1d43c8e585cbf8"
+            },
+            {
+              "source": "../node_modules/.pnpm/css-gradient-parser@0.0.17/node_modules/css-gradient-parser/src/linear.ts",
+              "sha256": "3041b0c7bbfe1fa69aef8ca89a9407158691caf8dd0bdfd0272a2946fb4f1632"
+            },
+            {
+              "source": "../node_modules/.pnpm/css-gradient-parser@0.0.17/node_modules/css-gradient-parser/src/radial.ts",
+              "sha256": "971a63272865a1844bcc9c6de148c0eca19e8c9a0504d76ae82f8c1cc5e030f1"
+            },
+            {
+              "source": "../node_modules/.pnpm/css-gradient-parser@0.0.17/node_modules/css-gradient-parser/src/conic.ts",
+              "sha256": "7d08d64ef95cabc329fd6ddcc598404e73dae258803454f54f0e63743f3c886d"
+            },
+            {
+              "source": "../node_modules/.pnpm/@shuding+opentype.js@1.4.0-beta.0/node_modules/@shuding/opentype.js/node_modules/.pnpm/fflate@0.7.3/node_modules/fflate/esm/browser.js",
+              "sha256": "de788be4f7afcf1cbe92333882e2e2997c03388e39ae096ca9053d6675565192"
+            },
+            {
+              "source": "../node_modules/.pnpm/@shuding+opentype.js@1.4.0-beta.0/node_modules/@shuding/opentype.js/src/path.js",
+              "sha256": "9a90e39a7e80bea317d8db874ab17b8f7c03d309af0ef00909d88e842ca23206"
+            },
+            {
+              "source": "../node_modules/.pnpm/@shuding+opentype.js@1.4.0-beta.0/node_modules/@shuding/opentype.js/src/encoding.js",
+              "sha256": "0f480258a5504174092a17604c183cb270a36226a63832ba68880b48e107cb0f"
+            },
+            {
+              "source": "../node_modules/.pnpm/@shuding+opentype.js@1.4.0-beta.0/node_modules/@shuding/opentype.js/src/check.js",
+              "sha256": "c59dd4296d03429482ba766919ad7fd8f69ed0171a3a08eb014612fea93f718c"
+            },
+            {
+              "source": "../node_modules/.pnpm/@shuding+opentype.js@1.4.0-beta.0/node_modules/@shuding/opentype.js/src/glyph.js",
+              "sha256": "aa3808f1e41b0e96ee67b2f764c97e828b23c3b90b75910379217160a75c7645"
+            },
+            {
+              "source": "../node_modules/.pnpm/@shuding+opentype.js@1.4.0-beta.0/node_modules/@shuding/opentype.js/src/glyphset.js",
+              "sha256": "bfe87260a605d99845ea421bd50b0599e1fe707a91e8444444e6ea06f54ce2cd"
+            },
+            {
+              "source": "../node_modules/.pnpm/@shuding+opentype.js@1.4.0-beta.0/node_modules/@shuding/opentype.js/src/layout.js",
+              "sha256": "61f90e5aece2e085e0d79d701d5d1484a46bfc5860958f9a73e13dda00f53a22"
+            },
+            {
+              "source": "../node_modules/.pnpm/@shuding+opentype.js@1.4.0-beta.0/node_modules/@shuding/opentype.js/src/position.js",
+              "sha256": "7a5ece8e7f2a9668616d167351b4aedec6cdcb3ded38ec22f41e50f8446f59f3"
+            },
+            {
+              "source": "../node_modules/.pnpm/@shuding+opentype.js@1.4.0-beta.0/node_modules/@shuding/opentype.js/src/substitution.js",
+              "sha256": "18c7be54df1511c2edeb9b3ebc90f2782cc30ba849544c4c66754ecdda2f587f"
+            },
+            {
+              "source": "../node_modules/.pnpm/@shuding+opentype.js@1.4.0-beta.0/node_modules/@shuding/opentype.js/src/util.js",
+              "sha256": "745cff243ddfde0b05ca02d0826928120395186586c104dea5e1df2040c77949"
+            },
+            {
+              "source": "../node_modules/.pnpm/@shuding+opentype.js@1.4.0-beta.0/node_modules/@shuding/opentype.js/src/parse.js",
+              "sha256": "1039c6aa775d0c208fcaa9ab8ad379589d7f683c41382a11de1df36fdcc9c2d8"
+            },
+            {
+              "source": "../node_modules/.pnpm/@shuding+opentype.js@1.4.0-beta.0/node_modules/@shuding/opentype.js/src/tables/glyf.js",
+              "sha256": "7fbf3cce932e9b9c96058dc5930969e142b9a71f16feb5878cde443defb1e9ee"
+            },
+            {
+              "source": "../node_modules/.pnpm/@shuding+opentype.js@1.4.0-beta.0/node_modules/@shuding/opentype.js/src/hintingtt.js",
+              "sha256": "f226046e659690e92a28076063907cb7c0fdedbc8df55940fc8cc69275869ac9"
+            },
+            {
+              "source": "../node_modules/.pnpm/@shuding+opentype.js@1.4.0-beta.0/node_modules/@shuding/opentype.js/src/tokenizer.js",
+              "sha256": "0317b8881f1b7dad6202b2253e037ad5a4c862246eed0ae898ceb40d4dbfa91d"
+            },
+            {
+              "source": "../node_modules/.pnpm/@shuding+opentype.js@1.4.0-beta.0/node_modules/@shuding/opentype.js/src/char.js",
+              "sha256": "991061ec0bf9e5fe2e64019d0d26d4d88ec45273a07e42437d61df9898a29f76"
+            },
+            {
+              "source": "../node_modules/.pnpm/@shuding+opentype.js@1.4.0-beta.0/node_modules/@shuding/opentype.js/src/features/featureQuery.js",
+              "sha256": "370c2cb444299c758e825b8e417f94cd91ba5b7af7d8fb257eab516954d98e44"
+            },
+            {
+              "source": "../node_modules/.pnpm/@shuding+opentype.js@1.4.0-beta.0/node_modules/@shuding/opentype.js/src/features/arab/contextCheck/arabicWord.js",
+              "sha256": "8721a9bb7058446e4eea572aaf1a38091dd1e8730928403454fc20b95b708d43"
+            },
+            {
+              "source": "../node_modules/.pnpm/@shuding+opentype.js@1.4.0-beta.0/node_modules/@shuding/opentype.js/src/features/arab/contextCheck/arabicSentence.js",
+              "sha256": "fca16efb9fa139a3c65f5a28278597d18bd0a59f386c6612d935fe8c97a8f9d7"
+            },
+            {
+              "source": "../node_modules/.pnpm/@shuding+opentype.js@1.4.0-beta.0/node_modules/@shuding/opentype.js/src/features/applySubstitution.js",
+              "sha256": "e390005b73491e8c2539e3b6cc8e10cdcecebe5497d6ca8222b4d1ec6e34ab14"
+            },
+            {
+              "source": "../node_modules/.pnpm/@shuding+opentype.js@1.4.0-beta.0/node_modules/@shuding/opentype.js/src/features/arab/arabicPresentationForms.js",
+              "sha256": "47417c57d20d13251e2a2502a75dc4db94ca515d3ca653e9789cbeeb45be1e67"
+            },
+            {
+              "source": "../node_modules/.pnpm/@shuding+opentype.js@1.4.0-beta.0/node_modules/@shuding/opentype.js/src/features/arab/arabicRequiredLigatures.js",
+              "sha256": "64270c72f6c09ada4a2f5571d6a95392011062a4fca062b81a30fa20a2cb595c"
+            },
+            {
+              "source": "../node_modules/.pnpm/@shuding+opentype.js@1.4.0-beta.0/node_modules/@shuding/opentype.js/src/features/latn/contextCheck/latinWord.js",
+              "sha256": "702af6e3c3388f6ea36b52f77a93b1a8dd54e46e7fe567968a9c72d80a432caf"
+            },
+            {
+              "source": "../node_modules/.pnpm/@shuding+opentype.js@1.4.0-beta.0/node_modules/@shuding/opentype.js/src/features/latn/latinLigatures.js",
+              "sha256": "a84679ca095e6863785348ed85b709977d6af51c6f148da5619b66b7134e77a7"
+            },
+            {
+              "source": "../node_modules/.pnpm/@shuding+opentype.js@1.4.0-beta.0/node_modules/@shuding/opentype.js/src/bidi.js",
+              "sha256": "6bdd820f08bc288b8af56302d880635738cc990655bec00c7ddab25685f63e3e"
+            },
+            {
+              "source": "../node_modules/.pnpm/@shuding+opentype.js@1.4.0-beta.0/node_modules/@shuding/opentype.js/src/font.js",
+              "sha256": "bf06c46caadbec7252cc44caf0f00c02df6585c11f5103b7211cb6f9f62118e4"
+            },
+            {
+              "source": "../node_modules/.pnpm/@shuding+opentype.js@1.4.0-beta.0/node_modules/@shuding/opentype.js/src/tables/cmap.js",
+              "sha256": "2bf3ee3e43e647025ebe99fb4ad52720e5fb58871946177db31f6c2a3580de30"
+            },
+            {
+              "source": "../node_modules/.pnpm/@shuding+opentype.js@1.4.0-beta.0/node_modules/@shuding/opentype.js/src/tables/cff.js",
+              "sha256": "72e7bbb81b9834e906a37bcf60e0311ad80e30cd8336d5d42f19498884eb6951"
+            },
+            {
+              "source": "../node_modules/.pnpm/@shuding+opentype.js@1.4.0-beta.0/node_modules/@shuding/opentype.js/src/tables/fvar.js",
+              "sha256": "efe65c4206a6be0fb36192e6cc766fe11d4f6a1dcbb254d4c13f8728430d8736"
+            },
+            {
+              "source": "../node_modules/.pnpm/@shuding+opentype.js@1.4.0-beta.0/node_modules/@shuding/opentype.js/src/tables/gdef.js",
+              "sha256": "b4f1d486352ea30c990afd661e823e052d7a514bdb076b925184b864f866a1cd"
+            },
+            {
+              "source": "../node_modules/.pnpm/@shuding+opentype.js@1.4.0-beta.0/node_modules/@shuding/opentype.js/src/tables/gpos.js",
+              "sha256": "870953b08e560264f9cda8c869b7077299e370496832efa77f03c7e494236b60"
+            },
+            {
+              "source": "../node_modules/.pnpm/@shuding+opentype.js@1.4.0-beta.0/node_modules/@shuding/opentype.js/src/tables/gsub.js",
+              "sha256": "49b02521f3b4db4e409db100556fcce740edaaf933392d71ac6dd0e80e7a82c1"
+            },
+            {
+              "source": "../node_modules/.pnpm/@shuding+opentype.js@1.4.0-beta.0/node_modules/@shuding/opentype.js/src/tables/head.js",
+              "sha256": "3ebda9c43a520ef0c63330dc61642ea52c1a64f4561c2743fa9033db1985b0b4"
+            },
+            {
+              "source": "../node_modules/.pnpm/@shuding+opentype.js@1.4.0-beta.0/node_modules/@shuding/opentype.js/src/tables/hhea.js",
+              "sha256": "bf412c900a75f325e119e3140469c1f7f925c092acbe86fe7e01e8af06f8b2b0"
+            },
+            {
+              "source": "../node_modules/.pnpm/@shuding+opentype.js@1.4.0-beta.0/node_modules/@shuding/opentype.js/src/tables/hmtx.js",
+              "sha256": "86e0054250846ca541c3431b199010fd29c312e50e82e6352a87a45af5690ea4"
+            },
+            {
+              "source": "../node_modules/.pnpm/@shuding+opentype.js@1.4.0-beta.0/node_modules/@shuding/opentype.js/src/tables/kern.js",
+              "sha256": "b7cefa18f91649b8287e475e6e45e9cecd10e444e55e2f67b3f07b701f399541"
+            },
+            {
+              "source": "../node_modules/.pnpm/@shuding+opentype.js@1.4.0-beta.0/node_modules/@shuding/opentype.js/src/tables/ltag.js",
+              "sha256": "c2175ad0aff523435c5670315331b589cb9111e49df8b3a8cd55265a5a874878"
+            },
+            {
+              "source": "../node_modules/.pnpm/@shuding+opentype.js@1.4.0-beta.0/node_modules/@shuding/opentype.js/src/tables/loca.js",
+              "sha256": "07f3dec8feb725c1c605bcbbbbeb118e3dcc3f42be2e3591882a7a9f2534f2b2"
+            },
+            {
+              "source": "../node_modules/.pnpm/@shuding+opentype.js@1.4.0-beta.0/node_modules/@shuding/opentype.js/src/tables/maxp.js",
+              "sha256": "37c959cde5c74d6fff6cbd0830e586d33ef01a823290c55e9a4090bafbceba96"
+            },
+            {
+              "source": "../node_modules/.pnpm/@shuding+opentype.js@1.4.0-beta.0/node_modules/@shuding/opentype.js/src/tables/os2.js",
+              "sha256": "56fef2bad2364ca2ba0268b4aa36ea56e57e8408aab0cf74ddd97b216665a339"
+            },
+            {
+              "source": "../node_modules/.pnpm/@shuding+opentype.js@1.4.0-beta.0/node_modules/@shuding/opentype.js/src/tables/post.js",
+              "sha256": "fce6a6b4270d4e19ccc87218c9c993850af6e4bc6c5d3782f16ff7516f0fba33"
+            },
+            {
+              "source": "../node_modules/.pnpm/@shuding+opentype.js@1.4.0-beta.0/node_modules/@shuding/opentype.js/src/types.js",
+              "sha256": "11ab98b5c93a70d04e4922efde2a80749ebab18981bebb35060177bda899107d"
+            },
+            {
+              "source": "../node_modules/.pnpm/@shuding+opentype.js@1.4.0-beta.0/node_modules/@shuding/opentype.js/src/tables/meta.js",
+              "sha256": "908f3f956715a92952bb8d0cc0a3522f0bb2bf506860207285deb38dc2249616"
+            },
+            {
+              "source": "../node_modules/.pnpm/@shuding+opentype.js@1.4.0-beta.0/node_modules/@shuding/opentype.js/src/opentype.js",
+              "sha256": "b7d5324ca237cbe88bd9f5689e3d044c702d910de2a189151c365c92ac2e9a2b"
+            },
+            {
+              "source": "../node_modules/.pnpm/@resvg+resvg-wasm@2.4.1/node_modules/@resvg/resvg-wasm/index.mjs",
+              "sha256": "b39c6c6d834126f5ab44e9155a318fd09a3bff0ed68595cd1b3609a9b3b10ab3"
+            },
+            {
+              "source": "../src/index.node.ts",
+              "sha256": "a048d1a9bf1cc4ccb0d4c192414b7a310a7b93d5bc86c5436a0c56df03f002e7"
+            },
+            {
+              "source": "../src/emoji/index.ts",
+              "sha256": "6bf901a53389675444d5f0f79a1159d1760266bea3c545a50d466fdb9a0d1531"
+            },
+            {
+              "source": "../src/language/index.ts",
+              "sha256": "a71b64fe70e010adfffaf036f5a2c6a781ad105f81e88c72157bcf0c2c8b3a11"
+            },
+            {
+              "source": "../src/og.ts",
+              "sha256": "1e0d3d369bcce031c3c04fe4d6443d7123cd324068512ddb40029dded3222f48"
+            }
+          ]
+        },
+        {
+          "kind": "edge",
+          "sources": 201,
+          "embedded": 201,
+          "ownSources": [
+            "../src/index.edge.ts",
+            "../src/emoji/index.ts",
+            "../src/language/index.ts",
+            "../src/og.ts"
+          ],
+          "wasmSources": [
+            "../node_modules/.pnpm/satori@0.29.0/node_modules/satori/node_modules/.pnpm/yoga-layout@3.2.1_patch_hash=7591c1773fe3dfdcc65257d2ea478c1f665ef46b4f5089e60926b05b0854807c/node_modules/yoga-layout/src/generated/YGEnums.ts",
+            "../node_modules/.pnpm/satori@0.29.0/node_modules/satori/node_modules/.pnpm/yoga-layout@3.2.1_patch_hash=7591c1773fe3dfdcc65257d2ea478c1f665ef46b4f5089e60926b05b0854807c/node_modules/yoga-layout/src/wrapAssembly.ts",
+            "../node_modules/.pnpm/satori@0.29.0/node_modules/satori/node_modules/.pnpm/yoga-layout@3.2.1_patch_hash=7591c1773fe3dfdcc65257d2ea478c1f665ef46b4f5089e60926b05b0854807c/node_modules/yoga-layout/dist/binaries/yoga-wasm-esm.js",
+            "../node_modules/.pnpm/satori@0.29.0/node_modules/satori/node_modules/.pnpm/yoga-layout@3.2.1_patch_hash=7591c1773fe3dfdcc65257d2ea478c1f665ef46b4f5089e60926b05b0854807c/node_modules/yoga-layout/src/load.ts",
+            "../node_modules/.pnpm/satori@0.29.0/node_modules/satori/src/yoga.external.ts",
+            "../node_modules/.pnpm/satori@0.29.0/node_modules/satori/src/yoga.ts",
+            "../node_modules/.pnpm/@resvg+resvg-wasm@2.4.1/node_modules/@resvg/resvg-wasm/index.mjs"
+          ],
+          "sameWithoutSourceMap": false,
+          "originalTail": "v0.2.1\n   * @link http://github.com/noeldelgado/parse-css-color/\n   * @license MIT\n   *)\n*/\n//# sourceMappingURL=index.edge.js.map",
+          "installedTail": "v0.2.1\n   * @link http://github.com/noeldelgado/parse-css-color/\n   * @license MIT\n   *)\n*/\n//# sourceMappingURL=index.edge.js.map",
+          "firstDifference": {
+            "offset": 1475,
+            "archive": "\", { value: mod, enumerable: true }) : target,\n  mod\n));\n\n// node_modules/.pnpm/tiny-inflate@1.0.3/node_modules/tiny-inflate/index.js\nvar require_tiny_inflate = __commonJS({\n  \"node_modules/.pnpm/tiny-inflate@1.0.3/node_modules/tiny-inflate/index.js\"(exports2,",
+            "installed": "\", { value: mod, enumerable: true }) : target,\n  mod\n));\n\n// node_modules/.pnpm/escape-html@1.0.3/node_modules/escape-html/index.js\nvar require_escape_html = __commonJS({\n  \"node_modules/.pnpm/escape-html@1.0.3/node_modules/escape-html/index.js\"(exports2, modu"
+          },
+          "equalAfterCRLFNormalization": false,
+          "sourceContentHashes": [
+            {
+              "source": "../node_modules/.pnpm/tiny-inflate@1.0.3/node_modules/tiny-inflate/index.js",
+              "sha256": "203ccaa89e30ec4d6f9467a91758b0f55597424a817ea2107510bbadaab1b90d"
+            },
+            {
+              "source": "../node_modules/.pnpm/unicode-trie@2.0.0/node_modules/unicode-trie/swap.js",
+              "sha256": "396e7304db6c698496668e7e872a6a68e5ce4bcaeef3c8af818dedb6bb4bb76c"
+            },
+            {
+              "source": "../node_modules/.pnpm/unicode-trie@2.0.0/node_modules/unicode-trie/index.js",
+              "sha256": "f91bee244cdd4622152ab582210b7586f1552e12c3b53d2c7d4240af4f161e99"
+            },
+            {
+              "source": "../node_modules/.pnpm/base64-js@0.0.8/node_modules/base64-js/lib/b64.js",
+              "sha256": "4965d2f7e04e7986eacd077bb7398c14364375bfccc67e8a599fd29ac10c96d8"
+            },
+            {
+              "source": "../node_modules/.pnpm/postcss-value-parser@4.2.0/node_modules/postcss-value-parser/lib/parse.js",
+              "sha256": "7f57d3c73010b7a5f11cd5fd1b49fc61043a0a2b430f090b6eb9220b0b27e4f2"
+            },
+            {
+              "source": "../node_modules/.pnpm/postcss-value-parser@4.2.0/node_modules/postcss-value-parser/lib/walk.js",
+              "sha256": "f954705a5401ddf0401d500088ed668a0307bd19259f2af104377704899cd09f"
+            },
+            {
+              "source": "../node_modules/.pnpm/postcss-value-parser@4.2.0/node_modules/postcss-value-parser/lib/stringify.js",
+              "sha256": "bea6103af615bb9d65a2fc6dff1b2ab8a32b5ca33e263b5a2c8d458c4eff19fc"
+            },
+            {
+              "source": "../node_modules/.pnpm/postcss-value-parser@4.2.0/node_modules/postcss-value-parser/lib/unit.js",
+              "sha256": "728de375616da4672cd8a2d0b1713fd9b61ec5774075b4d1ad3ef1076cbbd740"
+            },
+            {
+              "source": "../node_modules/.pnpm/postcss-value-parser@4.2.0/node_modules/postcss-value-parser/lib/index.js",
+              "sha256": "b72197f798b185efdd013e8d9b9b405e9a940dd9c5e9c53931684474f447af92"
+            },
+            {
+              "source": "../node_modules/.pnpm/camelize@1.0.1/node_modules/camelize/index.js",
+              "sha256": "6beae6a2e5d89afaae6d989e52733708ef90b672db0cae8e7951db7ef5d68e57"
+            },
+            {
+              "source": "../node_modules/.pnpm/css-color-keywords@1.0.0/node_modules/css-color-keywords/colors.json",
+              "sha256": "354f1816e82e3aa407d5493a59ff75f6d073d18e39db48e792b3bde951419ff5"
+            },
+            {
+              "source": "../node_modules/.pnpm/css-color-keywords@1.0.0/node_modules/css-color-keywords/index.js",
+              "sha256": "73f63dd96a077e7c0eec89348d7a7ed4282df769e47a222ee3039c7904306ac5"
+            },
+            {
+              "source": "../node_modules/.pnpm/css-to-react-native@3.2.0/node_modules/css-to-react-native/index.js",
+              "sha256": "43b3e5558ea2c9c37ecdbb40b00f9284034d1e6d10e3d0eeb9dc2e87bd3a3ece"
+            },
+            {
+              "source": "../node_modules/.pnpm/css-background-parser@0.1.0/node_modules/css-background-parser/index.js",
+              "sha256": "d08ff4ec9c749d3f0f2336ef8ac8cf96672bcd556c4a6cacc1cb7861e777d401"
+            },
+            {
+              "source": "../node_modules/.pnpm/css-box-shadow@1.0.0-3/node_modules/css-box-shadow/index.js",
+              "sha256": "007e3ba655fdd3224359922f2e040c07f127a44c4340ba547025fb500a5a2fe7"
+            },
+            {
+              "source": "../node_modules/.pnpm/color-name@1.1.4/node_modules/color-name/index.js",
+              "sha256": "97dabd7ebb70c33c19ccfa6956377fc722d9769924903f42a3bede30d83a8592"
+            },
+            {
+              "source": "../node_modules/.pnpm/hex-rgb@4.3.0/node_modules/hex-rgb/index.js",
+              "sha256": "a76283cc2b4715f0780d50f24ee8056958f169f36cfbc6c3c9363fcf7df3fb31"
+            },
+            {
+              "source": "../node_modules/.pnpm/escape-html@1.0.3/node_modules/escape-html/index.js",
+              "sha256": "42a7f91883d0c5ce9292dda4e017e1f8664d34b09276d89fb6f3859c29d1ca9b"
+            },
+            {
+              "source": "../node_modules/.pnpm/linebreak@1.1.0/node_modules/linebreak/dist/src/linebreaker.js",
+              "sha256": "77119ac9301f1fd4d0c0945be418d342fdf2f7ffdf6d8dac4f205f751885c345"
+            },
+            {
+              "source": "../node_modules/.pnpm/linebreak@1.1.0/node_modules/linebreak/dist/node_modules/@parcel/node-resolver-core/lib/_empty.js",
+              "sha256": "5ecf2f4d83e6260dabd6ec48e76d8ddebccf956563f34072221bf960d3b8c255"
+            },
+            {
+              "source": "../node_modules/.pnpm/linebreak@1.1.0/node_modules/linebreak/dist/src/classes.js",
+              "sha256": "ab7632ddd76daef8ac456008e64c388a61ddd1b5cb8dc2fed50adac854254baf"
+            },
+            {
+              "source": "../node_modules/.pnpm/linebreak@1.1.0/node_modules/linebreak/dist/src/pairs.js",
+              "sha256": "b05ea2f49cc0b8ffe7df78de69a30c1dcf058981bc5fcd7f16b416339b1d40dc"
+            },
+            {
+              "source": "../node_modules/.pnpm/satori@0.29.0/node_modules/satori/node_modules/.pnpm/yoga-layout@3.2.1_patch_hash=7591c1773fe3dfdcc65257d2ea478c1f665ef46b4f5089e60926b05b0854807c/node_modules/yoga-layout/src/generated/YGEnums.ts",
+              "sha256": "bc7ef97509d5572e0a2db12e14a830c5da5d916c17d09977c7d257f6144b650b"
+            },
+            {
+              "source": "../node_modules/.pnpm/satori@0.29.0/node_modules/satori/node_modules/.pnpm/yoga-layout@3.2.1_patch_hash=7591c1773fe3dfdcc65257d2ea478c1f665ef46b4f5089e60926b05b0854807c/node_modules/yoga-layout/src/wrapAssembly.ts",
+              "sha256": "e063db4e80e7cc381a17c5c12306fdb753ba96d6f9dbf95bb07a98241cf81fe5"
+            },
+            {
+              "source": "../node_modules/.pnpm/satori@0.29.0/node_modules/satori/node_modules/.pnpm/yoga-layout@3.2.1_patch_hash=7591c1773fe3dfdcc65257d2ea478c1f665ef46b4f5089e60926b05b0854807c/node_modules/yoga-layout/dist/binaries/yoga-wasm-esm.js",
+              "sha256": "13711c51c94be899d432ce4609e0b35d5c369c60f327d229c80fae86a190bf92"
+            },
+            {
+              "source": "../node_modules/.pnpm/satori@0.29.0/node_modules/satori/node_modules/.pnpm/yoga-layout@3.2.1_patch_hash=7591c1773fe3dfdcc65257d2ea478c1f665ef46b4f5089e60926b05b0854807c/node_modules/yoga-layout/src/load.ts",
+              "sha256": "c5656438fc842e10cfdb12bf314ed89da3e5f8366479900190ba292b8eaae3bd"
+            },
+            {
+              "source": "../node_modules/.pnpm/satori@0.29.0/node_modules/satori/src/yoga.external.ts",
+              "sha256": "980ab183805b0fc5e2706f4e77cb6a8c581649481bc15abff806bc32c3184612"
+            },
+            {
+              "source": "../node_modules/.pnpm/satori@0.29.0/node_modules/satori/node_modules/.pnpm/tailwindcss@3.1.8_postcss@8.4.21/node_modules/tailwindcss/lib/util/negateValue.js",
+              "sha256": "74a1f9186b49de855ed631591d0cf79904303bc34aa5f14c344162b347c38c48"
+            },
+            {
+              "source": "../node_modules/.pnpm/satori@0.29.0/node_modules/satori/node_modules/.pnpm/tailwindcss@3.1.8_postcss@8.4.21/node_modules/tailwindcss/lib/corePluginList.js",
+              "sha256": "1c4232d7a1d98a4691105e18e444947f7421317605685718cb195bb667344860"
+            },
+            {
+              "source": "../node_modules/.pnpm/satori@0.29.0/node_modules/satori/node_modules/.pnpm/tailwindcss@3.1.8_postcss@8.4.21/node_modules/tailwindcss/lib/util/configurePlugins.js",
+              "sha256": "cc5c436f86b35954d35d10e01052141cee6fdae8b02fb0a33742088c29d909a4"
+            },
+            {
+              "source": "../node_modules/.pnpm/satori@0.29.0/node_modules/satori/node_modules/.pnpm/tailwindcss@3.1.8_postcss@8.4.21/node_modules/tailwindcss/stubs/defaultConfig.stub.js",
+              "sha256": "70cdbab1462e1213746807f24075d1dddac6632f8a31ad962efe18a0ddcc0c79"
+            },
+            {
+              "source": "../node_modules/.pnpm/satori@0.29.0/node_modules/satori/src/vendor/twrnc/log.js",
+              "sha256": "e9c1928e7f530b0c6d40c0d619cd7efef62a8c8a07cc1c1385927e4e7c5ddce0"
+            },
+            {
+              "source": "../node_modules/.pnpm/satori@0.29.0/node_modules/satori/node_modules/.pnpm/tailwindcss@3.1.8_postcss@8.4.21/node_modules/tailwindcss/lib/public/colors.js",
+              "sha256": "af3d666b21d049ce522b2f0bbc7dca80f65f60709742ba6562499246f3affb46"
+            },
+            {
+              "source": "../node_modules/.pnpm/satori@0.29.0/node_modules/satori/node_modules/.pnpm/tailwindcss@3.1.8_postcss@8.4.21/node_modules/tailwindcss/lib/util/defaults.js",
+              "sha256": "ef2a4a87fef5c6212c0cd5c7ed9d6247e07466ce14c8a7af3535283c02e84fde"
+            },
+            {
+              "source": "../node_modules/.pnpm/satori@0.29.0/node_modules/satori/node_modules/.pnpm/tailwindcss@3.1.8_postcss@8.4.21/node_modules/tailwindcss/lib/util/toPath.js",
+              "sha256": "d77696a351635e0d64fef254dccc10b90ada9a5a7d51382aca8e3a0c516c9651"
+            },
+            {
+              "source": "../node_modules/.pnpm/satori@0.29.0/node_modules/satori/node_modules/.pnpm/tailwindcss@3.1.8_postcss@8.4.21/node_modules/tailwindcss/lib/util/normalizeConfig.js",
+              "sha256": "d891786f5c2c977f0c6cb78caa302000b078899136a71542ff40c1f52d295444"
+            },
+            {
+              "source": "../node_modules/.pnpm/satori@0.29.0/node_modules/satori/node_modules/.pnpm/tailwindcss@3.1.8_postcss@8.4.21/node_modules/tailwindcss/lib/util/isPlainObject.js",
+              "sha256": "dc5c446d5403f03ca8a9290cd12aa7f9e5bece576aa6b16ee296190dcaa6a8bd"
+            },
+            {
+              "source": "../node_modules/.pnpm/satori@0.29.0/node_modules/satori/node_modules/.pnpm/tailwindcss@3.1.8_postcss@8.4.21/node_modules/tailwindcss/lib/util/cloneDeep.js",
+              "sha256": "5443dc4b35c145347d5db4a36e1579fc45a2e9070fc908be4382cc551f899dec"
+            },
+            {
+              "source": "../node_modules/.pnpm/satori@0.29.0/node_modules/satori/node_modules/.pnpm/postcss-selector-parser@6.0.10/node_modules/postcss-selector-parser/dist/util/unesc.js",
+              "sha256": "78b7dff846be5408fb5da1b2f09a1eda35d5a844ea3fcf66e3efee852d99153c"
+            },
+            {
+              "source": "../node_modules/.pnpm/satori@0.29.0/node_modules/satori/node_modules/.pnpm/postcss-selector-parser@6.0.10/node_modules/postcss-selector-parser/dist/util/getProp.js",
+              "sha256": "c5fa18b7cb18ab8953672a3a43324fc22d3a0b46b705bfd6e7f9e5853fcd244d"
+            },
+            {
+              "source": "../node_modules/.pnpm/satori@0.29.0/node_modules/satori/node_modules/.pnpm/postcss-selector-parser@6.0.10/node_modules/postcss-selector-parser/dist/util/ensureObject.js",
+              "sha256": "6490d34cef50b92bbdde71cf4855cb11804ec308a898565b3234ab09aa4085ec"
+            },
+            {
+              "source": "../node_modules/.pnpm/satori@0.29.0/node_modules/satori/node_modules/.pnpm/postcss-selector-parser@6.0.10/node_modules/postcss-selector-parser/dist/util/stripComments.js",
+              "sha256": "6c87c87bba484a858e651b40e1896b47ac6038ab13e5c75862af3ba504671703"
+            },
+            {
+              "source": "../node_modules/.pnpm/satori@0.29.0/node_modules/satori/node_modules/.pnpm/postcss-selector-parser@6.0.10/node_modules/postcss-selector-parser/dist/util/index.js",
+              "sha256": "ac0a4dfac05495ef1080716d4e6289b27d25ee1012066b53822de89189577cd3"
+            },
+            {
+              "source": "../node_modules/.pnpm/satori@0.29.0/node_modules/satori/node_modules/.pnpm/postcss-selector-parser@6.0.10/node_modules/postcss-selector-parser/dist/selectors/node.js",
+              "sha256": "4f00d6d6258c15524d454791b2366b3d2e9d4685f85c76744c45fe1e46996446"
+            },
+            {
+              "source": "../node_modules/.pnpm/satori@0.29.0/node_modules/satori/node_modules/.pnpm/postcss-selector-parser@6.0.10/node_modules/postcss-selector-parser/dist/selectors/types.js",
+              "sha256": "00e7ff653625c285b408d782a91b1ee5e6a341f76529e2153e5c53120173aec8"
+            },
+            {
+              "source": "../node_modules/.pnpm/satori@0.29.0/node_modules/satori/node_modules/.pnpm/postcss-selector-parser@6.0.10/node_modules/postcss-selector-parser/dist/selectors/container.js",
+              "sha256": "dcf2666c09a477d23b7d0b329e92272e4cf8b406f702995146392fab434273b4"
+            },
+            {
+              "source": "../node_modules/.pnpm/satori@0.29.0/node_modules/satori/node_modules/.pnpm/postcss-selector-parser@6.0.10/node_modules/postcss-selector-parser/dist/selectors/root.js",
+              "sha256": "1c761a92299b6a01fc51c23a467c948e3275944966daa613f259160ae929c424"
+            },
+            {
+              "source": "../node_modules/.pnpm/satori@0.29.0/node_modules/satori/node_modules/.pnpm/postcss-selector-parser@6.0.10/node_modules/postcss-selector-parser/dist/selectors/selector.js",
+              "sha256": "e8d662300b704f94fa0d18d13b143162019722ddad6f314ac688c2112e8e74ec"
+            },
+            {
+              "source": "../node_modules/.pnpm/satori@0.29.0/node_modules/satori/node_modules/.pnpm/cssesc@3.0.0/node_modules/cssesc/cssesc.js",
+              "sha256": "e80b6f193be7dafddc6d4c8eb4e0b0c1e3cfabe8d9e65f1ae309d45bebd63a91"
+            },
+            {
+              "source": "../node_modules/.pnpm/satori@0.29.0/node_modules/satori/node_modules/.pnpm/postcss-selector-parser@6.0.10/node_modules/postcss-selector-parser/dist/selectors/className.js",
+              "sha256": "da4a229409e1259db2d261572eddac2d52ebb958072a35cf1a4f23c6bac8da88"
+            },
+            {
+              "source": "../node_modules/.pnpm/satori@0.29.0/node_modules/satori/node_modules/.pnpm/postcss-selector-parser@6.0.10/node_modules/postcss-selector-parser/dist/selectors/comment.js",
+              "sha256": "fe213a7ce2dc97bb8bf252c3727ce7f7b1affa78d772a942ff980162b29b7c20"
+            },
+            {
+              "source": "../node_modules/.pnpm/satori@0.29.0/node_modules/satori/node_modules/.pnpm/postcss-selector-parser@6.0.10/node_modules/postcss-selector-parser/dist/selectors/id.js",
+              "sha256": "21b21787bdf62d0f939d95e700b57d7d661694bdded0b89298aea67de61435fd"
+            },
+            {
+              "source": "../node_modules/.pnpm/satori@0.29.0/node_modules/satori/node_modules/.pnpm/postcss-selector-parser@6.0.10/node_modules/postcss-selector-parser/dist/selectors/namespace.js",
+              "sha256": "9c57b1ed3c6b21de531c85bd1fec583f8147ee3e020393a4fb74fea873032b02"
+            },
+            {
+              "source": "../node_modules/.pnpm/satori@0.29.0/node_modules/satori/node_modules/.pnpm/postcss-selector-parser@6.0.10/node_modules/postcss-selector-parser/dist/selectors/tag.js",
+              "sha256": "575f612b87228e0b51b561f72cad0e8567195471c486d5d6c733e3761773d8dd"
+            },
+            {
+              "source": "../node_modules/.pnpm/satori@0.29.0/node_modules/satori/node_modules/.pnpm/postcss-selector-parser@6.0.10/node_modules/postcss-selector-parser/dist/selectors/string.js",
+              "sha256": "351e53f3466fa1a93fcedd5e337f3efda8e4cc4b5e3d7482a70141ed124d5291"
+            },
+            {
+              "source": "../node_modules/.pnpm/satori@0.29.0/node_modules/satori/node_modules/.pnpm/postcss-selector-parser@6.0.10/node_modules/postcss-selector-parser/dist/selectors/pseudo.js",
+              "sha256": "14519d7aa920b2bcac7b2c45af2da2471fbd63d20fb9429e6a065be17c2027d1"
+            },
+            {
+              "source": "../node_modules/.pnpm/satori@0.29.0/node_modules/satori/src/vendor/twrnc/deprecate.js",
+              "sha256": "8bc3cccb95adbc5459d754e371fb970449f03c2e4a054b0b01b1e645855f493d"
+            },
+            {
+              "source": "../node_modules/.pnpm/satori@0.29.0/node_modules/satori/node_modules/.pnpm/postcss-selector-parser@6.0.10/node_modules/postcss-selector-parser/dist/selectors/attribute.js",
+              "sha256": "da5376599f4cb885596803f73bf96442d773f9935b89fbdd084ef24785f80c98"
+            },
+            {
+              "source": "../node_modules/.pnpm/satori@0.29.0/node_modules/satori/node_modules/.pnpm/postcss-selector-parser@6.0.10/node_modules/postcss-selector-parser/dist/selectors/universal.js",
+              "sha256": "eb3025fa3de6423b3b0963b22d4a5f787185c6f70fa77f5b731ecb3165d539fa"
+            },
+            {
+              "source": "../node_modules/.pnpm/satori@0.29.0/node_modules/satori/node_modules/.pnpm/postcss-selector-parser@6.0.10/node_modules/postcss-selector-parser/dist/selectors/combinator.js",
+              "sha256": "abab7b4f7ea59125ffcd4371dc1f933192f0ef590940a88f3c6655d478f38122"
+            },
+            {
+              "source": "../node_modules/.pnpm/satori@0.29.0/node_modules/satori/node_modules/.pnpm/postcss-selector-parser@6.0.10/node_modules/postcss-selector-parser/dist/selectors/nesting.js",
+              "sha256": "2ab818bba04f8418fa4dd5a82af8dd18b371d54983a6a85f45d03af2c173917e"
+            },
+            {
+              "source": "../node_modules/.pnpm/satori@0.29.0/node_modules/satori/node_modules/.pnpm/postcss-selector-parser@6.0.10/node_modules/postcss-selector-parser/dist/sortAscending.js",
+              "sha256": "4ba01d7abff065d6c60c016a4ef78562b7763ef4daafb542a6513b810b0c3d79"
+            },
+            {
+              "source": "../node_modules/.pnpm/satori@0.29.0/node_modules/satori/node_modules/.pnpm/postcss-selector-parser@6.0.10/node_modules/postcss-selector-parser/dist/tokenTypes.js",
+              "sha256": "1d170f1c5e8aa7fc3072b5dd523284b07e50c3f3fa83dc76fcbdd61c07236a8f"
+            },
+            {
+              "source": "../node_modules/.pnpm/satori@0.29.0/node_modules/satori/node_modules/.pnpm/postcss-selector-parser@6.0.10/node_modules/postcss-selector-parser/dist/tokenize.js",
+              "sha256": "88f8d53281e7e2f6aa394575766d9329e235c3c4a09913ab938ead13900d3758"
+            },
+            {
+              "source": "../node_modules/.pnpm/satori@0.29.0/node_modules/satori/node_modules/.pnpm/postcss-selector-parser@6.0.10/node_modules/postcss-selector-parser/dist/parser.js",
+              "sha256": "3f97ae98bbe1b6e100042c033411fc0e62de26536d3bbcac6e87f561e4be8891"
+            },
+            {
+              "source": "../node_modules/.pnpm/satori@0.29.0/node_modules/satori/node_modules/.pnpm/postcss-selector-parser@6.0.10/node_modules/postcss-selector-parser/dist/processor.js",
+              "sha256": "334ec387e33408caff2830763a62f01c80ea89660ab7dbfc89e14fc8f7e0c397"
+            },
+            {
+              "source": "../node_modules/.pnpm/satori@0.29.0/node_modules/satori/node_modules/.pnpm/postcss-selector-parser@6.0.10/node_modules/postcss-selector-parser/dist/selectors/constructors.js",
+              "sha256": "8f8c7dd911da751a77f48f94493804b0466d5ebc2eeb17f9251ec766073be155"
+            },
+            {
+              "source": "../node_modules/.pnpm/satori@0.29.0/node_modules/satori/node_modules/.pnpm/postcss-selector-parser@6.0.10/node_modules/postcss-selector-parser/dist/selectors/guards.js",
+              "sha256": "d9e07b78950d957130a1ac832d2ed7f4505ab28fff71cac3d8dee0aa5925e75b"
+            },
+            {
+              "source": "../node_modules/.pnpm/satori@0.29.0/node_modules/satori/node_modules/.pnpm/postcss-selector-parser@6.0.10/node_modules/postcss-selector-parser/dist/selectors/index.js",
+              "sha256": "03ae6f17c40850dc442fa5e517130312798f6a6c1679b281908e0c7c75f09a4a"
+            },
+            {
+              "source": "../node_modules/.pnpm/satori@0.29.0/node_modules/satori/node_modules/.pnpm/postcss-selector-parser@6.0.10/node_modules/postcss-selector-parser/dist/index.js",
+              "sha256": "3155c696272cefc7692cde38b6ac516e22c032b47e08335bd1f195d57777252f"
+            },
+            {
+              "source": "../node_modules/.pnpm/satori@0.29.0/node_modules/satori/node_modules/.pnpm/tailwindcss@3.1.8_postcss@8.4.21/node_modules/tailwindcss/lib/util/escapeCommas.js",
+              "sha256": "cebe833370345a9e8c389d02b9c556424626d1eea3609b9c1a70de65656954e1"
+            },
+            {
+              "source": "../node_modules/.pnpm/satori@0.29.0/node_modules/satori/node_modules/.pnpm/color-name@1.1.4/node_modules/color-name/index.js",
+              "sha256": "97dabd7ebb70c33c19ccfa6956377fc722d9769924903f42a3bede30d83a8592"
+            },
+            {
+              "source": "../node_modules/.pnpm/satori@0.29.0/node_modules/satori/node_modules/.pnpm/tailwindcss@3.1.8_postcss@8.4.21/node_modules/tailwindcss/lib/util/color.js",
+              "sha256": "a83cd8d03b240163dd8475582bd40ad3ce34b9e0a878706bbdbb4ea34aa97de2"
+            },
+            {
+              "source": "../node_modules/.pnpm/satori@0.29.0/node_modules/satori/node_modules/.pnpm/tailwindcss@3.1.8_postcss@8.4.21/node_modules/tailwindcss/lib/util/withAlphaVariable.js",
+              "sha256": "91e0975c23a4bc64507955305c31e0ee53e029686b60296fef537ce7a6e98aef"
+            },
+            {
+              "source": "../node_modules/.pnpm/satori@0.29.0/node_modules/satori/node_modules/.pnpm/tailwindcss@3.1.8_postcss@8.4.21/node_modules/tailwindcss/lib/lib/regex.js",
+              "sha256": "eb270d800ed0f45d1bc342fb3fb825d1c43da531d43d634eea655c58b187b2a2"
+            },
+            {
+              "source": "../node_modules/.pnpm/satori@0.29.0/node_modules/satori/node_modules/.pnpm/tailwindcss@3.1.8_postcss@8.4.21/node_modules/tailwindcss/lib/util/splitAtTopLevelOnly.js",
+              "sha256": "4b1ad574f4f76fecc874eafe44a43e2cc8ada5ea8de6f823fc7e5d829d8601ea"
+            },
+            {
+              "source": "../node_modules/.pnpm/satori@0.29.0/node_modules/satori/node_modules/.pnpm/tailwindcss@3.1.8_postcss@8.4.21/node_modules/tailwindcss/lib/util/parseBoxShadowValue.js",
+              "sha256": "1b58d34cb8fb34b92e90f03f8761df11e201f3b392e1cd3a4bcad6c104bcaab4"
+            },
+            {
+              "source": "../node_modules/.pnpm/satori@0.29.0/node_modules/satori/node_modules/.pnpm/tailwindcss@3.1.8_postcss@8.4.21/node_modules/tailwindcss/lib/util/dataTypes.js",
+              "sha256": "6dbb842168802bd07ddb377a56b468874f4abebdfdb4484028ffd8cf7b6094e5"
+            },
+            {
+              "source": "../node_modules/.pnpm/satori@0.29.0/node_modules/satori/node_modules/.pnpm/tailwindcss@3.1.8_postcss@8.4.21/node_modules/tailwindcss/lib/util/pluginUtils.js",
+              "sha256": "415a0bf985bd54c55641e72d0b8d000b5471f37e8071af694fc50a771104c4da"
+            },
+            {
+              "source": "../node_modules/.pnpm/satori@0.29.0/node_modules/satori/node_modules/.pnpm/tailwindcss@3.1.8_postcss@8.4.21/node_modules/tailwindcss/lib/util/toColorValue.js",
+              "sha256": "b593caf05c50d7d4559349f61e5483c85cd88457d7033b5f1c60a44004544b88"
+            },
+            {
+              "source": "../node_modules/.pnpm/satori@0.29.0/node_modules/satori/node_modules/.pnpm/tailwindcss@3.1.8_postcss@8.4.21/node_modules/tailwindcss/lib/util/resolveConfig.js",
+              "sha256": "c86e5f1683acb11cee59edaea53db3e4558310a3ecf92ab117ad63f2017913b0"
+            },
+            {
+              "source": "../node_modules/.pnpm/satori@0.29.0/node_modules/satori/src/vendor/twrnc/picocolors.js",
+              "sha256": "5d0c55ec0d2e9decac63c9d44e6d905e0c144bdadc0f4872adbc4df9cf38d97a"
+            },
+            {
+              "source": "../node_modules/.pnpm/satori@0.29.0/node_modules/satori/node_modules/.pnpm/tailwindcss@3.1.8_postcss@8.4.21/node_modules/tailwindcss/lib/featureFlags.js",
+              "sha256": "92f53657788445300d4a7dac3d34a0202d37c61eb60b5ef05c21f6c748a2f637"
+            },
+            {
+              "source": "../node_modules/.pnpm/satori@0.29.0/node_modules/satori/node_modules/.pnpm/tailwindcss@3.1.8_postcss@8.4.21/node_modules/tailwindcss/lib/util/getAllConfigs.js",
+              "sha256": "73a19e3f045181b6aec0c7ba0f703ecbd32cc3975dfd172428337b7f2dbfa18c"
+            },
+            {
+              "source": "../node_modules/.pnpm/satori@0.29.0/node_modules/satori/node_modules/.pnpm/tailwindcss@3.1.8_postcss@8.4.21/node_modules/tailwindcss/lib/public/resolve-config.js",
+              "sha256": "1538ad7b67895b741bc32e41c052cd39d5e2a277dd7016839cdc8681542e9776"
+            },
+            {
+              "source": "../node_modules/.pnpm/satori@0.29.0/node_modules/satori/node_modules/.pnpm/tailwindcss@3.1.8_postcss@8.4.21/node_modules/tailwindcss/resolveConfig.js",
+              "sha256": "c314898034e9b664168635218078ac577c7a620d27b6427940590b8b53585fe3"
+            },
+            {
+              "source": "../node_modules/.pnpm/satori@0.29.0/node_modules/satori/src/utils.ts",
+              "sha256": "300e8aaf1711384a9e4d6d44bdb53bf940f0f3ba0d40fe4a6a287722203490c0"
+            },
+            {
+              "source": "../node_modules/.pnpm/satori@0.29.0/node_modules/satori/src/vendor/parse-css-dimension/index.js",
+              "sha256": "a8e24c14cb0de006af34c1110395a2acd031778bdde78748c76789630107bf05"
+            },
+            {
+              "source": "../node_modules/.pnpm/satori@0.29.0/node_modules/satori/src/yoga.ts",
+              "sha256": "e43a16fb84b9ba023b6479c2df4f7ca1ee183a887a1402e219ad25e32f24e674"
+            },
+            {
+              "source": "../node_modules/.pnpm/satori@0.29.0/node_modules/satori/src/jsx/jsx-runtime.ts",
+              "sha256": "5ba3294992a43b935dc4bf9a3eebf27d034b864ae88f0b783ae2b955887b06b9"
+            },
+            {
+              "source": "../node_modules/.pnpm/satori@0.29.0/node_modules/satori/src/handler/url-safety.ts",
+              "sha256": "9f06f14d3a025ac5f4ea2b545be7e42c8ad846e693b07a96269942681ec2cd18"
+            },
+            {
+              "source": "../node_modules/.pnpm/satori@0.29.0/node_modules/satori/src/handler/image.ts",
+              "sha256": "b111f4dad229deabfe5ca01a83e8b7b05ac9602a416a9f298bb7959eec20be21"
+            },
+            {
+              "source": "../node_modules/.pnpm/satori@0.29.0/node_modules/satori/src/handler/preprocess.ts",
+              "sha256": "18f49b94be53a4a49552e851b21aaafbcb0f764de16d5203dce64e95410aa957"
+            },
+            {
+              "source": "../node_modules/.pnpm/satori@0.29.0/node_modules/satori/src/handler/presets.ts",
+              "sha256": "258eba6c2e7c3fadca70191431e6dc669024c6495ae2ec7a1c17bfef2a1664d8"
+            },
+            {
+              "source": "../node_modules/.pnpm/satori@0.29.0/node_modules/satori/src/handler/inheritable.ts",
+              "sha256": "4ad6e018a5df48da641f02a786466ea30c4651ea3297400cab33b439086db7cb"
+            },
+            {
+              "source": "../node_modules/.pnpm/satori@0.29.0/node_modules/satori/src/handler/expand.ts",
+              "sha256": "4c01bb303d59eb1be4a85ab131a82f2cfe4d8dfba9bc56dde1b007f974b1293b"
+            },
+            {
+              "source": "../node_modules/.pnpm/satori@0.29.0/node_modules/satori/src/transform-origin.ts",
+              "sha256": "d3b97c4f4a0e42b33f14b09267cbb6acb60cb5c169c1bb8ad99b57ee0372ef35"
+            },
+            {
+              "source": "../node_modules/.pnpm/satori@0.29.0/node_modules/satori/src/parser/mask.ts",
+              "sha256": "4c5eb4435b3fb3f5f41ff9e6d893de56b22072bb55899537a9fd788c5bb91f81"
+            },
+            {
+              "source": "../node_modules/.pnpm/satori@0.29.0/node_modules/satori/src/handler/variables.ts",
+              "sha256": "f196402a91eb50cdf805d59f775322675a548a210b0b4ee6bd78232d0ba817d7"
+            },
+            {
+              "source": "../node_modules/.pnpm/satori@0.29.0/node_modules/satori/src/handler/compute.ts",
+              "sha256": "6ec4b1d6be5472957a2d5a842468bedf5e33f998ffa698131b8db0143253de2f"
+            },
+            {
+              "source": "../node_modules/.pnpm/satori@0.29.0/node_modules/satori/src/builder/text.ts",
+              "sha256": "c6acd7074a3e8fa82c8366e4ecfeca6110033a35d650e05799fb6887d75ac582"
+            },
+            {
+              "source": "../node_modules/.pnpm/satori@0.29.0/node_modules/satori/src/builder/transform.ts",
+              "sha256": "e4bb680a6ed3d916f02b57d2a4a92604a8b60b81ee7b0f95fd06446b77cb8b84"
+            },
+            {
+              "source": "../node_modules/.pnpm/satori@0.29.0/node_modules/satori/src/builder/shadow.ts",
+              "sha256": "b9028e584eb35bc94943e9bf3f029bc90438ea9842d187e83201d9c175451fe9"
+            },
+            {
+              "source": "../node_modules/.pnpm/satori@0.29.0/node_modules/satori/src/builder/text-decoration.ts",
+              "sha256": "7b8c922b1e4d1bd6cb83ae1355fbf8ab6c40af209bc28a1ce8c6b2b872f8d843"
+            },
+            {
+              "source": "../node_modules/.pnpm/satori@0.29.0/node_modules/satori/src/text/characters.ts",
+              "sha256": "5166ffb112e223179e2d8fef0240e1ed678132ce87f4f0373718778ece9dd546"
+            },
+            {
+              "source": "../node_modules/.pnpm/satori@0.29.0/node_modules/satori/src/text/measurer.ts",
+              "sha256": "8878e9db579cb6870ed93e10d631fbc184d2c06cd88bc11d806a69f3d3794406"
+            },
+            {
+              "source": "../node_modules/.pnpm/satori@0.29.0/node_modules/satori/src/text/processor.ts",
+              "sha256": "baf5060efd93e054ad7c58e08de1122f85e3856848b9e6a7be4b699e8fa3541e"
+            },
+            {
+              "source": "../node_modules/.pnpm/satori@0.29.0/node_modules/satori/src/text/index.ts",
+              "sha256": "d1e64ab4b539d0f1d8558ccec6cfb157b55df4c46fb961bd1a94061fac361184"
+            },
+            {
+              "source": "../node_modules/.pnpm/satori@0.29.0/node_modules/satori/src/builder/gradient/linear.ts",
+              "sha256": "126124a49dde0848d04911b3e93411de50be38aba772296320afb4c5f49877ef"
+            },
+            {
+              "source": "../node_modules/.pnpm/satori@0.29.0/node_modules/satori/src/builder/gradient/utils.ts",
+              "sha256": "d07ecdcdfbd052a33b46e123b8b70afce38a58c2d18fc4a757dbd418f96b4e7b"
+            },
+            {
+              "source": "../node_modules/.pnpm/satori@0.29.0/node_modules/satori/src/builder/gradient/radial.ts",
+              "sha256": "74a6ddf64c62faefa4d52283c31d41df6ebc86ab0003ba019f20ba5549f667d4"
+            },
+            {
+              "source": "../node_modules/.pnpm/satori@0.29.0/node_modules/satori/src/builder/background-image.ts",
+              "sha256": "314acf697934fa216e101082e15e2d41bb2734a2a9596b9d7777af31f333662b"
+            },
+            {
+              "source": "../node_modules/.pnpm/satori@0.29.0/node_modules/satori/src/builder/border-radius.ts",
+              "sha256": "bdcc511eb9c3fa092bcd48389e868ff02e519187546ceb34497341e3190cbce5"
+            },
+            {
+              "source": "../node_modules/.pnpm/satori@0.29.0/node_modules/satori/src/builder/border.ts",
+              "sha256": "fc2a879fd22c1aa5503f575d87a26dcd03f71ab86d274f4733867b9adfa95c28"
+            },
+            {
+              "source": "../node_modules/.pnpm/satori@0.29.0/node_modules/satori/src/builder/content-mask.ts",
+              "sha256": "8db8d01bd808e77f9c62bcf4fe851bbca2c132a6a1f27d78bd16f47460484edc"
+            },
+            {
+              "source": "../node_modules/.pnpm/satori@0.29.0/node_modules/satori/src/parser/shape.ts",
+              "sha256": "2c00ddf3febbf7cb9dee2298a456d6f0bda7492b835cd6948fc72013332dab02"
+            },
+            {
+              "source": "../node_modules/.pnpm/satori@0.29.0/node_modules/satori/src/builder/clip-path.ts",
+              "sha256": "9d10b2cd0202687c9b04d36e41c0e4a32390d9d5e27c88aef0c1bdabf228bef7"
+            },
+            {
+              "source": "../node_modules/.pnpm/satori@0.29.0/node_modules/satori/src/builder/overflow.ts",
+              "sha256": "574cd47f97ada5b696e045e7891febf434d064008fea244419cc877dc3ffab5c"
+            },
+            {
+              "source": "../node_modules/.pnpm/satori@0.29.0/node_modules/satori/src/builder/mask-image.ts",
+              "sha256": "b00deb719f920447dcea5a616cddf75206d3f78903ca24d18a72150b5992c484"
+            },
+            {
+              "source": "../node_modules/.pnpm/satori@0.29.0/node_modules/satori/src/builder/rect.ts",
+              "sha256": "522d3b2952eca85ad893da9550bd9e3ab9041f6d7753491974ece9f444e2bfb2"
+            },
+            {
+              "source": "../node_modules/.pnpm/satori@0.29.0/node_modules/satori/node_modules/.pnpm/emoji-regex-xs@2.0.1/node_modules/emoji-regex-xs/index.mjs",
+              "sha256": "bcbef71ab2ea794b79dc6e590aed3b478c6edd322a574f6eaf185f1d7888c906"
+            },
+            {
+              "source": "../node_modules/.pnpm/satori@0.29.0/node_modules/satori/src/language.ts",
+              "sha256": "7c32e5ea11d68a3023a8baecbbb596d417e908e01ec794666e93dcf7b9420760"
+            },
+            {
+              "source": "../node_modules/.pnpm/satori@0.29.0/node_modules/satori/src/layout.ts",
+              "sha256": "6bde590a9783adb522433486e696500a16a406ecd68760e5224475774fffbaa1"
+            },
+            {
+              "source": "../node_modules/.pnpm/satori@0.29.0/node_modules/satori/src/font.ts",
+              "sha256": "e18f714af09c4bc9a3dc8932c4983ef3463a90e8121a5ff42cb897a9b0fbc423"
+            },
+            {
+              "source": "../node_modules/.pnpm/satori@0.29.0/node_modules/satori/src/builder/svg.ts",
+              "sha256": "b1836c2badf78e1db3666f6c51c4919e0280ff42c8cca3624d9a3fef134627eb"
+            },
+            {
+              "source": "../node_modules/.pnpm/satori@0.29.0/node_modules/satori/node_modules/.pnpm/twrnc@3.4.0_postcss@8.4.21_react-native@0.72.4_@babel+core@7.22.20_@babel+preset-env@7._3c230b22695967cdff2532887d406bc0/node_modules/twrnc/dist/esm/create.js",
+              "sha256": "9a7d252599ee2475c1676ae3d8612f6e56f482462a038b410c6d456195664612"
+            },
+            {
+              "source": "../node_modules/.pnpm/satori@0.29.0/node_modules/satori/node_modules/.pnpm/twrnc@3.4.0_postcss@8.4.21_react-native@0.72.4_@babel+core@7.22.20_@babel+preset-env@7._3c230b22695967cdff2532887d406bc0/node_modules/twrnc/dist/esm/types.js",
+              "sha256": "595f9fa9f2f39fd2bdc66d52ee568988de5016517c4371ae12a34d00d1351e96"
+            },
+            {
+              "source": "../node_modules/.pnpm/satori@0.29.0/node_modules/satori/node_modules/.pnpm/twrnc@3.4.0_postcss@8.4.21_react-native@0.72.4_@babel+core@7.22.20_@babel+preset-env@7._3c230b22695967cdff2532887d406bc0/node_modules/twrnc/dist/esm/helpers.js",
+              "sha256": "6a11b96df679d3804891a3ca119ddc041024847caa5f47f19fc0b944c928a4ef"
+            },
+            {
+              "source": "../node_modules/.pnpm/satori@0.29.0/node_modules/satori/node_modules/.pnpm/twrnc@3.4.0_postcss@8.4.21_react-native@0.72.4_@babel+core@7.22.20_@babel+preset-env@7._3c230b22695967cdff2532887d406bc0/node_modules/twrnc/dist/esm/styles.js",
+              "sha256": "1708e561ad0e6d47154a0d5fc81e72af514f91c119035d7c223afec7479b573d"
+            },
+            {
+              "source": "../node_modules/.pnpm/satori@0.29.0/node_modules/satori/node_modules/.pnpm/twrnc@3.4.0_postcss@8.4.21_react-native@0.72.4_@babel+core@7.22.20_@babel+preset-env@7._3c230b22695967cdff2532887d406bc0/node_modules/twrnc/dist/esm/cache.js",
+              "sha256": "43fc9b6faa8b6488dea2f2c11e42dc1f3fcd131328cc0bd4065e8cd6d0c3bc9d"
+            },
+            {
+              "source": "../node_modules/.pnpm/satori@0.29.0/node_modules/satori/node_modules/.pnpm/twrnc@3.4.0_postcss@8.4.21_react-native@0.72.4_@babel+core@7.22.20_@babel+preset-env@7._3c230b22695967cdff2532887d406bc0/node_modules/twrnc/dist/esm/resolve/font-size.js",
+              "sha256": "b2fd85d9044de1311251744c0886fcace2786f88d999f1f3a8eeda955e2f8f78"
+            },
+            {
+              "source": "../node_modules/.pnpm/satori@0.29.0/node_modules/satori/node_modules/.pnpm/twrnc@3.4.0_postcss@8.4.21_react-native@0.72.4_@babel+core@7.22.20_@babel+preset-env@7._3c230b22695967cdff2532887d406bc0/node_modules/twrnc/dist/esm/resolve/line-height.js",
+              "sha256": "1f3c483d297321e50c772030b22df52cd798cbb390463e8ea873f5f8accb30d0"
+            },
+            {
+              "source": "../node_modules/.pnpm/satori@0.29.0/node_modules/satori/node_modules/.pnpm/twrnc@3.4.0_postcss@8.4.21_react-native@0.72.4_@babel+core@7.22.20_@babel+preset-env@7._3c230b22695967cdff2532887d406bc0/node_modules/twrnc/dist/esm/resolve/spacing.js",
+              "sha256": "4267900655811581759aaade8e9a51f261335ec593d6a102084c6628b48e3040"
+            },
+            {
+              "source": "../node_modules/.pnpm/satori@0.29.0/node_modules/satori/node_modules/.pnpm/twrnc@3.4.0_postcss@8.4.21_react-native@0.72.4_@babel+core@7.22.20_@babel+preset-env@7._3c230b22695967cdff2532887d406bc0/node_modules/twrnc/dist/esm/screens.js",
+              "sha256": "43a555a2c830f4b3fa2f0afa346dc491c643382ec805923a1927affb1141e04a"
+            },
+            {
+              "source": "../node_modules/.pnpm/satori@0.29.0/node_modules/satori/node_modules/.pnpm/twrnc@3.4.0_postcss@8.4.21_react-native@0.72.4_@babel+core@7.22.20_@babel+preset-env@7._3c230b22695967cdff2532887d406bc0/node_modules/twrnc/dist/esm/resolve/font-family.js",
+              "sha256": "9b8fe052e1dd122706bfca845c9c717539cd6ab57960179f650f44c245b3df65"
+            },
+            {
+              "source": "../node_modules/.pnpm/satori@0.29.0/node_modules/satori/node_modules/.pnpm/twrnc@3.4.0_postcss@8.4.21_react-native@0.72.4_@babel+core@7.22.20_@babel+preset-env@7._3c230b22695967cdff2532887d406bc0/node_modules/twrnc/dist/esm/resolve/color.js",
+              "sha256": "3b48f65e611d9978a623e59ec42ee785343d4a0d8eb6c261ed52df2debb6a83c"
+            },
+            {
+              "source": "../node_modules/.pnpm/satori@0.29.0/node_modules/satori/node_modules/.pnpm/twrnc@3.4.0_postcss@8.4.21_react-native@0.72.4_@babel+core@7.22.20_@babel+preset-env@7._3c230b22695967cdff2532887d406bc0/node_modules/twrnc/dist/esm/resolve/borders.js",
+              "sha256": "b115143c654b879283df8d9484d230a4e9f5b577a764e1a4fc68888fe7c5df39"
+            },
+            {
+              "source": "../node_modules/.pnpm/satori@0.29.0/node_modules/satori/node_modules/.pnpm/twrnc@3.4.0_postcss@8.4.21_react-native@0.72.4_@babel+core@7.22.20_@babel+preset-env@7._3c230b22695967cdff2532887d406bc0/node_modules/twrnc/dist/esm/resolve/inset.js",
+              "sha256": "0df276360158401ee5f15201e83f568cccc3a02b73e196b4c52f13244eabb0b5"
+            },
+            {
+              "source": "../node_modules/.pnpm/satori@0.29.0/node_modules/satori/node_modules/.pnpm/twrnc@3.4.0_postcss@8.4.21_react-native@0.72.4_@babel+core@7.22.20_@babel+preset-env@7._3c230b22695967cdff2532887d406bc0/node_modules/twrnc/dist/esm/resolve/flex.js",
+              "sha256": "8f8e89f92758dd2d3ab5b83ca029cc8528e4b4870f28adb388e7364909a253bf"
+            },
+            {
+              "source": "../node_modules/.pnpm/satori@0.29.0/node_modules/satori/node_modules/.pnpm/twrnc@3.4.0_postcss@8.4.21_react-native@0.72.4_@babel+core@7.22.20_@babel+preset-env@7._3c230b22695967cdff2532887d406bc0/node_modules/twrnc/dist/esm/resolve/width-height.js",
+              "sha256": "20f17c485473a3bc2ee5b1fb4473910da1572fda08c9ea80eb6d556b7ec13b80"
+            },
+            {
+              "source": "../node_modules/.pnpm/satori@0.29.0/node_modules/satori/node_modules/.pnpm/twrnc@3.4.0_postcss@8.4.21_react-native@0.72.4_@babel+core@7.22.20_@babel+preset-env@7._3c230b22695967cdff2532887d406bc0/node_modules/twrnc/dist/esm/resolve/letter-spacing.js",
+              "sha256": "2bfa3a655b34e1aef4fe133ca90c30a83d666c048edaefa695739ee4920e4b4c"
+            },
+            {
+              "source": "../node_modules/.pnpm/satori@0.29.0/node_modules/satori/node_modules/.pnpm/twrnc@3.4.0_postcss@8.4.21_react-native@0.72.4_@babel+core@7.22.20_@babel+preset-env@7._3c230b22695967cdff2532887d406bc0/node_modules/twrnc/dist/esm/resolve/opacity.js",
+              "sha256": "ce6e0fecea5aa6d4955ad0493692f4b7c6bf2b1a2fe008b45a9ac400699a768e"
+            },
+            {
+              "source": "../node_modules/.pnpm/satori@0.29.0/node_modules/satori/node_modules/.pnpm/twrnc@3.4.0_postcss@8.4.21_react-native@0.72.4_@babel+core@7.22.20_@babel+preset-env@7._3c230b22695967cdff2532887d406bc0/node_modules/twrnc/dist/esm/resolve/shadow.js",
+              "sha256": "019c9d80f8fbc276dac657259d4a982b1d481b2f6cfb5fd1c26549948c3facec"
+            },
+            {
+              "source": "../node_modules/.pnpm/satori@0.29.0/node_modules/satori/node_modules/.pnpm/twrnc@3.4.0_postcss@8.4.21_react-native@0.72.4_@babel+core@7.22.20_@babel+preset-env@7._3c230b22695967cdff2532887d406bc0/node_modules/twrnc/dist/esm/ClassParser.js",
+              "sha256": "7baface3513af133bde9a32f563daac9d265f195aa331cd039e769d0bf3d8cb5"
+            },
+            {
+              "source": "../node_modules/.pnpm/satori@0.29.0/node_modules/satori/node_modules/.pnpm/twrnc@3.4.0_postcss@8.4.21_react-native@0.72.4_@babel+core@7.22.20_@babel+preset-env@7._3c230b22695967cdff2532887d406bc0/node_modules/twrnc/dist/esm/parse-inputs.js",
+              "sha256": "f9293ec8a596bb868dbaa2fdba1ce61867f2865ef11b6f72e6db6483c7ab1af8"
+            },
+            {
+              "source": "../node_modules/.pnpm/satori@0.29.0/node_modules/satori/node_modules/.pnpm/twrnc@3.4.0_postcss@8.4.21_react-native@0.72.4_@babel+core@7.22.20_@babel+preset-env@7._3c230b22695967cdff2532887d406bc0/node_modules/twrnc/dist/esm/plugin.js",
+              "sha256": "18bc889a410c42f33cf39d684b0e6fd339ec49c7ea1493fef53ec89660dbe990"
+            },
+            {
+              "source": "../node_modules/.pnpm/satori@0.29.0/node_modules/satori/src/handler/tailwind.ts",
+              "sha256": "47d885bb381cdc23b74741319de6276c96f000dc78f9edd7925dde2d6d5bad32"
+            },
+            {
+              "source": "../node_modules/.pnpm/satori@0.29.0/node_modules/satori/src/satori.ts",
+              "sha256": "cd21762de3d50dbe3279bbfcb8836c206fafe9fadb179c4ecc0cb0ea1156e416"
+            },
+            {
+              "source": "../node_modules/.pnpm/parse-css-color@0.2.1/node_modules/parse-css-color/dist/index.esm.js",
+              "sha256": "fc75da39fd4f2a5e3ff74535d2a04abadf2b1108e6bb60bfc75d5816c82f3c0f"
+            },
+            {
+              "source": "../node_modules/.pnpm/css-gradient-parser@0.0.17/node_modules/css-gradient-parser/src/utils.ts",
+              "sha256": "8f13e5afae5818e76fc026d6c7c4ea3c1bca249f5e5a1cfb0c1d43c8e585cbf8"
+            },
+            {
+              "source": "../node_modules/.pnpm/css-gradient-parser@0.0.17/node_modules/css-gradient-parser/src/linear.ts",
+              "sha256": "3041b0c7bbfe1fa69aef8ca89a9407158691caf8dd0bdfd0272a2946fb4f1632"
+            },
+            {
+              "source": "../node_modules/.pnpm/css-gradient-parser@0.0.17/node_modules/css-gradient-parser/src/radial.ts",
+              "sha256": "971a63272865a1844bcc9c6de148c0eca19e8c9a0504d76ae82f8c1cc5e030f1"
+            },
+            {
+              "source": "../node_modules/.pnpm/css-gradient-parser@0.0.17/node_modules/css-gradient-parser/src/conic.ts",
+              "sha256": "7d08d64ef95cabc329fd6ddcc598404e73dae258803454f54f0e63743f3c886d"
+            },
+            {
+              "source": "../node_modules/.pnpm/@shuding+opentype.js@1.4.0-beta.0/node_modules/@shuding/opentype.js/node_modules/.pnpm/fflate@0.7.3/node_modules/fflate/esm/browser.js",
+              "sha256": "de788be4f7afcf1cbe92333882e2e2997c03388e39ae096ca9053d6675565192"
+            },
+            {
+              "source": "../node_modules/.pnpm/@shuding+opentype.js@1.4.0-beta.0/node_modules/@shuding/opentype.js/src/path.js",
+              "sha256": "9a90e39a7e80bea317d8db874ab17b8f7c03d309af0ef00909d88e842ca23206"
+            },
+            {
+              "source": "../node_modules/.pnpm/@shuding+opentype.js@1.4.0-beta.0/node_modules/@shuding/opentype.js/src/encoding.js",
+              "sha256": "0f480258a5504174092a17604c183cb270a36226a63832ba68880b48e107cb0f"
+            },
+            {
+              "source": "../node_modules/.pnpm/@shuding+opentype.js@1.4.0-beta.0/node_modules/@shuding/opentype.js/src/check.js",
+              "sha256": "c59dd4296d03429482ba766919ad7fd8f69ed0171a3a08eb014612fea93f718c"
+            },
+            {
+              "source": "../node_modules/.pnpm/@shuding+opentype.js@1.4.0-beta.0/node_modules/@shuding/opentype.js/src/glyph.js",
+              "sha256": "aa3808f1e41b0e96ee67b2f764c97e828b23c3b90b75910379217160a75c7645"
+            },
+            {
+              "source": "../node_modules/.pnpm/@shuding+opentype.js@1.4.0-beta.0/node_modules/@shuding/opentype.js/src/glyphset.js",
+              "sha256": "bfe87260a605d99845ea421bd50b0599e1fe707a91e8444444e6ea06f54ce2cd"
+            },
+            {
+              "source": "../node_modules/.pnpm/@shuding+opentype.js@1.4.0-beta.0/node_modules/@shuding/opentype.js/src/layout.js",
+              "sha256": "61f90e5aece2e085e0d79d701d5d1484a46bfc5860958f9a73e13dda00f53a22"
+            },
+            {
+              "source": "../node_modules/.pnpm/@shuding+opentype.js@1.4.0-beta.0/node_modules/@shuding/opentype.js/src/position.js",
+              "sha256": "7a5ece8e7f2a9668616d167351b4aedec6cdcb3ded38ec22f41e50f8446f59f3"
+            },
+            {
+              "source": "../node_modules/.pnpm/@shuding+opentype.js@1.4.0-beta.0/node_modules/@shuding/opentype.js/src/substitution.js",
+              "sha256": "18c7be54df1511c2edeb9b3ebc90f2782cc30ba849544c4c66754ecdda2f587f"
+            },
+            {
+              "source": "../node_modules/.pnpm/@shuding+opentype.js@1.4.0-beta.0/node_modules/@shuding/opentype.js/src/util.js",
+              "sha256": "745cff243ddfde0b05ca02d0826928120395186586c104dea5e1df2040c77949"
+            },
+            {
+              "source": "../node_modules/.pnpm/@shuding+opentype.js@1.4.0-beta.0/node_modules/@shuding/opentype.js/src/parse.js",
+              "sha256": "1039c6aa775d0c208fcaa9ab8ad379589d7f683c41382a11de1df36fdcc9c2d8"
+            },
+            {
+              "source": "../node_modules/.pnpm/@shuding+opentype.js@1.4.0-beta.0/node_modules/@shuding/opentype.js/src/tables/glyf.js",
+              "sha256": "7fbf3cce932e9b9c96058dc5930969e142b9a71f16feb5878cde443defb1e9ee"
+            },
+            {
+              "source": "../node_modules/.pnpm/@shuding+opentype.js@1.4.0-beta.0/node_modules/@shuding/opentype.js/src/hintingtt.js",
+              "sha256": "f226046e659690e92a28076063907cb7c0fdedbc8df55940fc8cc69275869ac9"
+            },
+            {
+              "source": "../node_modules/.pnpm/@shuding+opentype.js@1.4.0-beta.0/node_modules/@shuding/opentype.js/src/tokenizer.js",
+              "sha256": "0317b8881f1b7dad6202b2253e037ad5a4c862246eed0ae898ceb40d4dbfa91d"
+            },
+            {
+              "source": "../node_modules/.pnpm/@shuding+opentype.js@1.4.0-beta.0/node_modules/@shuding/opentype.js/src/char.js",
+              "sha256": "991061ec0bf9e5fe2e64019d0d26d4d88ec45273a07e42437d61df9898a29f76"
+            },
+            {
+              "source": "../node_modules/.pnpm/@shuding+opentype.js@1.4.0-beta.0/node_modules/@shuding/opentype.js/src/features/featureQuery.js",
+              "sha256": "370c2cb444299c758e825b8e417f94cd91ba5b7af7d8fb257eab516954d98e44"
+            },
+            {
+              "source": "../node_modules/.pnpm/@shuding+opentype.js@1.4.0-beta.0/node_modules/@shuding/opentype.js/src/features/arab/contextCheck/arabicWord.js",
+              "sha256": "8721a9bb7058446e4eea572aaf1a38091dd1e8730928403454fc20b95b708d43"
+            },
+            {
+              "source": "../node_modules/.pnpm/@shuding+opentype.js@1.4.0-beta.0/node_modules/@shuding/opentype.js/src/features/arab/contextCheck/arabicSentence.js",
+              "sha256": "fca16efb9fa139a3c65f5a28278597d18bd0a59f386c6612d935fe8c97a8f9d7"
+            },
+            {
+              "source": "../node_modules/.pnpm/@shuding+opentype.js@1.4.0-beta.0/node_modules/@shuding/opentype.js/src/features/applySubstitution.js",
+              "sha256": "e390005b73491e8c2539e3b6cc8e10cdcecebe5497d6ca8222b4d1ec6e34ab14"
+            },
+            {
+              "source": "../node_modules/.pnpm/@shuding+opentype.js@1.4.0-beta.0/node_modules/@shuding/opentype.js/src/features/arab/arabicPresentationForms.js",
+              "sha256": "47417c57d20d13251e2a2502a75dc4db94ca515d3ca653e9789cbeeb45be1e67"
+            },
+            {
+              "source": "../node_modules/.pnpm/@shuding+opentype.js@1.4.0-beta.0/node_modules/@shuding/opentype.js/src/features/arab/arabicRequiredLigatures.js",
+              "sha256": "64270c72f6c09ada4a2f5571d6a95392011062a4fca062b81a30fa20a2cb595c"
+            },
+            {
+              "source": "../node_modules/.pnpm/@shuding+opentype.js@1.4.0-beta.0/node_modules/@shuding/opentype.js/src/features/latn/contextCheck/latinWord.js",
+              "sha256": "702af6e3c3388f6ea36b52f77a93b1a8dd54e46e7fe567968a9c72d80a432caf"
+            },
+            {
+              "source": "../node_modules/.pnpm/@shuding+opentype.js@1.4.0-beta.0/node_modules/@shuding/opentype.js/src/features/latn/latinLigatures.js",
+              "sha256": "a84679ca095e6863785348ed85b709977d6af51c6f148da5619b66b7134e77a7"
+            },
+            {
+              "source": "../node_modules/.pnpm/@shuding+opentype.js@1.4.0-beta.0/node_modules/@shuding/opentype.js/src/bidi.js",
+              "sha256": "6bdd820f08bc288b8af56302d880635738cc990655bec00c7ddab25685f63e3e"
+            },
+            {
+              "source": "../node_modules/.pnpm/@shuding+opentype.js@1.4.0-beta.0/node_modules/@shuding/opentype.js/src/font.js",
+              "sha256": "bf06c46caadbec7252cc44caf0f00c02df6585c11f5103b7211cb6f9f62118e4"
+            },
+            {
+              "source": "../node_modules/.pnpm/@shuding+opentype.js@1.4.0-beta.0/node_modules/@shuding/opentype.js/src/tables/cmap.js",
+              "sha256": "2bf3ee3e43e647025ebe99fb4ad52720e5fb58871946177db31f6c2a3580de30"
+            },
+            {
+              "source": "../node_modules/.pnpm/@shuding+opentype.js@1.4.0-beta.0/node_modules/@shuding/opentype.js/src/tables/cff.js",
+              "sha256": "72e7bbb81b9834e906a37bcf60e0311ad80e30cd8336d5d42f19498884eb6951"
+            },
+            {
+              "source": "../node_modules/.pnpm/@shuding+opentype.js@1.4.0-beta.0/node_modules/@shuding/opentype.js/src/tables/fvar.js",
+              "sha256": "efe65c4206a6be0fb36192e6cc766fe11d4f6a1dcbb254d4c13f8728430d8736"
+            },
+            {
+              "source": "../node_modules/.pnpm/@shuding+opentype.js@1.4.0-beta.0/node_modules/@shuding/opentype.js/src/tables/gdef.js",
+              "sha256": "b4f1d486352ea30c990afd661e823e052d7a514bdb076b925184b864f866a1cd"
+            },
+            {
+              "source": "../node_modules/.pnpm/@shuding+opentype.js@1.4.0-beta.0/node_modules/@shuding/opentype.js/src/tables/gpos.js",
+              "sha256": "870953b08e560264f9cda8c869b7077299e370496832efa77f03c7e494236b60"
+            },
+            {
+              "source": "../node_modules/.pnpm/@shuding+opentype.js@1.4.0-beta.0/node_modules/@shuding/opentype.js/src/tables/gsub.js",
+              "sha256": "49b02521f3b4db4e409db100556fcce740edaaf933392d71ac6dd0e80e7a82c1"
+            },
+            {
+              "source": "../node_modules/.pnpm/@shuding+opentype.js@1.4.0-beta.0/node_modules/@shuding/opentype.js/src/tables/head.js",
+              "sha256": "3ebda9c43a520ef0c63330dc61642ea52c1a64f4561c2743fa9033db1985b0b4"
+            },
+            {
+              "source": "../node_modules/.pnpm/@shuding+opentype.js@1.4.0-beta.0/node_modules/@shuding/opentype.js/src/tables/hhea.js",
+              "sha256": "bf412c900a75f325e119e3140469c1f7f925c092acbe86fe7e01e8af06f8b2b0"
+            },
+            {
+              "source": "../node_modules/.pnpm/@shuding+opentype.js@1.4.0-beta.0/node_modules/@shuding/opentype.js/src/tables/hmtx.js",
+              "sha256": "86e0054250846ca541c3431b199010fd29c312e50e82e6352a87a45af5690ea4"
+            },
+            {
+              "source": "../node_modules/.pnpm/@shuding+opentype.js@1.4.0-beta.0/node_modules/@shuding/opentype.js/src/tables/kern.js",
+              "sha256": "b7cefa18f91649b8287e475e6e45e9cecd10e444e55e2f67b3f07b701f399541"
+            },
+            {
+              "source": "../node_modules/.pnpm/@shuding+opentype.js@1.4.0-beta.0/node_modules/@shuding/opentype.js/src/tables/ltag.js",
+              "sha256": "c2175ad0aff523435c5670315331b589cb9111e49df8b3a8cd55265a5a874878"
+            },
+            {
+              "source": "../node_modules/.pnpm/@shuding+opentype.js@1.4.0-beta.0/node_modules/@shuding/opentype.js/src/tables/loca.js",
+              "sha256": "07f3dec8feb725c1c605bcbbbbeb118e3dcc3f42be2e3591882a7a9f2534f2b2"
+            },
+            {
+              "source": "../node_modules/.pnpm/@shuding+opentype.js@1.4.0-beta.0/node_modules/@shuding/opentype.js/src/tables/maxp.js",
+              "sha256": "37c959cde5c74d6fff6cbd0830e586d33ef01a823290c55e9a4090bafbceba96"
+            },
+            {
+              "source": "../node_modules/.pnpm/@shuding+opentype.js@1.4.0-beta.0/node_modules/@shuding/opentype.js/src/tables/os2.js",
+              "sha256": "56fef2bad2364ca2ba0268b4aa36ea56e57e8408aab0cf74ddd97b216665a339"
+            },
+            {
+              "source": "../node_modules/.pnpm/@shuding+opentype.js@1.4.0-beta.0/node_modules/@shuding/opentype.js/src/tables/post.js",
+              "sha256": "fce6a6b4270d4e19ccc87218c9c993850af6e4bc6c5d3782f16ff7516f0fba33"
+            },
+            {
+              "source": "../node_modules/.pnpm/@shuding+opentype.js@1.4.0-beta.0/node_modules/@shuding/opentype.js/src/types.js",
+              "sha256": "11ab98b5c93a70d04e4922efde2a80749ebab18981bebb35060177bda899107d"
+            },
+            {
+              "source": "../node_modules/.pnpm/@shuding+opentype.js@1.4.0-beta.0/node_modules/@shuding/opentype.js/src/tables/meta.js",
+              "sha256": "908f3f956715a92952bb8d0cc0a3522f0bb2bf506860207285deb38dc2249616"
+            },
+            {
+              "source": "../node_modules/.pnpm/@shuding+opentype.js@1.4.0-beta.0/node_modules/@shuding/opentype.js/src/opentype.js",
+              "sha256": "b7d5324ca237cbe88bd9f5689e3d044c702d910de2a189151c365c92ac2e9a2b"
+            },
+            {
+              "source": "../node_modules/.pnpm/@resvg+resvg-wasm@2.4.1/node_modules/@resvg/resvg-wasm/index.mjs",
+              "sha256": "b39c6c6d834126f5ab44e9155a318fd09a3bff0ed68595cd1b3609a9b3b10ab3"
+            },
+            {
+              "source": "../src/index.edge.ts",
+              "sha256": "9695887d446c4fda2029556cb7e121424b05872740b34fab27e797187ac0b847"
+            },
+            {
+              "source": "../src/emoji/index.ts",
+              "sha256": "6bf901a53389675444d5f0f79a1159d1760266bea3c545a50d466fdb9a0d1531"
+            },
+            {
+              "source": "../src/language/index.ts",
+              "sha256": "a71b64fe70e010adfffaf036f5a2c6a781ad105f81e88c72157bcf0c2c8b3a11"
+            },
+            {
+              "source": "../src/og.ts",
+              "sha256": "1e0d3d369bcce031c3c04fe4d6443d7123cd324068512ddb40029dded3222f48"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "fetchFailures": [
+    "Error: https://www.gnu.org/licenses/lgpl-3.0.txt HTTP 403",
+    "Error: https://www.gnu.org/licenses/gpl-3.0.txt HTTP 403",
+    "PowerShell GNU origin fallback: unable to connect; original GNU URLs remain referenced in the brief."
+  ],
+  "sourceReferences": [
+    {
+      "file": "Next-16.4.0-Cargo.lock",
+      "sha256": "2c9d1258bc518f6ab2c49b3b7530f6871a816a804934fb9ad009fd1ea0bf7489",
+      "bytes": 278170,
+      "component": "Next compiler source mapping",
+      "version": "16.4.0",
+      "kind": "source reference; not copied into collection",
+      "source": "https://raw.githubusercontent.com/vercel/next.js/v16.4.0/Cargo.lock"
+    },
+    {
+      "component": "@next/eslint-plugin-next",
+      "version": "16.4.0",
+      "license": "MIT",
+      "kind": "exact-version parent upstream license corroborates declaration; package omits LICENSE",
+      "licenseFile": "next-16.4.0-license.md",
+      "source": "https://github.com/vercel/next.js/blob/v16.4.0/license.md"
+    },
+    {
+      "component": "Rust lightningcss",
+      "version": "1.0.0-alpha.72",
+      "license": "MPL-2.0",
+      "source": "https://crates.io/api/v1/crates/lightningcss/1.0.0-alpha.72",
+      "sourceArchive": "https://crates.io/api/v1/crates/lightningcss/1.0.0-alpha.72/download",
+      "compilerSource": "https://github.com/vercel/next.js/tree/v16.4.0",
+      "status": "source reference verified previously; native/compiler closure not assembled"
+    },
+    {
+      "component": "Geist-Regular.ttf",
+      "version": "unknown font release; Next 16.4.0 OG bundle",
+      "license": "OFL-1.1",
+      "installedSha256": "bde046ddd9f20be35b0bd56cc79eb752b967fb6661a3fe76cb067bb09f871d76",
+      "status": "embedded copyright/license corroborated previously; no font source/release equivalence claimed"
+    }
+  ]
+}
