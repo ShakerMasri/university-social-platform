@@ -38,7 +38,8 @@ English, Arabic, RTL, and keyboard accessibility are additional requirements fro
 - The latest notes settle the direction that everyone participates equally in the shared social space, while teachers have additional authority within their own course communities. Teacher verification and the exact community powers still need definition; this does not grant global authority or automatic priority across the platform.
 - University email ownership must be verified. The notes' suggestion that a typed student ID or email proves student status conflicts with the identity rules: neither a typed ID nor a matching domain establishes ownership, current enrollment, or teacher status.
 - AI uses authorized content, cites supporting sources, and indicates insufficient information. Teacher identity and popularity alone do not establish truth. Private messages are excluded from retrieval by default; external AI use of private community content needs an explicit privacy decision.
-- Complete and evaluate the minimum baseline before implementing later extensions. No service provider, hosting choice, vector infrastructure, or dependency version has been selected.
+- Complete and evaluate the minimum baseline before implementing later extensions. No service provider, hosting choice, or vector infrastructure has been selected. M1a runtime and application/tool versions are recorded in README and the lockfile.
+- M1a uses `/en` and `/ar`, with `/` temporarily redirecting to English. This initial default is reversible; browser-language negotiation is deferred. No separate app name is selected.
 
 ## Proposed implementation details
 
@@ -64,13 +65,13 @@ Resolve only those needed for the next flow, recording the chosen option and its
 | Messaging, notifications, and moderation | Define participant eligibility, blocking/reporting, notification recipients/settings, moderation actions, appeals, and retry semantics before their flows. Ratings must not automatically trigger bans. |
 | Archive, profiles, and resources | Define retention/deletion, attribution after account removal, profile post visibility, resource links/uploads, and file policy if uploads are introduced. Preserve cross-year knowledge consistently with privacy decisions; no retention period is selected. |
 | Search and AI | Select trusted university sources and permitted ingestion, bilingual retrieval approach, assistant interface, provider, and budgets. Recommend measuring ordinary search before adding vectors. Resolve external private-content use explicitly; the notes' automatic AI trust in teachers or ratings conflicts with evidence-based grounding. |
-| Environment and evaluation | Select supported runtime/package-manager and dependency versions when scaffolding; choose supporting services as needed. Define evaluation participants, methods, and success measures without inventing results or dates. |
+| Environment and evaluation | M1a pins Node 24.21.0 LTS and bundled npm 11.19.0; application/tool versions are recorded in README. Database development environment and supporting services remain open. Define evaluation participants, methods, and success measures without inventing results or dates. |
 
 ## Later backlog from the latest notes
 
 Revisit after baseline completion and evaluation; none is committed implementation scope:
 
-- Teacher channel presentation, local teacher prioritization, and answer/post pinning, subject to the settled authority boundaries. A teacher-only variant must preserve student-created communities.
+- Teacher channel presentation, local teacher prioritization, and answer/post pinning, subject to the settled authority boundaries.
 - Suggesting similar past discussions while composing a post, beyond baseline archive search.
 - User ratings without comments: explicitly **NOT SURE**; stars are **maybe**. Reduced visibility, reduced AI trust, and temporary bans (**maybe**) are unapproved consequences needing policy and evidence review.
 - Volunteer student administration/moderation, including student councils (مجالس طلابية): explicitly **maybe**; role scope and assignment remain open.
@@ -85,7 +86,8 @@ These are proposed checkpoints, without deadlines or completion claims. Evaluati
 | Checkpoint | Deliverable and exit evidence |
 | --- | --- |
 | M0 — Documentation foundation | Source hierarchy, baseline, decisions, acceptance criteria, and actual setup recorded; source files preserved and documentation links checked. |
-| M1 — Application foundation | Select runtime/package-manager and package versions; create the minimal specified stack with bilingual/RTL/accessibility foundations and test/CI gates. Record verified setup commands in README. |
+| M1a — Application foundation | Pin compatible runtime/package versions; provide the English/Arabic shell, locale routing, RTL, keyboard access, focused tests, and CI configuration. Record observed local checks in README separately from GitHub CI. |
+| M1b — Database foundation | Review the initial data model and permission-dependent decisions, select a local/disposable PostgreSQL setup, and introduce Prisma with reviewed migrations and database checks. No authentication or provider integration is implied. |
 | M2 — Verified user and profile | Resolve B1 identity/provider decisions and deliver the first end-to-end flow below with negative-path evidence. |
 | M3 — Community interaction | Resolve permissions, votes, and retention; implement B2–B4 and B6, including private access and revocation tests. |
 | M4 — Discovery, archive, and messaging | Deliver B5, B7, and B8 with bilingual retrieval, participant authorization, and duplicate/revocation evidence. |
@@ -100,14 +102,18 @@ Acceptance: a second account cannot edit the first profile; invalid/expired/reus
 
 ## Current status and checkpoint evidence
 
-Repository inspection on 2026-10-08 found only README, AGENTS.md, and the two source documents before this checkpoint. Initial branch: `main`, tracking `origin/main`; latest local commit: `ef30470` (`first commit`). AGENTS.md and docs/ were already untracked and must be preserved. Remote freshness was not checked.
+M0 inspection found documentation only on `main` at `ef30470`. M1a re-inspection on 2026-10-08 confirmed the reviewed documents were still uncommitted. They were preserved and committed alone as `bd2f778` (`docs: establish project documentation foundation`) on `feat/application-foundation`. Runtime/package-manager pins, manifest, lockfile, and ignores were committed as `00c2e4c` (`chore: pin application runtime and dependency lockfile`); application/config/test/CI and README/brief changes remain uncommitted for review. Existing whitespace in the source notes was preserved. Remote freshness was not checked.
 
 | Scope | Planned | Implemented | Tested | Deployed |
 | --- | --- | --- | --- | --- |
 | Documentation foundation (M0) | Defined here | Brief and README written | Source hashes, local links, scope review, and whitespace checked | Not applicable |
-| B1–B10 and language/accessibility requirements | Baseline and draft acceptance criteria recorded; affected designs remain open | No application implementation present | No application, database, browser, provider, or usability checks run; tooling unconfigured | No repository deployment evidence |
+| Application foundation (M1a) | Locale shell and checks defined | English/Arabic shell, runtime pins/lockfile, scripts, tests, and workflow implemented | Clean npm ci, lint, typecheck, 19 unit tests, build, six Chromium tests, and dev/start HTTP smoke checks passed locally; mobile screenshots reviewed. GitHub CI not run | Not deployed |
+| Database foundation (M1b) | Separate next checkpoint | Not implemented | No database checks run | Not deployed |
+| B1–B10 | Baseline and draft acceptance criteria preserved; affected designs remain open | Features not implemented | No feature, database, provider, or usability evaluation performed | Not deployed |
 | Later extensions | Candidates only | No implementation present | Not tested | No deployment evidence |
 
-This checkpoint changes only the brief and README, with no scaffold, dependency installation, service connection, migration, or deployment. Installed tools and command behavior are recorded in [README](../README.md). No commit, push, or merge is performed.
+M1a adds an application foundation only. Its server-side locale allowlist controls dictionary selection and document language/direction; it is not user authorization. No private data or protected feature exists yet. There is no database, authentication, provider, service connection, migration, push, merge, or deployment. Exact setup/check commands and limitations are recorded in [README](../README.md).
 
-Next smallest implementation checkpoint: M1, a minimal application foundation on a focused branch after selecting runtime/package-manager versions. Then resolve the B1 choices for M2; providers are chosen when the flow needs them. Suggested next branch: `feat/application-foundation`; suggested documentation commit: `docs: establish project documentation foundation`.
+Limits: Chromium-only coverage, no interactive manual browser session, no screen-reader audit or usability evaluation, and a generic English 404 page. A development-only transitive `braces` advisory remains unpatched upstream; full npm audit reports four affected dependency entries, while the production-only audit reports zero. Source hashes confirm AGENTS.md and both source documents are preserved; automatic Next.js agent-rule generation is disabled to keep AGENTS.md unchanged.
+
+Next smallest implementation checkpoint: M1b, the reviewed PostgreSQL/Prisma foundation with disposable database checks. Resolve only decisions affecting its initial schema and setup, then proceed to the B1 choices for M2. Suggested M1a implementation commit: `feat: add bilingual application foundation`.
