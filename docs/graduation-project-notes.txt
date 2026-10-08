@@ -1,0 +1,45 @@
+Graduation project idea: social media platform for university
+
+how we plan to make it:
+
+-login/signin using student id/uni email (to prove it's a student)
+
+-AI (maybe chatbot?)
+	students ask questions and it replies using "app data" or unversity trusted sources
+
+-similar to youtube
+	Teachers have make their own course group/community (similar to channels)
+	students sub (or get added) to private groups created by teacher
+	teacher's response/posts and comments are prioritized
+	teacher can pin answers/posts
+	
+-Teachers answers, comments and posts are given priority (and trusted by ai)
+
+-Posts and comments have voting mechanisim
+
+#NOT SURE -users can be rated by others (with no comments)(maybe stars)
+		less trusted by others
+		less trusted by AI
+		least shown 
+		(maybe get banned temporarly?)
+
+-student studies major X
+	app shows him posts or communities related to his major
+
+-posts have "types" (e.g.question) --makes it easy to filter?
+
+-profile for users
+	user data and bio
+	(maybe shows users posts ?)
+
+-when user tries to write a post, the app recommends a past similar discussion
+
+(maybe add roles for students that volunteer to be an admin?)(مجالس طلابية)
+
+
+-notifications, voice messages, messages and instant messages
+
+-share as email
+
+-everyone participates equally in the social space; teachers have additional authority within their own course communities.
+
