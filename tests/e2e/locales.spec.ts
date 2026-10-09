@@ -13,6 +13,11 @@ test("root uses a temporary redirect to the initial English default", async ({ r
   await expect(page).toHaveURL(/\/en$/);
 });
 
+test("unused image optimization endpoint is disabled", async ({ request }) => {
+  const response = await request.get("/_next/image?url=%2Fen&w=640&q=75");
+  expect(response.status()).toBe(404);
+});
+
 for (const item of cases) {
   test(`${item.locale}: translated shell, document direction, and keyboard language switching`, async ({ page }) => {
     const response = await page.goto(`/${item.locale}`);

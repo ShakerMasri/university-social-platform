@@ -179,12 +179,12 @@
     },
     {
       "file": "img--sharp-win32-x64-0.35.5-LICENSE",
-      "sha256": "dc1f5d2d43c5531dfe0acaf4e950ea5dbe3e61e1850cf0e983bda7efc10d6693",
-      "bytes": 10464,
+      "sha256": "73ba74dfaa520b49a401b5d21459a8523a146f3b7518a833eea5efa85130bf68",
+      "bytes": 10273,
       "component": "@img/sharp-win32-x64",
       "version": "0.35.5",
       "license": "Apache-2.0 AND LGPL-3.0-or-later",
-      "kind": "unmodified upstream file",
+      "kind": "verbatim text; CRLF normalized to LF in committed copy",
       "copiedFrom": "node_modules/@img/sharp-win32-x64/LICENSE",
       "source": "https://registry.npmjs.org/@img/sharp-win32-x64/-/sharp-win32-x64-0.35.5.tgz",
       "integrity": "sha512-x76eH0vEiHlcMQu8Y8IenntaACtddpT6W0wmXtWrnKcnKI7ME5DdgqhAD6SEWOEl1v2zDvkZDhFA9KnURwpfqg==",
@@ -192,16 +192,18 @@
         "type": "git",
         "url": "git+https://github.com/lovell/sharp.git",
         "directory": "npm/win32-x64"
-      }
+      },
+      "sourceFileSha256": "dc1f5d2d43c5531dfe0acaf4e950ea5dbe3e61e1850cf0e983bda7efc10d6693",
+      "sourceFileBytes": 10464
     },
     {
       "file": "img--sharp-win32-x64-0.35.5-README.md",
-      "sha256": "3d083ada5ebafe1e6c227daa7b061d4254b61df4a3901c359ffdeac817ce5866",
-      "bytes": 4913,
+      "sha256": "e6450a13c796568b71e0e3518b1103c5a1345322483b5a498bd9e9b5622d441a",
+      "bytes": 4899,
       "component": "@img/sharp-win32-x64",
       "version": "0.35.5",
       "license": "Apache-2.0 AND LGPL-3.0-or-later",
-      "kind": "unmodified upstream file",
+      "kind": "verbatim text; CRLF normalized to LF in committed copy",
       "copiedFrom": "node_modules/@img/sharp-win32-x64/README.md",
       "source": "https://registry.npmjs.org/@img/sharp-win32-x64/-/sharp-win32-x64-0.35.5.tgz",
       "integrity": "sha512-x76eH0vEiHlcMQu8Y8IenntaACtddpT6W0wmXtWrnKcnKI7ME5DdgqhAD6SEWOEl1v2zDvkZDhFA9KnURwpfqg==",
@@ -209,7 +211,9 @@
         "type": "git",
         "url": "git+https://github.com/lovell/sharp.git",
         "directory": "npm/win32-x64"
-      }
+      },
+      "sourceFileSha256": "3d083ada5ebafe1e6c227daa7b061d4254b61df4a3901c359ffdeac817ce5866",
+      "sourceFileBytes": 4913
     },
     {
       "file": "img--sharp-win32-x64-0.35.5-versions.json",
@@ -370,19 +374,21 @@
     },
     {
       "file": "playwright--test-1.64.0-LICENSE",
-      "sha256": "45873d00a0dd243596deb4aa23b2493b3d1f0671921bf2538ea431d7380220eb",
-      "bytes": 11601,
+      "sha256": "7fab1461b41970ff376f1c9303a637076bfaaeb71cd12dd3a1c44aaf59a1a2b9",
+      "bytes": 11399,
       "component": "@playwright/test",
       "version": "1.64.0",
       "license": "Apache-2.0",
-      "kind": "unmodified upstream file",
+      "kind": "verbatim text; CRLF normalized to LF in committed copy",
       "copiedFrom": "node_modules/@playwright/test/LICENSE",
       "source": "https://registry.npmjs.org/@playwright/test/-/test-1.64.0.tgz",
       "integrity": "sha512-oTN9FNYuN6bqQMwiho6jJKLCG2/QOYCixGXuCjRmzOq23eODeukuY2XiAVoVpAECbuezMt1MHQjAiQxK8F+Y+g==",
       "repository": {
         "type": "git",
         "url": "git+https://github.com/microsoft/playwright.git"
-      }
+      },
+      "sourceFileSha256": "45873d00a0dd243596deb4aa23b2493b3d1f0671921bf2538ea431d7380220eb",
+      "sourceFileBytes": 11601
     },
     {
       "file": "playwright--test-1.64.0-NOTICE",
@@ -571,19 +577,21 @@
     },
     {
       "file": "typescript-6.0.3-LICENSE.txt",
-      "sha256": "a7d00bfd54525bc694b6e32f64c7ebcf5e6b7ae3657be5cc12767bce74654a47",
-      "bytes": 9197,
+      "sha256": "a5e9f9b1575301c7a7a03508fdaa2e05a918cc17fd21c6e898096a96d6a34f61",
+      "bytes": 9142,
       "component": "typescript",
       "version": "6.0.3",
       "license": "Apache-2.0",
-      "kind": "unmodified upstream file",
+      "kind": "verbatim text; CRLF normalized to LF in committed copy",
       "copiedFrom": "node_modules/typescript/LICENSE.txt",
       "source": "https://registry.npmjs.org/typescript/-/typescript-6.0.3.tgz",
       "integrity": "sha512-y2TvuxSZPDyQakkFRPZHKFm+KKVqIisdg9/CZwm9ftvKXLP8NRWj38/ODjNbr43SsoXqNuAisEf1GdCxqWcdBw==",
       "repository": {
         "type": "git",
         "url": "https://github.com/microsoft/TypeScript.git"
-      }
+      },
+      "sourceFileSha256": "a7d00bfd54525bc694b6e32f64c7ebcf5e6b7ae3657be5cc12767bce74654a47",
+      "sourceFileBytes": 9197
     },
     {
       "file": "typescript-eslint-8.71.1-LICENSE",
