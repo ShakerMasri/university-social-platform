@@ -19,7 +19,7 @@ Direct dependencies are pinned, with transitive versions captured by `package-lo
 
 References used: [Next.js installation](https://nextjs.org/docs/app/getting-started/installation), [locale layouts](https://nextjs.org/docs/app/guides/internationalization), [ESLint configuration](https://nextjs.org/docs/app/api-reference/config/eslint), [React versions](https://react.dev/versions), [TypeScript setup](https://www.typescriptlang.org/download/), [Vitest](https://vitest.dev/guide/), and [Playwright CI](https://playwright.dev/docs/ci). Exact compatibility ranges were checked using official npm registry metadata.
 
-PostgreSQL and Prisma remain the specified database stack for M1b. No database, authentication, provider, application feature, or deployment is included in M1a. No secrets or service accounts are needed to run the shell. Initial dependency and browser installation requires internet access.
+PostgreSQL and Prisma are the specified database stack for M1b. The isolated local foundation below adds persistence and database tests; no authentication, live email, provider integration or deployment is included. The shell itself needs no service account. Initial dependency, engine and browser installation requires internet access.
 
 ## Fresh-checkout setup
 
@@ -158,4 +158,116 @@ Follow-up shipping changes affect documentation only. `git diff --check`, local 
 
 Manual review checklist for teammates: tab to the visible skip link, activate it, use language links by keyboard in both directions, inspect Arabic reading order, narrow the viewport, and visit `/fr` for 404. This is a focused foundation check, not a full accessibility audit or user study. Browser coverage is Chromium only, and the framework's generic 404 page is currently English.
 
-M1a owner acceptance of the existing MPL/LGPL-bearing dependencies remains open. Missing license evidence and release-specific obligations remain visible; refresh resolution is recorded separately from the unproven root cause. M1b remains planned only; all baseline feature, permission and approved profile/email decisions are in the brief.
+M1a owner acceptance of the existing MPL/LGPL-bearing dependencies remains open. Missing license evidence and release-specific obligations remain visible; refresh resolution is recorded separately from the unproven root cause. M1b local implementation is authorized while M1a remains open; its actual status is recorded below. All baseline feature, permission and approved profile/email decisions are in the brief.
+
+## M1b isolated local preparation — 2026-10-09
+
+**Implemented and tested locally; not deployed.** The owner approved whole-address lowercasing for the separate email matching key, preservation of trimmed original spelling/dots/plus suffixes, a 254-Unicode-code-point storage/input bound, and nonblank self-reported display names of at most 60 code points. A user can exist without a profile. No domain or naming pattern grants teacher permissions.
+
+`prisma/schema.prisma`, the reviewed initial migration and server-only user/profile/challenge modules are implemented. Prisma CLI/client/adapter 7.10.0 are pinned. Under the owner's clarified standard of current risk and free permitted use, the [scoped dependency assessment](docs/project-brief.md#m1b-dependency-selection-review--2026-10-09) found no reachable exploit path for the reported advisories in this guarded local PostgreSQL checkpoint. Vulnerable CLI dependencies remain; flat trusted config and no MySQL/Studio use are mitigations, not fixes. Preserve the tooling's EPL license and Studio NOTICE/branding; do not embed Studio or use hosted Prisma services through this setup. Existing MPL/LGPL decisions and release clearance remain open.
+
+The reviewed Prisma preinstall checks Node compatibility; engines postinstall downloads the official schema engine with checksums. npm 11.19 skips unapproved dependency install scripts: `allowScripts` permits only the exact reviewed `prisma@7.10.0` and `@prisma/engines@7.10.0` versions. Root postinstall generates the ignored client from the local schema so clean installation/typecheck/build need no database. Do not approve all scripts or accept unreviewed future versions. The new dependency delta adds 128 authentic packaged/supplemental notice files to the existing collection. `@prisma/dev@0.24.17` declares ISC but lacks an established original notice/source reference; it is unused, and conveying a CLI/builder artifact containing it needs that question resolved. The final website/mobile artifacts are still unreviewed.
+
+The independent `pg@8.23.1` driver and `@types/pg@8.23.1` are pinned. Exact identities, official repositories, compatibility, scripts and license texts were checked; the isolated candidate audit identified no advisory for this driver set. Fifteen new lockfile entries were reviewed, all MIT/ISC; the two packages lacking standalone license files (`pg-types`, `pgpass`) contain authentic MIT texts in their preserved READMEs. New notices and source/integrity/hash references extend [the existing collection](THIRD-PARTY-NOTICES.md). Existing foundation dependency versions were preserved. No old full license inventory/security audit or refresh experiment was repeated.
+
+The approved local environment uses official `postgres:18.6-bookworm`, pinned to image index digest `sha256:afc7e2d441324c0388fa80c3d24f733b4194a4eb7f47dd8ee2b08eb1a24a647c`. This is local tooling; the container OS/native distribution is not cleared for release. `compose.m1b.yaml` is managed through the guarded scripts, with a random project/container/volume identity, a free loopback-only port 55432 and ignored operational files under `.cache/m1b/`. Node's file mode is not a Windows ACL guarantee: keep that local directory private and do not share credentials or manifests.
+
+Use the pinned runtime in a project-root PowerShell session:
+
+```powershell
+$env:Path = "$PWD\.tools\node-v24.21.0-win-x64;$env:Path"
+docker --version
+docker compose version
+docker info --format '{{.ServerVersion}}'
+npm.cmd run db:validate
+npm.cmd run db:generate
+npm.cmd run db:setup
+npm.cmd run db:status
+npm.cmd run db:review
+# Inspect prisma/migrations/20261009000000_m1b_foundation/migration.sql, including custom checks.
+# Also inspect prisma/migrations/20261009010000_m1b_email_case_contract/migration.sql.
+npm.cmd run db:migrate
+npm.cmd run db:guard-check
+npm.cmd run db:test
+npm.cmd run db:cleanup
+```
+
+These are configured local commands. `db:setup` refuses an existing manifest/resource and does not install or start Docker Desktop. If the engine is unavailable, resolve that environment decision first. Do not run Compose directly against guessed names. Do not adopt another project's database. Cleanup validates ownership markers/labels/container identity before removing only this setup's exact container and volume; it does not stop Docker Desktop or prune other resources. Preflight rejection removes only the three operational files created by that attempt, before any Docker mutation. Incomplete provisioning after startup is preserved for inspection rather than automatically reset.
+
+`db:review` invokes `prisma migrate diff --from-empty --to-schema prisma/schema.prisma --script --output .cache/m1b-reviewed-generated.sql`, passing a guarded local migration URL through the environment without printing it. This exact Windows engine requires a datasource argument even for this diff; an invocation without one exited 0 without producing SQL. The wrapper uses the owned development target and reads its identity marker; the diff applies no schema/data change and needs no shadow database. It removes stale output, requires a fresh complete artifact and compares the generated tables/indexes/foreign keys with history. Custom checks, the forward case-mapping function/constraint and transaction wrappers require separate SQL review; Prisma's generated base comparison does not cover them. `db:migrate`/`db:test` repeat the base comparison before applying history; no ambient `DATABASE_URL`, reset, schema-push or remote/shared target is allowed. The test runner creates three fresh owned databases: two replay complete Prisma history and one tests the reviewed SQL's populated forward upgrade/refusal directly, without fabricated migration records. It verifies populated-history reapplication and removes only these databases after connections close.
+
+Every usable target must match the ignored manifest's exact host, port, database and selected role, then pass a read-back check of a bootstrap-owned database marker. Migration and runtime roles have no superuser/role-creation/database-creation privileges. Runtime has no DDL privilege or access to change the marker. The migration grants runtime only relevant record/column permissions; email changes and deletions have no runtime permission or API. The challenge transition locks the bound row before sampling the database clock, then conditionally consumes and verifies in one transaction. Static parameterized SQL is used only for clock/row-lock queries, since Prisma has no row-lock API. No raw token is stored; issuance returns a random token in memory for a future approved delivery adapter. Internal functions still require caller authorization before any M2 public endpoint is introduced.
+
+Original checkpoint evidence (before the review corrections below):
+
+| Exact command/check | Outcome |
+| --- | --- |
+| Git branch/HEAD/upstream/status | Matched `feat/application-foundation`, `6796fe31e33da7aa3b8af903fcacb9d1c38a76c9`, matching upstream ref, only unstaged AGENTS.md at entry. AGENTS.md SHA-256 remains `3ddaf22c6219cc904a96609645531f2b2145d57599cccf33717b1506f9021551`. |
+| [GitHub run 37853461907](https://github.com/ShakerMasri/university-social-platform/actions/runs/37853461907) | Authenticated read verified exact head SHA `6796fe31…`, completed success, successful install/lint/typecheck/unit/build/Chromium gates. Earlier CI is not substituted for this result. This run does not cover these uncommitted M1b changes. |
+| `docker --version`, `docker compose version`, `docker info` | CLI 29.8.1 / Compose 5.5.1 present; Linux engine initially unavailable. Owner separately approved starting installed Docker Desktop; subsequent engine check reported 29.8.1. No software installed. |
+| `npm.cmd install --save-exact pg@8.23.1 --ignore-scripts --no-audit --no-fund --offline=false --cache .cache/npm` and corresponding `--save-dev @types/pg@8.23.1` | Passed; no install scripts executed during dependency selection. |
+| `npm.cmd install --save-exact @prisma/client@7.10.0 @prisma/adapter-pg@7.10.0 --ignore-scripts --no-audit --no-fund --offline=false --cache .cache/npm` and corresponding `--save-dev prisma@7.10.0` | Passed after the scoped assessment; prior foundation versions retained. |
+| `node node_modules/@prisma/engines/scripts/postinstall.js`, `node node_modules/prisma/build/index.js validate`, `node node_modules/prisma/build/index.js generate` | Passed with the pinned runtime; official schema engine downloaded, schema validated and ignored client generated. |
+| `npm.cmd run db:validate`, `npm.cmd run db:generate` | Passed through the configured scripts after database cleanup; these commands need no database. |
+| `npm.cmd run db:setup`, `npm.cmd run db:status` | Passed: new owned container/volume and empty database, loopback-only target, database marker and limited role identity verified. |
+| Second `npm.cmd run db:setup` | Expected exit 1: refused existing manifest, with no reset/adoption. |
+| `npm.cmd run db:guard-check` | Passed real-PostgreSQL missing/wrong marker rejection and runtime DDL/marker-write denial. Owned disposable guard-test databases removed afterward. |
+| `npm.cmd install-scripts approve prisma @prisma/engines`, `npm.cmd install-scripts ls --json` | Exact-version approvals recorded only for the two reviewed lifecycle scripts; no pending approvals. No global configuration change. |
+| `npm.cmd ci --no-audit --no-fund --offline=false --cache .cache/npm` | Final clean installation passed (353 packages), including automatic client generation and permitted reviewed scripts. An earlier install skipped those two scripts and warned; the final run has no such warning. Unchanged full audit deliberately not repeated. |
+| `npm.cmd run db:review`, `npm.cmd run db:migrate` | Passed generated-base SQL comparison and guarded application of the separately reviewed custom checks/atomic migration. No shadow/reset/schema-push workflow. |
+| `npm.cmd run db:test` | Final 13 tests passed on two fresh real PostgreSQL databases; replay/reapplication retained synthetic records, and test databases were removed. First run had three test-oracle failures (catalog internal-char decoding and RESTRICT SQLSTATE); corrected without changing schema constraints. Lock-wait test now observes actual blocking before expiry. |
+| `npm.cmd run db:cleanup` | Passed twice across preparation/completion. Final owned container `usp-m1b-18f74c15fd6b-postgres`, volume `usp-m1b-18f74c15fd6b-data`, migrated development database and operational credentials/manifest removed. Other resource names match the initial inventory. Docker Desktop remains running; the pinned image remains cached. |
+| `npm.cmd test -- src/server/database/validation.test.ts` | 21 passed after sandbox `spawn EPERM` startup was rerun with worker permissions; no check weakened. |
+| `npm.cmd test` | 44 passed: existing 19 locale tests, 21 input policy tests and 4 target-guard tests. No mocked result is presented as database persistence evidence. |
+| `npm.cmd run typecheck`, `npm.cmd run lint`, `npm.cmd run build` | Passed after clean installation. |
+| `npm.cmd run test:e2e` with `CI=1`, `PLAYWRIGHT_BROWSERS_PATH=$PWD/.cache/ms-playwright`, `NEXT_TELEMETRY_DISABLED=1` | All 6 existing Chromium production-shell tests passed with the already-installed browser; test-owned server stopped. No new browser flow or refresh experiment. |
+| Browser output marker check (`rg -l 'M1B_|EmailOwnershipChallenge|usp_m1b|postgresql://' .next/static`) | No matching files. This focused check is not a final artifact/license inventory or comprehensive secret scan. |
+| `git diff --check`, `node .cache/check-m1b-docs.mjs` (pinned runtime; ignored local evidence helper) | Passed 66 local links/anchors, 143 new notice hashes/original-byte comparisons where available, exact reviewed identities/integrities for 144 new lockfile entries and prior-version preservation. `.gitattributes` protects original license-evidence bytes from line-ending conversion. Authentic upstream formatting retained. |
+| Email/provider/authentication/session/mobile/deployment verification | Not implemented or tested in this checkpoint. Synthetic challenges do not establish real email ownership. Database checks are local Windows evidence; no new database GitHub job or fresh Linux execution was performed. |
+
+M1b has no HTTP endpoint or changed browser flow. No real email ownership, enrollment, teacher identity, complete baseline feature, production security, final website/mobile artifact clearance or M1a closure is established. At this implementation checkpoint all changes were unstaged; no commit, push, merge or deployment had been performed. The subsequent independent review and Git authorization are recorded below and in the brief.
+
+### M1b review corrections — 2026-10-09
+
+Two confirmed findings are fixed. `tools/database/compose.ts` clones the subprocess environment, removes inherited `M1B_*` and `COMPOSE_*` controls case-insensitively, and supplies the validated manifest's owner/container/volume/port. `db:setup` runs read-only `docker compose config --format json` with this same environment and compares the complete resolved specification with the expected service, image, loopback binding, ownership labels, volume and secret path before `up`. Resource-absence checks use those same names. Unexpected mounts, external storage, services or configuration fail closed. The environment of the calling shell is unchanged. The exact normalized shape was verified with Compose 5.5.1; review differing output before changing that comparison on a future Compose upgrade.
+
+Email keys now use a fixed **Unicode 17 default full lowercase contract** in both TypeScript and PostgreSQL. PostgreSQL 18's built-in Unicode data is [16.0](https://github.com/postgres/postgres/blob/REL_18_STABLE/src/include/common/unicode_version.h), and [pg_unicode_fast](https://www.postgresql.org/docs/18/collation.html) uses that major version's full case mapping. Keeping its unmodified mapping would leave the newly recognized U+A7CE/U+A7CF pair with different keys. The shared generated data preserves that pair and the other 27 additions, contextual Greek sigma and Turkish İ expansion, without excluding Unicode input or introducing an extension/dependency. `normalizeEmail` still trims/preserves original spelling, lowercases the entire key, retains dots/plus suffixes and bounds both stored values to 254 code points. This is lowercase mapping, not provider rewriting, Unicode normalization, casefolding or deliverability validation.
+
+`email-case-generate.mts` derives TypeScript data and `20261009010000_m1b_email_case_contract/migration.sql` from hash-pinned official UnicodeData/SpecialCasing/DerivedCoreProperties. `email-case.ts` and SQL `public.usp_email_lower_v17(text)` use the same 1,487 single-character mappings, expansion and context properties. The forward migration retains all email checks and changes the equality check to that function. It preserves the initial migration bytes. The function is immutable/invoker-only with a fixed `pg_catalog` search path; PUBLIC execution is revoked and guarded migration grants only the local runtime role execution. Existing keys that would change cause an atomic refusal requiring a separately reviewed collision/foreign-key migration; there is no automatic account/key merge. Compatible user/profile/challenge records survive the upgrade. Future case-data changes require a versioned function and new reviewed migration; never rewrite applied history.
+
+The official data's permissive Unicode-3.0 license was reviewed for free use/modification/redistribution. Its authentic [copyright and permission text](docs/third-party-licenses/Unicode-17.0.0-LICENSE.txt) is preserved with [source hashes and attribution](THIRD-PARTY-NOTICES.md#m1b-shared-email-case-mapping-data--2026-10-09). Preserve it with conveyed derived data/SQL. No npm dependency, lockfile, runtime, Prisma version or PostgreSQL image changed for these fixes. Existing audits/notice inventories/Chromium evidence were reused.
+
+Generation/check commands actually used (ordinary setup uses the checked-in generated artifacts and needs no Unicode download):
+
+```powershell
+$env:Path = "$PWD\.tools\node-v24.21.0-win-x64;$env:Path"
+$reviewDirectory = Join-Path $PWD '.cache/m1b-unicode17-review'
+New-Item -ItemType Directory -Path $reviewDirectory -Force | Out-Null
+foreach ($file in @('UnicodeData.txt', 'SpecialCasing.txt', 'DerivedCoreProperties.txt')) {
+  Invoke-WebRequest -UseBasicParsing -Uri "https://www.unicode.org/Public/17.0.0/ucd/$file" -OutFile (Join-Path $reviewDirectory $file)
+}
+Invoke-WebRequest -UseBasicParsing -Uri 'https://www.unicode.org/license.txt' -OutFile (Join-Path $reviewDirectory 'LICENSE.txt')
+node tools/database/email-case-generate.mts --write
+node tools/database/email-case-generate.mts
+```
+
+The generator is offline and rejects input hash changes or unexpected special-casing rules. The first generation attempt hit an empty locale-specific lower field; parsing was corrected before any artifact/migration was produced. Read-only comparison also downloaded official Unicode 16 UnicodeData to `.cache/m1b-unicode17-review/UnicodeData-16.txt`; its SHA-256 is recorded in the brief. Downloaded source/review files remain ignored; the operational database directory was removed.
+
+| Actual pinned-runtime command/check | Review-correction outcome |
+| --- | --- |
+| `docker --version`, `docker compose version`, `docker info --format '{{.ServerVersion}}'` | 29.8.1 / 5.5.1 / 29.8.1; engine available after sandbox access permission. No engine activation or software installation needed. |
+| `npm.cmd test -- src/server/database/email-case.test.ts src/server/database/validation.test.ts tools/database/compose.test.ts` | 27 passed; synthetic configuration/environment regressions and full scalar/context mapping coverage. |
+| `npm.cmd run db:validate` | Passed. Prisma schema itself is unchanged. |
+| `npm.cmd test` | 50 passed. Case mapping matches pinned Node Unicode 17 for all 1,112,063 non-NUL Unicode scalar values; context samples cover new pairs/properties and existing Turkish/Greek/Arabic behavior. |
+| `npm.cmd run lint`, `npm.cmd run typecheck`, `npm.cmd run build` | Passed. Initial typecheck found the synthetic environment missing Next's required NODE_ENV; corrected without weakening strict types. |
+| `npm.cmd run db:setup` | Initial strict preflight refused before provisioning because the fixture omitted Compose's null command/entrypoint and absolute secret target. Verified no resource existed, removed only that attempt's three files, corrected the expected shape. Retry passed with owned `usp-m1b-b3aadaec8855-postgres` / `usp-m1b-b3aadaec8855-data` / `usp_m1b_b3aadaec8855_dev`. |
+| `npm.cmd run db:migrate` | Passed generated-base comparison and application of both reviewed migrations to the owned development database. |
+| `npm.cmd run db:guard-check` | Passed real marker/permission guards and read-only resolved-config regression with inherited synthetic owner/container/volume/port, lowercase-variable and Compose-control overrides. No synthetic unowned target was provisioned. |
+| `npm.cmd run db:test` | Final 16 passed across three fresh owned databases. All 28 pairs persist and match for duplicate/lookup/challenge consumption/replay; 1,488 mapped scalars plus 93 context samples match Node/server/SQL. Forward-upgrade refusal rolls back and compatible records survive. Existing FK, expiry, rollback and concurrent single-use tests pass; populated Prisma-history reapplication preserves records. First run passed 13/15: synchronous validation needed a synchronous rejection assertion, and lock observation needed fresh activity snapshots. Corrected polling retains proof of blocking before expiry. All test databases removed. |
+| `node tools/database/email-case-generate.mts`; focused Unicode notice hash check | Generated data/SQL match all three reviewed input hashes; the authentic 1,995-byte Unicode license matches SHA-256 `e7a93b009565cfce55919a381437ac4db883e9da2126fa28b91d12732bc53d96`. |
+| `npm.cmd run db:cleanup` | Passed; exact owned container/volume/development database and manifest/password/env files removed. Unrelated container/volume names match the pre-run inventory. Docker Desktop/image cache remain. |
+| `git diff --check`; focused local documentation/source/notice check | Passed 72 local links/anchors, changed-source whitespace checks, and the new Unicode license's hash/original-byte equality. Prior 143 dependency notices and unchanged package inventory were reused. |
+
+At the correction checkpoint no fresh CI/Linux, Chromium, deployment, provider or live email test was claimed. The existing six Chromium shell tests were prior evidence; no browser flow changed. Synthetic persistence tests establish neither delivery nor email ownership. M1a, existing dependency/license findings, final website/mobile release review and M2 product/provider decisions remain open. The correction checkpoint retained branch/HEAD/upstream `feat/application-foundation` / `6796fe31e33da7aa3b8af903fcacb9d1c38a76c9` / `origin/feat/application-foundation`, with all changes unstaged and AGENTS.md entry bytes preserved.
+
+Subsequent [independent review](docs/project-brief.md#m1b-independent-review-and-git-authorization--2026-10-09) verified both fixes and reran 50 unit tests, 16 real PostgreSQL tests, migration/Compose/identity guards, schema validation, lint, typecheck, build and Unicode artifact comparison successfully. Review-owned database resources were cleaned up; the previously approved Docker Desktop engine was started for the review and remains running. The owner now authorizes commit, push and merge of this local checkpoint after fresh CI and PR review, with publication evidence in the PR/Git history. Database CI remains a follow-up; deployment and M2 protected/provider flows are not authorized.

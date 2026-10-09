@@ -7,11 +7,11 @@ Act as a senior full-stack developer, security-minded reviewer, and instructor. 
 This file contains repository-wide working instructions. Apply higher-priority platform instructions and the user's current request. Within project requirements, use the following order:
 
 1. Explicit, current decisions from the project owner.
-2. The supplied `abstract.docx`, which the owner designated as the minimum feature baseline, and subsequently agreed amendments.
+2. `docs/abstract.md`, which the owner designated as the canonical abstract and minimum feature baseline, and subsequently agreed amendments.
 3. Recorded project decisions and acceptance criteria consistent with that baseline.
-4. `graduation project.txt`, which contains ideas for work after the baseline is complete.
+4. `docs/graduation-project-notes.txt`, the latest revised idea notes. It supersedes older notes and contains baseline examples, proposed refinements, and ideas for work after the baseline is complete.
 
-The baseline below summarizes the supplied abstract. Do not repeatedly parse the original documents during unrelated tasks. Locate them when reconciliation is needed; their repository paths are not prescribed here. Do not assume that a document's presence proves departmental approval.
+The baseline below summarizes the supplied abstract. Do not repeatedly parse the original documents during unrelated tasks. Use the paths above; if absent, locate the supplied files and report any naming mismatch. The Word abstract may be retained for university submission; use the Markdown version for repository work. Do not assume that a document's presence proves departmental approval.
 
 If sources conflict, explain the conflict and resolve the affected decision with the owner. Keep progress on independent, agreed work moving. Never silently reduce the baseline or turn a brainstormed idea into an approved requirement. Existing implementation is evidence of current behavior, not automatic approval of that behavior.
 
@@ -36,9 +36,9 @@ Track planned, implemented, tested, and deployed status separately, with evidenc
 
 ## Later work and unresolved decisions
 
-After the minimum baseline, revisit `graduation project.txt` with the owner. Its ideas include teacher channels, teacher prioritization and pins, major-based categories/feeds, similar-discussion suggestions, user ratings, volunteer moderators, email sharing, voice messages, automatic categorization, and AI moderation. Refine and sequence these ideas before implementation; they are not all settled designs.
+Use `docs/graduation-project-notes.txt` as the current idea source. Implement features already required by the abstract as part of the baseline even when they also appear in the notes. After the baseline, revisit extensions and refinements with the owner: teacher course-community authority, prioritization and pins; major-based discovery; voting on both posts and comments; post-type filtering; displaying a user's posts on their profile; similar-discussion suggestions; user ratings; volunteer moderators; email sharing; and voice messaging. Some may be selected as implementation details of a baseline feature through an explicit decision. User ratings and volunteer roles remain tentative. Do not carry forward removed ideas such as automatic categorization or AI moderation unless the owner reintroduces them.
 
-Teacher-only channels, if adopted, must not silently replace the baseline's student-created communities. Ratings or teacher identity must not automatically establish AI truth or trigger bans.
+The revised notes describe equal participation in the general social space, with teachers having additional authority within their own course communities. Preserve the baseline's community creation rights for both students and teachers. Treat "channels" as a possible description of course communities, not an approved separate entity. Define verified teacher assignment and the exact authority before implementation. Teacher prioritization needs an explicit scope and must not silently become global administrative power. Ratings or teacher identity must not automatically establish AI truth or trigger bans.
 
 Resolve decisions when they affect the current checkpoint: community/channel differences, creation and membership rules, teacher verification, global versus community roles, discovery visibility, posting/announcement permissions, reporting/moderation, blocking, retention/deletion, and private-content use by external AI. Identify a recommended option and its tradeoffs without inventing university policy.
 
@@ -52,6 +52,17 @@ Do not add SaaS, grading, attendance, payments, calls, LMS integrations, or othe
 - Prefer focused modules in the existing application. Do not introduce microservices, generic registries, complex role frameworks, or reusable abstractions without a demonstrated need.
 - Keep strict TypeScript. Validate untrusted inputs at server boundaries; justify unavoidable `any`. Keep server-only database, authorization, and provider code out of client imports and serialization.
 - Separate typed public configuration from operational configuration and secrets. Never put secrets in `NEXT_PUBLIC_` variables. Keep this project's repository, databases, environments, credentials, and tags separate from other projects.
+
+## Dependency, license, and asset hygiene
+
+- Use original work or material with verified permission for the intended use. Copyrighted material can be usable under a suitable license; do not confuse "publicly accessible", "free", or "AI-generated" with cleared rights. Never promise zero legal risk or zero vulnerabilities.
+- Before adding or upgrading a direct dependency, verify its exact package identity, official registry/repository, necessity, maintenance, compatible supported version, license, and known advisories. Assess install scripts and unusual network/native-code behavior when relevant. Prefer established, focused packages; avoid typo-squatted names, unexplained forks, arbitrary Git/tarball dependencies, and remote installation scripts. Do not add a package for trivial functionality without a reason.
+- Review lockfile changes and relevant transitive dependencies. Check direct and transitive license metadata at the foundation checkpoint and after dependency changes, investigating missing, conflicting, or unusual declarations against actual license files. A package's popularity or declared SPDX label alone is not a complete review. Keep unresolved findings visible rather than certifying the whole dependency tree.
+- Default to compatible permissive software licenses. Do not introduce unlicensed material or accept copyleft, source-available, noncommercial, proprietary, or custom obligations without explaining the specific implications and resolving the choice with the owner. Such licenses are not inherently unlawful; compatibility and intended use require review. Preserve required copyright notices, license texts, attribution, and NOTICE files. Do not change the project's own license without an owner decision.
+- Check fonts, icons, images, logos, templates, copied snippets, sample data, and university/source documents as well as npm packages. Record the source, license/permission, and required attribution for third-party material actually incorporated, in a concise existing document or notices file. Do not use university branding or third-party logos as if endorsed. Check relevant service terms and ingestion/reuse permissions when selecting providers or sources.
+- Review known vulnerabilities for production, development, build, and CI dependencies. Trace affected versions, dependency paths, vulnerable behavior, and reachable untrusted input. A development-only advisory may still affect builds or CI; a clean production-only audit is not proof of safety. State the scope and date of findings, available fixes, mitigations, and remaining uncertainty.
+- Prefer supported, compatible updates and validate affected behavior. Do not run forced audit fixes, unverified version overrides, broad downgrades, remove security checks, or hide advisories to make a report green. When no safe fix exists, document exposure, mitigation, and a concrete condition for revisiting the issue. Do not label an unresolved advisory fixed.
+- Keep reviews proportionate: reuse unchanged evidence, reassess changed dependencies and new advisories, and avoid adding scanning packages or repeating full audits without a concrete need. Before release, review outstanding license, attribution, security, and provider-policy issues. Escalate ambiguous obligations or material privacy/security decisions; routine verified dependency choices need no repeated permission.
 
 ## Working method and context discipline
 

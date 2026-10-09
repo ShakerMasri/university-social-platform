@@ -1,0 +1,2 @@
+# Preserve the original bytes used by the license evidence hashes on every OS.
+/docs/third-party-licenses/** -text
