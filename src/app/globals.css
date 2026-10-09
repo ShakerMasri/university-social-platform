@@ -53,3 +53,12 @@ footer { padding-block: 1rem; border-block-start: 1px solid #c9d6d2; font-size: 
   transform: translateY(-200%);
 }
 .skip-link:focus { transform: translateY(0); }
+
+.identity-main { max-inline-size: 44rem; padding-block: 2rem; }
+.identity-main h1 { font-size: clamp(1.8rem, 4vw, 2.8rem); }
+.identity-main form { display: grid; gap: 0.75rem; }
+.identity-main input, .identity-main button { font: inherit; padding: 0.65rem 0.85rem; border: 1px solid #58756b; border-radius: 0.3rem; min-inline-size: 0; max-inline-size: 100%; }
+.identity-main input { inline-size: 100%; background: #fff; }
+.identity-main button { background: #155a51; color: #fff; cursor: pointer; justify-self: start; }
+.identity-main button:disabled { opacity: 0.65; cursor: wait; }
+.identity-main p, .identity-main bdi { overflow-wrap: anywhere; }

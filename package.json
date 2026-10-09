@@ -17,6 +17,7 @@
     "typecheck": "next typegen && tsc --noEmit",
     "test": "vitest run",
     "test:e2e": "playwright test",
+    "test:e2e:identity": "node tools/database/local.mts identity-browser",
     "db:generate": "prisma generate",
     "db:validate": "prisma validate",
     "db:setup": "node tools/database/local.mts setup",

@@ -1,0 +1,32 @@
+import type { Locale } from "./locales";
+
+export const identityText = {
+  en: {
+    signIn: "Sign in", profile: "Your profile", confirm: "Confirm sign-in", email: "Email address",
+    request: "Request a sign-in link", name: "Display name", save: "Save profile", logout: "Log out",
+    local: "Local synthetic account test", disabled: "Identity testing is available through the dedicated local test runner.",
+    hint: "Use a synthetic address ending in @university.test. This flow sends no real email.",
+    requested: "If this test request can be completed, a link will be available in the local test mailbox. Request another after 60 seconds if needed.",
+    confirmHint: "Confirm in the browser that requested the link. Links expire after 10 minutes and work once.",
+    linkError: "This link cannot be used. Request a new link in this browser and try again.",
+    failed: "The request could not be completed. Please try again.", busy: "Please wait…",
+    nameHint: "A self-reported name, up to 60 characters. Arabic and English are supported.",
+    invalidName: "Enter a nonblank display name of up to 60 characters.", saved: "Your profile has been saved.",
+    private: "Only you can read or edit this test profile. Your email is private and cannot be changed.",
+    home: "Home",
+  },
+  ar: {
+    signIn: "تسجيل الدخول", profile: "ملفك الشخصي", confirm: "تأكيد تسجيل الدخول", email: "عنوان البريد الإلكتروني",
+    request: "طلب رابط تسجيل الدخول", name: "الاسم المعروض", save: "حفظ الملف الشخصي", logout: "تسجيل الخروج",
+    local: "اختبار محلي بحسابات وهمية", disabled: "اختبار الهوية متاح عبر أداة الاختبار المحلي المخصصة.",
+    hint: "استخدم عنوانًا وهميًا ينتهي بـ @university.test. لا يرسل هذا المسار بريدًا حقيقيًا.",
+    requested: "إذا أمكن إكمال طلب الاختبار، فسيتوفر رابط في صندوق الاختبار المحلي. يمكنك طلب رابط آخر بعد 60 ثانية عند الحاجة.",
+    confirmHint: "أكّد الدخول في المتصفح الذي طلب الرابط. تنتهي صلاحية الرابط بعد 10 دقائق ويُستخدم مرة واحدة.",
+    linkError: "لا يمكن استخدام هذا الرابط. اطلب رابطًا جديدًا في هذا المتصفح وحاول مجددًا.",
+    failed: "تعذر إكمال الطلب. يرجى المحاولة مجددًا.", busy: "يرجى الانتظار…",
+    nameHint: "اسم تُدخله بنفسك، لا يتجاوز 60 حرفًا. تُدعم العربية والإنجليزية.",
+    invalidName: "أدخل اسمًا غير فارغ لا يتجاوز 60 حرفًا.", saved: "تم حفظ ملفك الشخصي.",
+    private: "يمكنك وحدك قراءة ملف الاختبار وتعديله. بريدك خاص ولا يمكن تغييره.",
+    home: "الرئيسية",
+  },
+} satisfies Record<Locale, Record<string, string>>;

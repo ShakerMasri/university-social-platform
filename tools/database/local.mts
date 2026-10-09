@@ -165,7 +165,13 @@ async function migrate(m: LocalManifest, name: string) {
     GRANT INSERT (id, "userId", "emailKey", "tokenDigest", "createdAt", "expiresAt") ON "EmailOwnershipChallenge" TO ${identifier(m.runtimeRole)};
     GRANT UPDATE ("emailVerifiedAt", "updatedAt") ON "User" TO ${identifier(m.runtimeRole)};
     GRANT UPDATE ("displayName", "updatedAt") ON "Profile" TO ${identifier(m.runtimeRole)};
-    GRANT UPDATE ("consumedAt", "revokedAt") ON "EmailOwnershipChallenge" TO ${identifier(m.runtimeRole)};`);
+    GRANT UPDATE ("consumedAt", "revokedAt") ON "EmailOwnershipChallenge" TO ${identifier(m.runtimeRole)};
+    GRANT INSERT ("browserDigest") ON "EmailOwnershipChallenge" TO ${identifier(m.runtimeRole)};
+    GRANT SELECT ON "Session", "IdentityRateLimit" TO ${identifier(m.runtimeRole)};
+    GRANT INSERT (id, "userId", "tokenDigest", "createdAt", "expiresAt") ON "Session" TO ${identifier(m.runtimeRole)};
+    GRANT UPDATE ("revokedAt") ON "Session" TO ${identifier(m.runtimeRole)};
+    GRANT INSERT ("keyDigest", "startedAt", hits) ON "IdentityRateLimit" TO ${identifier(m.runtimeRole)};
+    GRANT UPDATE ("startedAt", hits) ON "IdentityRateLimit" TO ${identifier(m.runtimeRole)};`);
   console.log(`Reviewed migration history applied: ${name}`);
 }
 
@@ -182,29 +188,28 @@ async function removeTestDatabase(m: LocalManifest, record: DatabaseRecord) {
 
 async function reviewMigration(m: LocalManifest) {
   verifyResources(m);
-  const name = m.databases.find((record) => record.kind === "development" && record.ready)?.name;
-  if (!name) throw new Error("A ready owned development database is required for migration review");
-  const url = databaseUrl(m, name, "migration");
-  await assertDatabaseIdentity(url, m, "migration");
-  const output = resolve(".cache/m1b-reviewed-generated.sql");
+  if (!m.databases.some((record) => record.kind === "development" && record.ready)) throw new Error("A ready owned development database is required for migration review");
+  // Compare the entire replayed history, including additive migrations, against
+  // the current Prisma schema. Only a newly owned disposable DB is mutated.
+  // No shadow/reset workflow or hand-maintained final-schema snapshot.
+  const record: DatabaseRecord = { name: `usp_m1b_${m.owner}_test_${randomBytes(6).toString("hex")}`, kind: "test", ready: false };
+  m.databases.push(record); save(m);
+  const output = resolve(".cache/m2-reviewed-generated.sql");
   if (existsSync(output)) unlinkSync(output); // A stale artifact cannot establish successful generation.
-  execute(process.execPath, ["node_modules/prisma/build/index.js", "migrate", "diff", "--from-empty",
-    "--to-schema", "prisma/schema.prisma", "--script", "--output", output], undefined,
-    { ...process.env, M1B_MIGRATION_URL: url, PRISMA_HIDE_UPDATE_MESSAGE: "1", CHECKPOINT_DISABLE: "1" });
-  if (!existsSync(output)) throw new Error("Migration generation produced no artifact; review failed");
-  const generated = readFileSync(output, "utf8");
-  if (!["User", "Profile", "EmailOwnershipChallenge"].every((table) => generated.includes(`CREATE TABLE "${table}"`))) {
-    throw new Error("Generated migration artifact is incomplete; review failed");
-  }
-  const history = readFileSync(resolve("prisma/migrations/20261009000000_m1b_foundation/migration.sql"), "utf8");
-  // This foundation-only comparison ignores formatting, comments, the already-provisioned
-  // public schema, and the transaction wrapper. Custom checks still require SQL review.
-  const normalize = (sql: string) => sql.replace(/^--.*$/gm, "")
-    .replace(/CREATE SCHEMA IF NOT EXISTS "public";/g, "").replace(/\bBEGIN;/g, "").replace(/\s+/g, "");
-  if (normalize(history.split("-- Custom checks")[0]) !== normalize(generated)) {
-    throw new Error("Generated schema differs from the reviewed initial migration; inspect SQL before proceeding");
-  }
-  console.log("Generated SQL matches the reviewed initial tables/indexes/foreign keys: .cache/m1b-reviewed-generated.sql; no migration applied");
+  try {
+    await createDatabase(m, record);
+    await migrate(m, record.name);
+    const url = databaseUrl(m, record.name, "migration");
+    await assertDatabaseIdentity(url, m, "migration");
+    execute(process.execPath, ["node_modules/prisma/build/index.js", "migrate", "diff", "--from-config-datasource",
+      "--to-schema", "prisma/schema.prisma", "--script", "--output", output], undefined,
+      { ...process.env, M1B_MIGRATION_URL: url, PRISMA_HIDE_UPDATE_MESSAGE: "1", CHECKPOINT_DISABLE: "1" });
+    if (!existsSync(output)) throw new Error("Migration generation produced no artifact; review failed");
+    if (readFileSync(output, "utf8").replace(/^--.*$/gm, "").trim()) {
+      throw new Error("Current Prisma schema differs from replayed migration history; inspect SQL before proceeding");
+    }
+    console.log("Complete migration history matches current Prisma tables/indexes/foreign keys; custom SQL checks reviewed separately");
+  } finally { if (record.ready) await removeTestDatabase(m, record); }
 }
 
 async function setup() {
@@ -250,8 +255,8 @@ async function setup() {
 
 async function test(m: LocalManifest) {
   verifyResources(m);
-  // Two complete Prisma-history databases plus one explicit forward-upgrade fixture.
-  const records: DatabaseRecord[] = [0, 1, 2].map(() => ({
+  // Two complete-history databases and populated Unicode/M2 forward-upgrade fixtures.
+  const records: DatabaseRecord[] = [0, 1, 2, 3].map(() => ({
     name: `usp_m1b_${m.owner}_test_${randomBytes(6).toString("hex")}`, kind: "test", ready: false,
   }));
   m.databases.push(...records);
@@ -263,7 +268,7 @@ async function test(m: LocalManifest) {
     }
     const result = spawnSync(process.execPath, ["node_modules/vitest/vitest.mjs", "run", "--config", "vitest.database.config.mjs"], {
       env: { ...process.env, M1B_TEST_DATABASE: records[0].name, M1B_REPLAY_DATABASE: records[1].name,
-        M1B_UPGRADE_DATABASE: records[2].name },
+        M1B_UPGRADE_DATABASE: records[2].name, M2_UPGRADE_DATABASE: records[3].name },
       encoding: "utf8", windowsHide: true,
     });
     process.stdout.write(result.stdout ?? "");
@@ -288,6 +293,35 @@ async function test(m: LocalManifest) {
       if (record.ready) await removeTestDatabase(m, record);
     }
   }
+}
+
+async function identityBrowser(m: LocalManifest) {
+  verifyResources(m);
+  const controlPath = resolve(".cache/m2-browser.json");
+  if (existsSync(controlPath)) throw new Error("Existing identity browser control file requires inspection; not overwritten");
+  const record: DatabaseRecord = { name: `usp_m1b_${m.owner}_test_${randomBytes(6).toString("hex")}`, kind: "test", ready: false };
+  m.databases.push(record); save(m);
+  try {
+    await createDatabase(m, record);
+    await migrate(m, record.name);
+    const result = spawnSync(process.execPath, ["node_modules/@playwright/test/cli.js", "test"], {
+      env: { ...process.env, M2_IDENTITY_E2E: "1", M2_BROWSER_DATABASE: record.name },
+      encoding: "utf8", windowsHide: true,
+    });
+    process.stdout.write(result.stdout ?? ""); process.stderr.write(result.stderr ?? "");
+    if (result.error || result.status !== 0) throw new Error("Identity browser tests failed");
+  } finally {
+    if (existsSync(controlPath)) {
+      removeBrowserControl(controlPath, record.name);
+    }
+    if (record.ready) await removeTestDatabase(m, record);
+  }
+}
+
+function removeBrowserControl(path: string, name: string) {
+  const control = JSON.parse(readFileSync(path, "utf8")) as { databaseName: string };
+  if (path !== resolve(".cache/m2-browser.json") || control.databaseName !== name) throw new Error("Refusing another runner's control-file cleanup");
+  unlinkSync(path);
 }
 
 async function cleanup(m: LocalManifest) {
@@ -369,6 +403,7 @@ try {
       await reviewMigration(m);
       await test(m);
     }
+    else if (command === "identity-browser") { await reviewMigration(m); await identityBrowser(m); }
     else if (command === "cleanup") await cleanup(m);
     else if (command === "guard-check") await guardCheck(m);
     else if (command === "status") {

@@ -42,6 +42,9 @@ export async function consumeEmailChallengeInTransaction(tx: Prisma.TransactionC
   // Sample time only AFTER acquiring the row lock: a pre-lock clock/predicate
   // can become stale during contention. Prisma has no row-lock query API, so
   // this trusted SQL uses parameters for every input; writes use Prisma APIs.
+  // M2 issuance also locks user → challenge. Preserve that order for this
+  // internal M1b transition so it cannot deadlock with an M2 transaction.
+  await tx.$queryRaw`SELECT id FROM "User" WHERE id = ${input.userId}::uuid FOR UPDATE`;
   const locked = await tx.$queryRaw<{ id: string }[]>`
     SELECT id FROM "EmailOwnershipChallenge"
     WHERE "userId" = ${input.userId}::uuid AND "emailKey" = ${emailKey}
