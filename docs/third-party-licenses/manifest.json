@@ -3,6 +3,34 @@
   "collected": "2026-10-09",
   "files": [
     {
+      "file": "Unicode-17.0.0-LICENSE.txt",
+      "sha256": "e7a93b009565cfce55919a381437ac4db883e9da2126fa28b91d12732bc53d96",
+      "bytes": 1995,
+      "component": "Unicode Character Database",
+      "version": "17.0.0",
+      "license": "Unicode-3.0",
+      "kind": "authentic upstream license for M1b Unicode case-mapping data",
+      "source": "https://www.unicode.org/license.txt",
+      "derivedArtifacts": [
+        "src/server/database/email-case-data.ts",
+        "prisma/migrations/20261009010000_m1b_email_case_contract/migration.sql"
+      ],
+      "dataSources": [
+        {
+          "source": "https://www.unicode.org/Public/17.0.0/ucd/UnicodeData.txt",
+          "sha256": "2e1efc1dcb59c575eedf5ccae60f95229f706ee6d031835247d843c11d96470c"
+        },
+        {
+          "source": "https://www.unicode.org/Public/17.0.0/ucd/SpecialCasing.txt",
+          "sha256": "efc25faf19de21b92c1194c111c932e03d2a5eaf18194e33f1156e96de4c9588"
+        },
+        {
+          "source": "https://www.unicode.org/Public/17.0.0/ucd/DerivedCoreProperties.txt",
+          "sha256": "24c7fed1195c482faaefd5c1e7eb821c5ee1fb6de07ecdbaa64b56a99da22c08"
+        }
+      ]
+    },
+    {
       "file": "caniuse-lite-1.0.30001815-LICENSE",
       "sha256": "fd3a263fe19ed8faa9068b43abaebafc02c77897b0c6fc09abc04bb592e5f16e",
       "bytes": 18651,
@@ -629,6 +657,2218 @@
         "url": "git+https://github.com/vitest-dev/vitest.git",
         "directory": "packages/vitest"
       }
+    },
+    {
+      "file": "types--pg-8.23.1-LICENSE",
+      "sha256": "c2cfccb812fe482101a8f04597dfc5a9991a6b2748266c47ac91b6a5aae15383",
+      "bytes": 1141,
+      "component": "@types/pg",
+      "version": "8.23.1",
+      "license": "MIT",
+      "kind": "unmodified packaged file; M1b PostgreSQL driver delta",
+      "copiedFrom": "node_modules/@types/pg/LICENSE",
+      "source": "https://registry.npmjs.org/@types/pg/-/pg-8.23.1.tgz",
+      "integrity": "sha512-fKVHpikPdg4GKks3JuLEhvwSyvwzF23hnabPy6DD8ljVbC7+6J5dQzdv4arV6jqq57djnMgs1HKBxX4P8aBI3A==",
+      "repository": {
+        "type": "git",
+        "url": "https://github.com/DefinitelyTyped/DefinitelyTyped.git",
+        "directory": "types/pg"
+      }
+    },
+    {
+      "file": "pg-8.23.1-LICENSE",
+      "sha256": "192b8f5c96900f04a1271dec39688655d7416c1c6ea84a508e18b50d2b6751f3",
+      "bytes": 1077,
+      "component": "pg",
+      "version": "8.23.1",
+      "license": "MIT",
+      "kind": "unmodified packaged file; M1b PostgreSQL driver delta",
+      "copiedFrom": "node_modules/pg/LICENSE",
+      "source": "https://registry.npmjs.org/pg/-/pg-8.23.1.tgz",
+      "integrity": "sha512-aL96AHANtWjPLDOLqnhx+ngp9+UK7ETEU8VJrDCGvsSSi/mGLcWYsS6Herg7lmaBJe4uwrfqsa7gTEFaSizDoQ==",
+      "repository": {
+        "type": "git",
+        "url": "git://github.com/brianc/node-postgres.git",
+        "directory": "packages/pg"
+      }
+    },
+    {
+      "file": "pg-cloudflare-1.4.1-LICENSE",
+      "sha256": "192b8f5c96900f04a1271dec39688655d7416c1c6ea84a508e18b50d2b6751f3",
+      "bytes": 1077,
+      "component": "pg-cloudflare",
+      "version": "1.4.1",
+      "license": "MIT",
+      "kind": "unmodified packaged file; M1b PostgreSQL driver delta",
+      "copiedFrom": "node_modules/pg-cloudflare/LICENSE",
+      "source": "https://registry.npmjs.org/pg-cloudflare/-/pg-cloudflare-1.4.1.tgz",
+      "integrity": "sha512-6PQbsFWZcp9EmJEwy5cGQ2La+AMWpP46lgbb8X+U/XsHIUweYDNCpeuKck5RxL2MdVFi7krbbEi5nX4Zh7JhrQ==",
+      "repository": {
+        "type": "git",
+        "url": "git://github.com/brianc/node-postgres.git",
+        "directory": "packages/pg-cloudflare"
+      }
+    },
+    {
+      "file": "pg-connection-string-2.14.1-LICENSE",
+      "sha256": "2244b5486c4427001b6756a87b9a297d427c111dcc3ba64a097492a8979c23d0",
+      "bytes": 1082,
+      "component": "pg-connection-string",
+      "version": "2.14.1",
+      "license": "MIT",
+      "kind": "unmodified packaged file; M1b PostgreSQL driver delta",
+      "copiedFrom": "node_modules/pg-connection-string/LICENSE",
+      "source": "https://registry.npmjs.org/pg-connection-string/-/pg-connection-string-2.14.1.tgz",
+      "integrity": "sha512-qR3kGNPBLpCNtz0evbKA0Y/MRFXwSSdT+pTJvYp/bXTcReZbvX1kzF0IyTc1QnxqF7AZbOeBhNL8R5mYQZV/MA==",
+      "repository": {
+        "type": "git",
+        "url": "git://github.com/brianc/node-postgres.git",
+        "directory": "packages/pg-connection-string"
+      }
+    },
+    {
+      "file": "pg-int8-1.0.1-LICENSE",
+      "sha256": "4e8e87ccdfc7e4b47fd89015f78468aa53b6bf43ab6e6e12d43e8f55294911de",
+      "bytes": 750,
+      "component": "pg-int8",
+      "version": "1.0.1",
+      "license": "ISC",
+      "kind": "unmodified packaged file; M1b PostgreSQL driver delta",
+      "copiedFrom": "node_modules/pg-int8/LICENSE",
+      "source": "https://registry.npmjs.org/pg-int8/-/pg-int8-1.0.1.tgz",
+      "integrity": "sha512-WCtabS6t3c8SkpDBUlb1kjOs7l66xsGdKpIPZsg4wR+B3+u9UAum2odSsF9tnvxg80h4ZxLWMy4pRjOsFIqQpw==",
+      "repository": {
+        "type": "git",
+        "url": "https://github.com/charmander/pg-int8"
+      }
+    },
+    {
+      "file": "pg-pool-3.14.0-LICENSE",
+      "sha256": "4f15ee7fc2a72082859d7e0d12dfa4bcdd70b1c744ad3850d07780730ac08557",
+      "bytes": 1073,
+      "component": "pg-pool",
+      "version": "3.14.0",
+      "license": "MIT",
+      "kind": "unmodified packaged file; M1b PostgreSQL driver delta",
+      "copiedFrom": "node_modules/pg-pool/LICENSE",
+      "source": "https://registry.npmjs.org/pg-pool/-/pg-pool-3.14.0.tgz",
+      "integrity": "sha512-gKtPkFdQPU3DksooVLi9LsjZxrsBUZIpa+7aVx+LV5pNh0KzP4Zleud2po+ConrxbuXGBJ6Hfer6hdgpIBpBaw==",
+      "repository": {
+        "type": "git",
+        "url": "git://github.com/brianc/node-postgres.git",
+        "directory": "packages/pg-pool"
+      }
+    },
+    {
+      "file": "pg-protocol-1.16.1-LICENSE",
+      "sha256": "192b8f5c96900f04a1271dec39688655d7416c1c6ea84a508e18b50d2b6751f3",
+      "bytes": 1077,
+      "component": "pg-protocol",
+      "version": "1.16.1",
+      "license": "MIT",
+      "kind": "unmodified packaged file; M1b PostgreSQL driver delta",
+      "copiedFrom": "node_modules/pg-protocol/LICENSE",
+      "source": "https://registry.npmjs.org/pg-protocol/-/pg-protocol-1.16.1.tgz",
+      "integrity": "sha512-p9VOFMiHB/ZbJATetbg+99PxssTVSQRnyuPSQ67mN1+1KBOjZaZ83ZQzltnxPhJwSsC3nwVjJ10DVJlerbFzLg==",
+      "repository": {
+        "type": "git",
+        "url": "git://github.com/brianc/node-postgres.git",
+        "directory": "packages/pg-protocol"
+      }
+    },
+    {
+      "file": "pg-types-2.2.0-README.md",
+      "sha256": "ecda9bca71d3f0cee4e600d1dd2bef336213f39ef2e8fca6a1a1c1c8723f643a",
+      "bytes": 3831,
+      "component": "pg-types",
+      "version": "2.2.0",
+      "license": "MIT",
+      "kind": "unmodified packaged file; M1b PostgreSQL driver delta",
+      "copiedFrom": "node_modules/pg-types/README.md",
+      "source": "https://registry.npmjs.org/pg-types/-/pg-types-2.2.0.tgz",
+      "integrity": "sha512-qTAAlrEsl8s4OiEQY69wDvcMIdQN6wdz5ojQiOy6YRMuynxenON0O5oCpJI6lshc6scgAY8qvJ2On/p+CXY0GA==",
+      "repository": {
+        "type": "git",
+        "url": "git://github.com/brianc/node-pg-types.git"
+      }
+    },
+    {
+      "file": "pgpass-1.0.5-README.md",
+      "sha256": "62549909404b5a0dcb2b4b74c9a930baf8095dbcfa1543c4ffc79378acd22b57",
+      "bytes": 3294,
+      "component": "pgpass",
+      "version": "1.0.5",
+      "license": "MIT",
+      "kind": "unmodified packaged file; M1b PostgreSQL driver delta",
+      "copiedFrom": "node_modules/pgpass/README.md",
+      "source": "https://registry.npmjs.org/pgpass/-/pgpass-1.0.5.tgz",
+      "integrity": "sha512-FdW9r/jQZhSeohs1Z3sI1yxFQNFvMcnmfuj4WBMUTxOrAyLMaTcE1aAMBiTlbMNaXvBCQuVi0R7hd8udDSP7ug==",
+      "repository": {
+        "type": "git",
+        "url": "https://github.com/hoegaarden/pgpass.git"
+      }
+    },
+    {
+      "file": "postgres-array-2.0.0-license",
+      "sha256": "f057f36739d53d228a746de4440c1e0c644ecde06d6beab45337d39c9d12a393",
+      "bytes": 1111,
+      "component": "postgres-array",
+      "version": "2.0.0",
+      "license": "MIT",
+      "kind": "unmodified packaged file; M1b PostgreSQL driver delta",
+      "copiedFrom": "node_modules/postgres-array/license",
+      "source": "https://registry.npmjs.org/postgres-array/-/postgres-array-2.0.0.tgz",
+      "integrity": "sha512-VpZrUqU5A69eQyW2c5CA1jtLecCsN2U/bD6VilrFDWq5+5UIEVO7nazS3TEcHf1zuPYO/sqGvUvW62g86RXZuA==",
+      "repository": "bendrucker/postgres-array"
+    },
+    {
+      "file": "postgres-bytea-1.0.1-license",
+      "sha256": "f057f36739d53d228a746de4440c1e0c644ecde06d6beab45337d39c9d12a393",
+      "bytes": 1111,
+      "component": "postgres-bytea",
+      "version": "1.0.1",
+      "license": "MIT",
+      "kind": "unmodified packaged file; M1b PostgreSQL driver delta",
+      "copiedFrom": "node_modules/postgres-bytea/license",
+      "source": "https://registry.npmjs.org/postgres-bytea/-/postgres-bytea-1.0.1.tgz",
+      "integrity": "sha512-5+5HqXnsZPE65IJZSMkZtURARZelel2oXUEO8rH83VS/hxH5vv1uHquPg5wZs8yMAfdv971IU+kcPUczi7NVBQ==",
+      "repository": "bendrucker/postgres-bytea"
+    },
+    {
+      "file": "postgres-date-1.0.7-license",
+      "sha256": "f057f36739d53d228a746de4440c1e0c644ecde06d6beab45337d39c9d12a393",
+      "bytes": 1111,
+      "component": "postgres-date",
+      "version": "1.0.7",
+      "license": "MIT",
+      "kind": "unmodified packaged file; M1b PostgreSQL driver delta",
+      "copiedFrom": "node_modules/postgres-date/license",
+      "source": "https://registry.npmjs.org/postgres-date/-/postgres-date-1.0.7.tgz",
+      "integrity": "sha512-suDmjLVQg78nMK2UZ454hAG+OAW+HQPZ6n++TNDUX+L0+uUlLywnoxJKDou51Zm+zTCjrCl0Nq6J9C5hP9vK/Q==",
+      "repository": "bendrucker/postgres-date"
+    },
+    {
+      "file": "postgres-interval-1.2.0-license",
+      "sha256": "f057f36739d53d228a746de4440c1e0c644ecde06d6beab45337d39c9d12a393",
+      "bytes": 1111,
+      "component": "postgres-interval",
+      "version": "1.2.0",
+      "license": "MIT",
+      "kind": "unmodified packaged file; M1b PostgreSQL driver delta",
+      "copiedFrom": "node_modules/postgres-interval/license",
+      "source": "https://registry.npmjs.org/postgres-interval/-/postgres-interval-1.2.0.tgz",
+      "integrity": "sha512-9ZhXKM/rw350N1ovuWHbGxnGh/SNJ4cnxHiM0rxE4VN41wsg8P8zWn9hv/buK00RP4WvlOyr/RBDiptyxVbkZQ==",
+      "repository": "bendrucker/postgres-interval"
+    },
+    {
+      "file": "split2-4.2.0-LICENSE",
+      "sha256": "c372ef2fa1dfcb124ed807609751e75e3a009f108c5724916b489288fcb88a0c",
+      "bytes": 764,
+      "component": "split2",
+      "version": "4.2.0",
+      "license": "ISC",
+      "kind": "unmodified packaged file; M1b PostgreSQL driver delta",
+      "copiedFrom": "node_modules/split2/LICENSE",
+      "source": "https://registry.npmjs.org/split2/-/split2-4.2.0.tgz",
+      "integrity": "sha512-UcjcJOWknrNkF6PLX83qcHM6KHgVKNkV62Y8a5uYDVv9ydGQVwAHMKqHdJje1VTWpljG0WYpCDhrCdAOYH4TWg==",
+      "repository": {
+        "type": "git",
+        "url": "https://github.com/mcollina/split2.git"
+      }
+    },
+    {
+      "file": "xtend-4.0.2-LICENSE",
+      "sha256": "82e67379203d5794e7c44549847d8d64ae6904591381682360470898bd306821",
+      "bytes": 1078,
+      "component": "xtend",
+      "version": "4.0.2",
+      "license": "MIT",
+      "kind": "unmodified packaged file; M1b PostgreSQL driver delta",
+      "copiedFrom": "node_modules/xtend/LICENSE",
+      "source": "https://registry.npmjs.org/xtend/-/xtend-4.0.2.tgz",
+      "integrity": "sha512-LKYU1iAXJXUgAXn9URjiu+MWhyUXHsvfp7mcuYm9dSUKK0/CjtrUwFAxD82/mCWbtLsGjFIad0wIsod4zrTAEQ==",
+      "repository": "git://github.com/Raynos/xtend.git"
+    },
+    {
+      "file": "electric-sql--pglite-0.4.3-LICENSE",
+      "sha256": "a6cba85bc92e0cff7a450b1d873c0eaa2e9fc96bf472df0247a26bec77bf3ff9",
+      "bytes": 10173,
+      "component": "@electric-sql/pglite",
+      "version": "0.4.3",
+      "license": "Apache-2.0",
+      "kind": "unmodified packaged file; M1b Prisma dependency delta",
+      "copiedFrom": "node_modules/@electric-sql/pglite/LICENSE",
+      "source": "https://registry.npmjs.org/@electric-sql/pglite/-/pglite-0.4.3.tgz",
+      "integrity": "sha512-ichuWTgtd4mOM1G4SpyGJa5trT03lWbMypDV0fUXUCXg5hiHqVAz/bZyV68NqmkLB7WcYmj1RMJVSp8HV/v/ZQ==",
+      "repository": {
+        "type": "git",
+        "url": "https://github.com/electric-sql/pglite",
+        "directory": "packages/pglite"
+      }
+    },
+    {
+      "file": "electric-sql--pglite-socket-0.1.3-LICENSE",
+      "sha256": "a6cba85bc92e0cff7a450b1d873c0eaa2e9fc96bf472df0247a26bec77bf3ff9",
+      "bytes": 10173,
+      "component": "@electric-sql/pglite-socket",
+      "version": "0.1.3",
+      "license": "Apache-2.0",
+      "kind": "unmodified packaged file; M1b Prisma dependency delta",
+      "copiedFrom": "node_modules/@electric-sql/pglite-socket/LICENSE",
+      "source": "https://registry.npmjs.org/@electric-sql/pglite-socket/-/pglite-socket-0.1.3.tgz",
+      "integrity": "sha512-LAciWM0M1dCL8hlsxu2venbVZcdxema0BtDfpWYVqr+Y468UADw0pFWidhKw1M8sfJ8rdLT71tjMmnirf/IZRQ==",
+      "repository": {
+        "type": "git",
+        "url": "git+https://github.com/electric-sql/pglite",
+        "directory": "packages/pglite-socket"
+      }
+    },
+    {
+      "file": "electric-sql--pglite-tools-0.3.3-LICENSE",
+      "sha256": "a6cba85bc92e0cff7a450b1d873c0eaa2e9fc96bf472df0247a26bec77bf3ff9",
+      "bytes": 10173,
+      "component": "@electric-sql/pglite-tools",
+      "version": "0.3.3",
+      "license": "Apache-2.0",
+      "kind": "unmodified packaged file; M1b Prisma dependency delta",
+      "copiedFrom": "node_modules/@electric-sql/pglite-tools/LICENSE",
+      "source": "https://registry.npmjs.org/@electric-sql/pglite-tools/-/pglite-tools-0.3.3.tgz",
+      "integrity": "sha512-AlzLJTRJ8+UFgK8CmxIpyIpJ0+YaFw02IiOSdYrqxwPXdSyeIShz8aa9Tq+tYFXdPwcaMp/Fc80mQZ1dkOQ/wg==",
+      "repository": {
+        "type": "git",
+        "url": "git+https://github.com/electric-sql/pglite",
+        "directory": "packages/pglite-tools"
+      }
+    },
+    {
+      "file": "prisma--adapter-pg-7.10.0-LICENSE",
+      "sha256": "c71d239df91726fc519c6eb72d318ec65820627232b2f796219e87dcf35d0ab4",
+      "bytes": 11357,
+      "component": "@prisma/adapter-pg",
+      "version": "7.10.0",
+      "license": "Apache-2.0",
+      "kind": "unmodified packaged file; M1b Prisma dependency delta",
+      "copiedFrom": "node_modules/@prisma/adapter-pg/LICENSE",
+      "source": "https://registry.npmjs.org/@prisma/adapter-pg/-/adapter-pg-7.10.0.tgz",
+      "integrity": "sha512-N7nwSor0HO1Kz6xBv0TPAjAPysKK0fac6p4fVN3ensLOuzc/83Fgmln5k92eK/cvzqdkSR/2kkAqlbcdwVrwpw==",
+      "repository": {
+        "type": "git",
+        "url": "https://github.com/prisma/prisma.git",
+        "directory": "packages/adapter-pg"
+      }
+    },
+    {
+      "file": "postgres-array-3.0.4-license",
+      "sha256": "f057f36739d53d228a746de4440c1e0c644ecde06d6beab45337d39c9d12a393",
+      "bytes": 1111,
+      "component": "postgres-array",
+      "version": "3.0.4",
+      "license": "MIT",
+      "kind": "unmodified packaged file; M1b Prisma dependency delta",
+      "copiedFrom": "node_modules/@prisma/adapter-pg/node_modules/postgres-array/license",
+      "source": "https://registry.npmjs.org/postgres-array/-/postgres-array-3.0.4.tgz",
+      "integrity": "sha512-nAUSGfSDGOaOAEGwqsRY27GPOea7CNipJPOA7lPbdEpx5Kg3qzdP0AaWC5MlhTWV9s4hFX39nomVZ+C4tnGOJQ==",
+      "repository": "bendrucker/postgres-array"
+    },
+    {
+      "file": "prisma--client-7.10.0-LICENSE",
+      "sha256": "c71d239df91726fc519c6eb72d318ec65820627232b2f796219e87dcf35d0ab4",
+      "bytes": 11357,
+      "component": "@prisma/client",
+      "version": "7.10.0",
+      "license": "Apache-2.0",
+      "kind": "unmodified packaged file; M1b Prisma dependency delta",
+      "copiedFrom": "node_modules/@prisma/client/LICENSE",
+      "source": "https://registry.npmjs.org/@prisma/client/-/client-7.10.0.tgz",
+      "integrity": "sha512-Ubw/QS9JGIBSBUsyxAUQuK/Jcu0Tsva7le7QbLd91Kix9yJvYDdj5QkwgEbbZniH80dd+sziQcALPc+HnvQC8Q==",
+      "repository": {
+        "type": "git",
+        "url": "https://github.com/prisma/prisma.git",
+        "directory": "packages/client"
+      }
+    },
+    {
+      "file": "prisma--client-runtime-utils-7.10.0-LICENSE",
+      "sha256": "c71d239df91726fc519c6eb72d318ec65820627232b2f796219e87dcf35d0ab4",
+      "bytes": 11357,
+      "component": "@prisma/client-runtime-utils",
+      "version": "7.10.0",
+      "license": "Apache-2.0",
+      "kind": "unmodified packaged file; M1b Prisma dependency delta",
+      "copiedFrom": "node_modules/@prisma/client-runtime-utils/LICENSE",
+      "source": "https://registry.npmjs.org/@prisma/client-runtime-utils/-/client-runtime-utils-7.10.0.tgz",
+      "integrity": "sha512-cnCy7lUV8/CctgKVEmqAbSLAmwqJdE/qAlqTBk/0NDk59zEb2cZ0M0M0E4vVPnqbSEYudRroQDvOWfUZH6RIfw==",
+      "repository": {
+        "type": "git",
+        "url": "https://github.com/prisma/prisma.git",
+        "directory": "packages/client-runtime-utils"
+      }
+    },
+    {
+      "file": "prisma--config-7.10.0-LICENSE",
+      "sha256": "c71d239df91726fc519c6eb72d318ec65820627232b2f796219e87dcf35d0ab4",
+      "bytes": 11357,
+      "component": "@prisma/config",
+      "version": "7.10.0",
+      "license": "Apache-2.0",
+      "kind": "unmodified packaged file; M1b Prisma dependency delta",
+      "copiedFrom": "node_modules/@prisma/config/LICENSE",
+      "source": "https://registry.npmjs.org/@prisma/config/-/config-7.10.0.tgz",
+      "integrity": "sha512-Rcg828gIRE3HOQ3pOATFjV5d/P0U9OIobxhd/IMxlfWjA4vru0eGwb0AIwFw0rmcLMVShohZYWPixVxkBHsxUA==",
+      "repository": {
+        "type": "git",
+        "url": "https://github.com/prisma/prisma.git",
+        "directory": "packages/config"
+      }
+    },
+    {
+      "file": "prisma--debug-7.10.0-LICENSE",
+      "sha256": "c71d239df91726fc519c6eb72d318ec65820627232b2f796219e87dcf35d0ab4",
+      "bytes": 11357,
+      "component": "@prisma/debug",
+      "version": "7.10.0",
+      "license": "Apache-2.0",
+      "kind": "unmodified packaged file; M1b Prisma dependency delta",
+      "copiedFrom": "node_modules/@prisma/debug/LICENSE",
+      "source": "https://registry.npmjs.org/@prisma/debug/-/debug-7.10.0.tgz",
+      "integrity": "sha512-caygJKtltmRIgdJ3jRpkOr7yM4DW6zxo5uOmojKWFb3asnxWoRkQOwZmXBgD8FZp4htrX+nMpcWqDwzlQ1+Y4g==",
+      "repository": {
+        "type": "git",
+        "url": "https://github.com/prisma/prisma.git",
+        "directory": "packages/debug"
+      }
+    },
+    {
+      "file": "std-env-3.10.0-LICENCE",
+      "sha256": "a6f36438e46fb911859f3b9c4cad045ba64e1af3d8f4512c60258fa2d7552d28",
+      "bytes": 1079,
+      "component": "std-env",
+      "version": "3.10.0",
+      "license": "MIT",
+      "kind": "unmodified packaged file; M1b Prisma dependency delta",
+      "copiedFrom": "node_modules/@prisma/dev/node_modules/std-env/LICENCE",
+      "source": "https://registry.npmjs.org/std-env/-/std-env-3.10.0.tgz",
+      "integrity": "sha512-5GS12FdOZNliM5mAOxFRg7Ir0pWz8MdpYm6AY6VPkGpbA7ZzmbzNcBJQ0GPvvyWgcY7QAhCgf9Uy89I03faLkg==",
+      "repository": "unjs/std-env"
+    },
+    {
+      "file": "prisma--driver-adapter-utils-7.10.0-LICENSE",
+      "sha256": "c71d239df91726fc519c6eb72d318ec65820627232b2f796219e87dcf35d0ab4",
+      "bytes": 11357,
+      "component": "@prisma/driver-adapter-utils",
+      "version": "7.10.0",
+      "license": "Apache-2.0",
+      "kind": "unmodified packaged file; M1b Prisma dependency delta",
+      "copiedFrom": "node_modules/@prisma/driver-adapter-utils/LICENSE",
+      "source": "https://registry.npmjs.org/@prisma/driver-adapter-utils/-/driver-adapter-utils-7.10.0.tgz",
+      "integrity": "sha512-u8zkcRLlaryO652T4qavBg0HmzNW5tSKdsCn6hc1PhWAp/J6k0vrxLuUs+b9o+HcjsK7Dfa01o4OFSn0frauJA==",
+      "repository": {
+        "type": "git",
+        "url": "https://github.com/prisma/prisma.git",
+        "directory": "packages/driver-adapter-utils"
+      }
+    },
+    {
+      "file": "prisma--engines-7.10.0-LICENSE",
+      "sha256": "c71d239df91726fc519c6eb72d318ec65820627232b2f796219e87dcf35d0ab4",
+      "bytes": 11357,
+      "component": "@prisma/engines",
+      "version": "7.10.0",
+      "license": "Apache-2.0",
+      "kind": "unmodified packaged file; M1b Prisma dependency delta",
+      "copiedFrom": "node_modules/@prisma/engines/LICENSE",
+      "source": "https://registry.npmjs.org/@prisma/engines/-/engines-7.10.0.tgz",
+      "integrity": "sha512-KNumN6NHFwybvfdYzTee9pqwx5PvknpWAaHn6L5NsbrKdl+SQrsVZs9opKs6U6SAsvB26HDt3WybRjOhgoWOYQ==",
+      "repository": {
+        "type": "git",
+        "url": "https://github.com/prisma/prisma.git",
+        "directory": "packages/engines"
+      }
+    },
+    {
+      "file": "prisma--engines-version-7.10.0-4.0edf323efd1d98336f3f0a68684b56f689b900d3-LICENSE",
+      "sha256": "c71d239df91726fc519c6eb72d318ec65820627232b2f796219e87dcf35d0ab4",
+      "bytes": 11357,
+      "component": "@prisma/engines-version",
+      "version": "7.10.0-4.0edf323efd1d98336f3f0a68684b56f689b900d3",
+      "license": "Apache-2.0",
+      "kind": "unmodified packaged file; M1b Prisma dependency delta",
+      "copiedFrom": "node_modules/@prisma/engines-version/LICENSE",
+      "source": "https://registry.npmjs.org/@prisma/engines-version/-/engines-version-7.10.0-4.0edf323efd1d98336f3f0a68684b56f689b900d3.tgz",
+      "integrity": "sha512-8OJ6RuZTZ06eFUOtBwxVmv8XMmOW6HWN5F+uxUbZkGxR0Bfab1dfAdXaHPmR5mb59E+fmUo8IOzXlbLY1SClbw==",
+      "repository": {
+        "type": "git",
+        "url": "https://github.com/prisma/engines-wrapper.git",
+        "directory": "packages/engines-version"
+      }
+    },
+    {
+      "file": "prisma--get-platform-7.10.0-LICENSE",
+      "sha256": "c71d239df91726fc519c6eb72d318ec65820627232b2f796219e87dcf35d0ab4",
+      "bytes": 11357,
+      "component": "@prisma/get-platform",
+      "version": "7.10.0",
+      "license": "Apache-2.0",
+      "kind": "unmodified packaged file; M1b Prisma dependency delta",
+      "copiedFrom": "node_modules/@prisma/engines/node_modules/@prisma/get-platform/LICENSE",
+      "source": "https://registry.npmjs.org/@prisma/get-platform/-/get-platform-7.10.0.tgz",
+      "integrity": "sha512-0bra1LFYi8xNw0yqV62bHJNQk4BKleOngZiqPWIQc7a3+9q6rqsnqJ15BuepP8943PFMvtmgnP52juZsyYkA6w==",
+      "repository": {
+        "type": "git",
+        "url": "https://github.com/prisma/prisma.git",
+        "directory": "packages/get-platform"
+      }
+    },
+    {
+      "file": "prisma--fetch-engine-7.10.0-LICENSE",
+      "sha256": "c71d239df91726fc519c6eb72d318ec65820627232b2f796219e87dcf35d0ab4",
+      "bytes": 11357,
+      "component": "@prisma/fetch-engine",
+      "version": "7.10.0",
+      "license": "Apache-2.0",
+      "kind": "unmodified packaged file; M1b Prisma dependency delta",
+      "copiedFrom": "node_modules/@prisma/fetch-engine/LICENSE",
+      "source": "https://registry.npmjs.org/@prisma/fetch-engine/-/fetch-engine-7.10.0.tgz",
+      "integrity": "sha512-Zqyu8DY14t6W/xwmAxUYWCXtHrvQnSvT644EAZSsdM8NSmCS74vJJbBKdVsK3ucFpnUWkEpbO1a0CxJXrg130g==",
+      "repository": {
+        "type": "git",
+        "url": "https://github.com/prisma/prisma.git",
+        "directory": "packages/fetch-engine"
+      }
+    },
+    {
+      "file": "prisma--get-platform-7.2.0-LICENSE",
+      "sha256": "c71d239df91726fc519c6eb72d318ec65820627232b2f796219e87dcf35d0ab4",
+      "bytes": 11357,
+      "component": "@prisma/get-platform",
+      "version": "7.2.0",
+      "license": "Apache-2.0",
+      "kind": "unmodified packaged file; M1b Prisma dependency delta",
+      "copiedFrom": "node_modules/@prisma/get-platform/LICENSE",
+      "source": "https://registry.npmjs.org/@prisma/get-platform/-/get-platform-7.2.0.tgz",
+      "integrity": "sha512-k1V0l0Td1732EHpAfi2eySTezyllok9dXb6UQanajkJQzPUGi3vO2z7jdkz67SypFTdmbnyGYxvEvYZdZsMAVA==",
+      "repository": {
+        "type": "git",
+        "url": "https://github.com/prisma/prisma.git",
+        "directory": "packages/get-platform"
+      }
+    },
+    {
+      "file": "prisma--debug-7.2.0-LICENSE",
+      "sha256": "c71d239df91726fc519c6eb72d318ec65820627232b2f796219e87dcf35d0ab4",
+      "bytes": 11357,
+      "component": "@prisma/debug",
+      "version": "7.2.0",
+      "license": "Apache-2.0",
+      "kind": "unmodified packaged file; M1b Prisma dependency delta",
+      "copiedFrom": "node_modules/@prisma/get-platform/node_modules/@prisma/debug/LICENSE",
+      "source": "https://registry.npmjs.org/@prisma/debug/-/debug-7.2.0.tgz",
+      "integrity": "sha512-YSGTiSlBAVJPzX4ONZmMotL+ozJwQjRmZweQNIq/ER0tQJKJynNkRB3kyvt37eOfsbMCXk3gnLF6J9OJ4QWftw==",
+      "repository": {
+        "type": "git",
+        "url": "https://github.com/prisma/prisma.git",
+        "directory": "packages/debug"
+      }
+    },
+    {
+      "file": "prisma--query-plan-executor-7.2.0-LICENSE",
+      "sha256": "c71d239df91726fc519c6eb72d318ec65820627232b2f796219e87dcf35d0ab4",
+      "bytes": 11357,
+      "component": "@prisma/query-plan-executor",
+      "version": "7.2.0",
+      "license": "Apache-2.0",
+      "kind": "unmodified packaged file; M1b Prisma dependency delta",
+      "copiedFrom": "node_modules/@prisma/query-plan-executor/LICENSE",
+      "source": "https://registry.npmjs.org/@prisma/query-plan-executor/-/query-plan-executor-7.2.0.tgz",
+      "integrity": "sha512-EOZmNzcV8uJ0mae3DhTsiHgoNCuu1J9mULQpGCh62zN3PxPTd+qI9tJvk5jOst8WHKQNwJWR3b39t0XvfBB0WQ==",
+      "repository": {
+        "type": "git",
+        "url": "https://github.com/prisma/prisma.git",
+        "directory": "packages/query-plan-executor"
+      }
+    },
+    {
+      "file": "prisma--streams-local-0.1.11-LICENSE",
+      "sha256": "56358221e4cf44b7f68142b9ccf97459e5341dab8c6e5c976c8d99d477ce34b7",
+      "bytes": 11357,
+      "component": "@prisma/streams-local",
+      "version": "0.1.11",
+      "license": "Apache-2.0",
+      "kind": "unmodified packaged file; M1b Prisma dependency delta",
+      "copiedFrom": "node_modules/@prisma/streams-local/LICENSE",
+      "source": "https://registry.npmjs.org/@prisma/streams-local/-/streams-local-0.1.11.tgz",
+      "integrity": "sha512-0TcebL559MByKqTJ+SsrFIEg228iw8UCVRFckzgfRSiJqczhs+MuAgWOF9lnOIV/IVqvu+KMnFTH0eDeTQMpUg==",
+      "repository": {
+        "type": "git",
+        "url": "git+https://github.com/prisma/streams.git"
+      }
+    },
+    {
+      "file": "ajv-8.20.0-LICENSE",
+      "sha256": "a05350a88e318e4f5f2c2a1ff1e2e88daa4dd38e6e78b71cccae422bdc762cc3",
+      "bytes": 1090,
+      "component": "ajv",
+      "version": "8.20.0",
+      "license": "MIT",
+      "kind": "unmodified packaged file; M1b Prisma dependency delta",
+      "copiedFrom": "node_modules/@prisma/streams-local/node_modules/ajv/LICENSE",
+      "source": "https://registry.npmjs.org/ajv/-/ajv-8.20.0.tgz",
+      "integrity": "sha512-Thbli+OlOj+iMPYFBVBfJ3OmCAnaSyNn4M1vz9T6Gka5Jt9ba/HIR56joy65tY6kx/FCF5VXNB819Y7/GUrBGA==",
+      "repository": "ajv-validator/ajv"
+    },
+    {
+      "file": "json-schema-traverse-1.0.0-LICENSE",
+      "sha256": "7bf9b2de73a6b356761c948d0e9eeb4be6c1270bd04c79cd489c1e400ffdfc1a",
+      "bytes": 1074,
+      "component": "json-schema-traverse",
+      "version": "1.0.0",
+      "license": "MIT",
+      "kind": "unmodified packaged file; M1b Prisma dependency delta",
+      "copiedFrom": "node_modules/@prisma/streams-local/node_modules/json-schema-traverse/LICENSE",
+      "source": "https://registry.npmjs.org/json-schema-traverse/-/json-schema-traverse-1.0.0.tgz",
+      "integrity": "sha512-NM8/P9n3XjXhIZn1lLhkFaACTOURQXjWhV4BA/RnOv8xvgqtqpAX9IO4mRQxSx1Rlo4tqzeqb0sOlruaOy3dug==",
+      "repository": {
+        "type": "git",
+        "url": "git+https://github.com/epoberezkin/json-schema-traverse.git"
+      }
+    },
+    {
+      "file": "prisma--studio-core-0.33.0-LICENSE",
+      "sha256": "b449c6996d450db12130589a841c98f5d5b38ddd768345e217abc20203f16413",
+      "bytes": 197,
+      "component": "@prisma/studio-core",
+      "version": "0.33.0",
+      "license": "Apache-2.0",
+      "kind": "unmodified packaged file; M1b Prisma dependency delta",
+      "copiedFrom": "node_modules/@prisma/studio-core/LICENSE",
+      "source": "https://registry.npmjs.org/@prisma/studio-core/-/studio-core-0.33.0.tgz",
+      "integrity": "sha512-V2fX/nKEymNTrHXwfP26PGjoLStO35Ogu+ex7CFJbLrMYEcZxxZpiSNOs7px23Hk5mzLWvM5RsqG6Ka+rha+wg==",
+      "repository": {
+        "type": "git",
+        "url": "https://github.com/prisma/studio"
+      }
+    },
+    {
+      "file": "prisma--studio-core-0.33.0-NOTICE",
+      "sha256": "552c5744cd5228462425ee46e04f4c5ce9594e05f799a4ce4942ce2dfb252750",
+      "bytes": 326,
+      "component": "@prisma/studio-core",
+      "version": "0.33.0",
+      "license": "Apache-2.0",
+      "kind": "unmodified packaged file; M1b Prisma dependency delta",
+      "copiedFrom": "node_modules/@prisma/studio-core/NOTICE",
+      "source": "https://registry.npmjs.org/@prisma/studio-core/-/studio-core-0.33.0.tgz",
+      "integrity": "sha512-V2fX/nKEymNTrHXwfP26PGjoLStO35Ogu+ex7CFJbLrMYEcZxxZpiSNOs7px23Hk5mzLWvM5RsqG6Ka+rha+wg==",
+      "repository": {
+        "type": "git",
+        "url": "https://github.com/prisma/studio"
+      }
+    },
+    {
+      "file": "radix-ui--primitive-1.1.3-LICENSE",
+      "sha256": "0e80a2d229d2fd4fc7e8636142ec5d0ff0bc031f14c15b682e2ac01dfd5b5138",
+      "bytes": 1063,
+      "component": "@radix-ui/primitive",
+      "version": "1.1.3",
+      "license": "MIT",
+      "kind": "unmodified packaged file; M1b Prisma dependency delta",
+      "copiedFrom": "node_modules/@radix-ui/primitive/LICENSE",
+      "source": "https://registry.npmjs.org/@radix-ui/primitive/-/primitive-1.1.3.tgz",
+      "integrity": "sha512-JTF99U/6XIjCBo0wqkU5sK10glYe27MRRsfwoiq5zzOEZLHU3A3KCMa5X/azekYRCJ0HlwI0crAXS/5dEHTzDg==",
+      "repository": {
+        "type": "git",
+        "url": "git+https://github.com/radix-ui/primitives.git"
+      }
+    },
+    {
+      "file": "radix-ui--react-primitive-2.1.3-LICENSE",
+      "sha256": "0e80a2d229d2fd4fc7e8636142ec5d0ff0bc031f14c15b682e2ac01dfd5b5138",
+      "bytes": 1063,
+      "component": "@radix-ui/react-primitive",
+      "version": "2.1.3",
+      "license": "MIT",
+      "kind": "unmodified packaged file; M1b Prisma dependency delta",
+      "copiedFrom": "node_modules/@radix-ui/react-primitive/LICENSE",
+      "source": "https://registry.npmjs.org/@radix-ui/react-primitive/-/react-primitive-2.1.3.tgz",
+      "integrity": "sha512-m9gTwRkhy2lvCPe6QJp4d3G1TYEUHn/FzJUtq9MjH46an1wJU+GdoGC5VLof8RX8Ft/DlpshApkhswDLZzHIcQ==",
+      "repository": {
+        "type": "git",
+        "url": "git+https://github.com/radix-ui/primitives.git"
+      }
+    },
+    {
+      "file": "radix-ui--react-slot-1.2.3-LICENSE",
+      "sha256": "0e80a2d229d2fd4fc7e8636142ec5d0ff0bc031f14c15b682e2ac01dfd5b5138",
+      "bytes": 1063,
+      "component": "@radix-ui/react-slot",
+      "version": "1.2.3",
+      "license": "MIT",
+      "kind": "unmodified packaged file; M1b Prisma dependency delta",
+      "copiedFrom": "node_modules/@radix-ui/react-slot/LICENSE",
+      "source": "https://registry.npmjs.org/@radix-ui/react-slot/-/react-slot-1.2.3.tgz",
+      "integrity": "sha512-aeNmHnBxbi2St0au6VBVC7JXFlhLlOnvIIlePNniyUNAClzmtAUEY8/pBiK3iHjufOlwA+c20/8jngo7xcrg8A==",
+      "repository": {
+        "type": "git",
+        "url": "git+https://github.com/radix-ui/primitives.git"
+      }
+    },
+    {
+      "file": "radix-ui--react-toggle-1.1.10-LICENSE",
+      "sha256": "0e80a2d229d2fd4fc7e8636142ec5d0ff0bc031f14c15b682e2ac01dfd5b5138",
+      "bytes": 1063,
+      "component": "@radix-ui/react-toggle",
+      "version": "1.1.10",
+      "license": "MIT",
+      "kind": "unmodified packaged file; M1b Prisma dependency delta",
+      "copiedFrom": "node_modules/@radix-ui/react-toggle/LICENSE",
+      "source": "https://registry.npmjs.org/@radix-ui/react-toggle/-/react-toggle-1.1.10.tgz",
+      "integrity": "sha512-lS1odchhFTeZv3xwHH31YPObmJn8gOg7Lq12inrr0+BH/l3Tsq32VfjqH1oh80ARM3mlkfMic15n0kg4sD1poQ==",
+      "repository": {
+        "type": "git",
+        "url": "git+https://github.com/radix-ui/primitives.git"
+      }
+    },
+    {
+      "file": "radix-ui--react-use-controllable-state-1.2.2-LICENSE",
+      "sha256": "0e80a2d229d2fd4fc7e8636142ec5d0ff0bc031f14c15b682e2ac01dfd5b5138",
+      "bytes": 1063,
+      "component": "@radix-ui/react-use-controllable-state",
+      "version": "1.2.2",
+      "license": "MIT",
+      "kind": "unmodified packaged file; M1b Prisma dependency delta",
+      "copiedFrom": "node_modules/@radix-ui/react-use-controllable-state/LICENSE",
+      "source": "https://registry.npmjs.org/@radix-ui/react-use-controllable-state/-/react-use-controllable-state-1.2.2.tgz",
+      "integrity": "sha512-BjasUjixPFdS+NKkypcyyN5Pmg83Olst0+c6vGov0diwTEo6mgdqVR6hxcEgFuh4QrAs7Rc+9KuGJ9TVCj0Zzg==",
+      "repository": {
+        "type": "git",
+        "url": "git+https://github.com/radix-ui/primitives.git"
+      }
+    },
+    {
+      "file": "radix-ui--react-use-effect-event-0.0.2-LICENSE",
+      "sha256": "0e80a2d229d2fd4fc7e8636142ec5d0ff0bc031f14c15b682e2ac01dfd5b5138",
+      "bytes": 1063,
+      "component": "@radix-ui/react-use-effect-event",
+      "version": "0.0.2",
+      "license": "MIT",
+      "kind": "unmodified packaged file; M1b Prisma dependency delta",
+      "copiedFrom": "node_modules/@radix-ui/react-use-effect-event/LICENSE",
+      "source": "https://registry.npmjs.org/@radix-ui/react-use-effect-event/-/react-use-effect-event-0.0.2.tgz",
+      "integrity": "sha512-Qp8WbZOBe+blgpuUT+lw2xheLP8q0oatc9UpmiemEICxGvFLYmHm9QowVZGHtJlGbS6A6yJ3iViad/2cVjnOiA==",
+      "repository": {
+        "type": "git",
+        "url": "git+https://github.com/radix-ui/primitives.git"
+      }
+    },
+    {
+      "file": "standard-schema--spec-1.1.0-LICENSE",
+      "sha256": "653b779005a3a4d64a7288c940f7b9a0e8f0b1e0375f6aa6af9473caf131e564",
+      "bytes": 1071,
+      "component": "@standard-schema/spec",
+      "version": "1.1.0",
+      "license": "MIT",
+      "kind": "unmodified packaged file; M1b Prisma dependency delta",
+      "copiedFrom": "node_modules/@standard-schema/spec/LICENSE",
+      "source": "https://registry.npmjs.org/@standard-schema/spec/-/spec-1.1.0.tgz",
+      "integrity": "sha512-l2aFy5jALhniG5HgqrD6jXLi/rUWrKvqN/qJx6yoJsgKhblVd+iqqU4RCXavm/jPityDo5TCvKMnpjKnOriy0w==",
+      "repository": {
+        "type": "git",
+        "url": "https://github.com/standard-schema/standard-schema"
+      }
+    },
+    {
+      "file": "types--d3-array-3.0.3-LICENSE",
+      "sha256": "c2cfccb812fe482101a8f04597dfc5a9991a6b2748266c47ac91b6a5aae15383",
+      "bytes": 1141,
+      "component": "@types/d3-array",
+      "version": "3.0.3",
+      "license": "MIT",
+      "kind": "unmodified packaged file; M1b Prisma dependency delta",
+      "copiedFrom": "node_modules/@types/d3-array/LICENSE",
+      "source": "https://registry.npmjs.org/@types/d3-array/-/d3-array-3.0.3.tgz",
+      "integrity": "sha512-Reoy+pKnvsksN0lQUlcH6dOGjRZ/3WRwXR//m+/8lt1BXeI4xyaUZoqULNjyXXRuh0Mj4LNpkCvhUpQlY3X5xQ==",
+      "repository": {
+        "type": "git",
+        "url": "https://github.com/DefinitelyTyped/DefinitelyTyped.git",
+        "directory": "types/d3-array"
+      }
+    },
+    {
+      "file": "types--d3-color-3.1.0-LICENSE",
+      "sha256": "c2cfccb812fe482101a8f04597dfc5a9991a6b2748266c47ac91b6a5aae15383",
+      "bytes": 1141,
+      "component": "@types/d3-color",
+      "version": "3.1.0",
+      "license": "MIT",
+      "kind": "unmodified packaged file; M1b Prisma dependency delta",
+      "copiedFrom": "node_modules/@types/d3-color/LICENSE",
+      "source": "https://registry.npmjs.org/@types/d3-color/-/d3-color-3.1.0.tgz",
+      "integrity": "sha512-HKuicPHJuvPgCD+np6Se9MQvS6OCbJmOjGvylzMJRlDwUXjKTTXs6Pwgk79O09Vj/ho3u1ofXnhFOaEWWPrlwA==",
+      "repository": {
+        "type": "git",
+        "url": "https://github.com/DefinitelyTyped/DefinitelyTyped.git",
+        "directory": "types/d3-color"
+      }
+    },
+    {
+      "file": "types--d3-delaunay-6.0.1-LICENSE",
+      "sha256": "c2cfccb812fe482101a8f04597dfc5a9991a6b2748266c47ac91b6a5aae15383",
+      "bytes": 1141,
+      "component": "@types/d3-delaunay",
+      "version": "6.0.1",
+      "license": "MIT",
+      "kind": "unmodified packaged file; M1b Prisma dependency delta",
+      "copiedFrom": "node_modules/@types/d3-delaunay/LICENSE",
+      "source": "https://registry.npmjs.org/@types/d3-delaunay/-/d3-delaunay-6.0.1.tgz",
+      "integrity": "sha512-tLxQ2sfT0p6sxdG75c6f/ekqxjyYR0+LwPrsO1mbC9YDBzPJhs2HbJJRrn8Ez1DBoHRo2yx7YEATI+8V1nGMnQ==",
+      "repository": {
+        "type": "git",
+        "url": "https://github.com/DefinitelyTyped/DefinitelyTyped.git",
+        "directory": "types/d3-delaunay"
+      }
+    },
+    {
+      "file": "types--d3-format-3.0.1-LICENSE",
+      "sha256": "c2cfccb812fe482101a8f04597dfc5a9991a6b2748266c47ac91b6a5aae15383",
+      "bytes": 1141,
+      "component": "@types/d3-format",
+      "version": "3.0.1",
+      "license": "MIT",
+      "kind": "unmodified packaged file; M1b Prisma dependency delta",
+      "copiedFrom": "node_modules/@types/d3-format/LICENSE",
+      "source": "https://registry.npmjs.org/@types/d3-format/-/d3-format-3.0.1.tgz",
+      "integrity": "sha512-5KY70ifCCzorkLuIkDe0Z9YTf9RR2CjBX1iaJG+rgM/cPP+sO+q9YdQ9WdhQcgPj1EQiJ2/0+yUkkziTG6Lubg==",
+      "repository": {
+        "type": "git",
+        "url": "https://github.com/DefinitelyTyped/DefinitelyTyped.git",
+        "directory": "types/d3-format"
+      }
+    },
+    {
+      "file": "types--d3-geo-3.1.0-LICENSE",
+      "sha256": "c2cfccb812fe482101a8f04597dfc5a9991a6b2748266c47ac91b6a5aae15383",
+      "bytes": 1141,
+      "component": "@types/d3-geo",
+      "version": "3.1.0",
+      "license": "MIT",
+      "kind": "unmodified packaged file; M1b Prisma dependency delta",
+      "copiedFrom": "node_modules/@types/d3-geo/LICENSE",
+      "source": "https://registry.npmjs.org/@types/d3-geo/-/d3-geo-3.1.0.tgz",
+      "integrity": "sha512-856sckF0oP/diXtS4jNsiQw/UuK5fQG8l/a9VVLeSouf1/PPbBE1i1W852zVwKwYCBkFJJB7nCFTbk6UMEXBOQ==",
+      "repository": {
+        "type": "git",
+        "url": "https://github.com/DefinitelyTyped/DefinitelyTyped.git",
+        "directory": "types/d3-geo"
+      }
+    },
+    {
+      "file": "types--d3-interpolate-3.0.1-LICENSE",
+      "sha256": "c2cfccb812fe482101a8f04597dfc5a9991a6b2748266c47ac91b6a5aae15383",
+      "bytes": 1141,
+      "component": "@types/d3-interpolate",
+      "version": "3.0.1",
+      "license": "MIT",
+      "kind": "unmodified packaged file; M1b Prisma dependency delta",
+      "copiedFrom": "node_modules/@types/d3-interpolate/LICENSE",
+      "source": "https://registry.npmjs.org/@types/d3-interpolate/-/d3-interpolate-3.0.1.tgz",
+      "integrity": "sha512-jx5leotSeac3jr0RePOH1KdR9rISG91QIE4Q2PYTu4OymLTZfA3SrnURSLzKH48HmXVUru50b8nje4E79oQSQw==",
+      "repository": {
+        "type": "git",
+        "url": "https://github.com/DefinitelyTyped/DefinitelyTyped.git",
+        "directory": "types/d3-interpolate"
+      }
+    },
+    {
+      "file": "types--d3-path-3.1.1-LICENSE",
+      "sha256": "c2cfccb812fe482101a8f04597dfc5a9991a6b2748266c47ac91b6a5aae15383",
+      "bytes": 1141,
+      "component": "@types/d3-path",
+      "version": "3.1.1",
+      "license": "MIT",
+      "kind": "unmodified packaged file; M1b Prisma dependency delta",
+      "copiedFrom": "node_modules/@types/d3-path/LICENSE",
+      "source": "https://registry.npmjs.org/@types/d3-path/-/d3-path-3.1.1.tgz",
+      "integrity": "sha512-VMZBYyQvbGmWyWVea0EHs/BwLgxc+MKi1zLDCONksozI4YJMcTt8ZEuIR4Sb1MMTE8MMW49v0IwI5+b7RmfWlg==",
+      "repository": {
+        "type": "git",
+        "url": "https://github.com/DefinitelyTyped/DefinitelyTyped.git",
+        "directory": "types/d3-path"
+      }
+    },
+    {
+      "file": "types--d3-scale-4.0.2-LICENSE",
+      "sha256": "c2cfccb812fe482101a8f04597dfc5a9991a6b2748266c47ac91b6a5aae15383",
+      "bytes": 1141,
+      "component": "@types/d3-scale",
+      "version": "4.0.2",
+      "license": "MIT",
+      "kind": "unmodified packaged file; M1b Prisma dependency delta",
+      "copiedFrom": "node_modules/@types/d3-scale/LICENSE",
+      "source": "https://registry.npmjs.org/@types/d3-scale/-/d3-scale-4.0.2.tgz",
+      "integrity": "sha512-Yk4htunhPAwN0XGlIwArRomOjdoBFXC3+kCxK2Ubg7I9shQlVSJy/pG/Ht5ASN+gdMIalpk8TJ5xV74jFsetLA==",
+      "repository": {
+        "type": "git",
+        "url": "https://github.com/DefinitelyTyped/DefinitelyTyped.git",
+        "directory": "types/d3-scale"
+      }
+    },
+    {
+      "file": "types--d3-shape-3.1.7-LICENSE",
+      "sha256": "c2cfccb812fe482101a8f04597dfc5a9991a6b2748266c47ac91b6a5aae15383",
+      "bytes": 1141,
+      "component": "@types/d3-shape",
+      "version": "3.1.7",
+      "license": "MIT",
+      "kind": "unmodified packaged file; M1b Prisma dependency delta",
+      "copiedFrom": "node_modules/@types/d3-shape/LICENSE",
+      "source": "https://registry.npmjs.org/@types/d3-shape/-/d3-shape-3.1.7.tgz",
+      "integrity": "sha512-VLvUQ33C+3J+8p+Daf+nYSOsjB4GXp19/S/aGo60m9h1v6XaxjiT82lKVWJCfzhtuZ3yD7i/TPeC/fuKLLOSmg==",
+      "repository": {
+        "type": "git",
+        "url": "https://github.com/DefinitelyTyped/DefinitelyTyped.git",
+        "directory": "types/d3-shape"
+      }
+    },
+    {
+      "file": "types--d3-time-3.0.0-LICENSE",
+      "sha256": "c2cfccb812fe482101a8f04597dfc5a9991a6b2748266c47ac91b6a5aae15383",
+      "bytes": 1141,
+      "component": "@types/d3-time",
+      "version": "3.0.0",
+      "license": "MIT",
+      "kind": "unmodified packaged file; M1b Prisma dependency delta",
+      "copiedFrom": "node_modules/@types/d3-time/LICENSE",
+      "source": "https://registry.npmjs.org/@types/d3-time/-/d3-time-3.0.0.tgz",
+      "integrity": "sha512-sZLCdHvBUcNby1cB6Fd3ZBrABbjz3v1Vm90nysCQ6Vt7vd6e/h9Lt7SiJUoEX0l4Dzc7P5llKyhqSi1ycSf1Hg==",
+      "repository": {
+        "type": "git",
+        "url": "https://github.com/DefinitelyTyped/DefinitelyTyped.git",
+        "directory": "types/d3-time"
+      }
+    },
+    {
+      "file": "types--d3-time-format-2.1.0-LICENSE",
+      "sha256": "dea9265341829002e2c23a7372393eb2ed6e26085fb623f38a4ba0af833f30a6",
+      "bytes": 1183,
+      "component": "@types/d3-time-format",
+      "version": "2.1.0",
+      "license": "MIT",
+      "kind": "unmodified packaged file; M1b Prisma dependency delta",
+      "copiedFrom": "node_modules/@types/d3-time-format/LICENSE",
+      "source": "https://registry.npmjs.org/@types/d3-time-format/-/d3-time-format-2.1.0.tgz",
+      "integrity": "sha512-/myT3I7EwlukNOX2xVdMzb8FRgNzRMpsZddwst9Ld/VFe6LyJyRp0s32l/V9XoUzk+Gqu56F/oGk6507+8BxrA==",
+      "repository": {
+        "type": "git",
+        "url": "https://www.github.com/DefinitelyTyped/DefinitelyTyped.git"
+      }
+    },
+    {
+      "file": "types--geojson-7946.0.16-LICENSE",
+      "sha256": "c2cfccb812fe482101a8f04597dfc5a9991a6b2748266c47ac91b6a5aae15383",
+      "bytes": 1141,
+      "component": "@types/geojson",
+      "version": "7946.0.16",
+      "license": "MIT",
+      "kind": "unmodified packaged file; M1b Prisma dependency delta",
+      "copiedFrom": "node_modules/@types/geojson/LICENSE",
+      "source": "https://registry.npmjs.org/@types/geojson/-/geojson-7946.0.16.tgz",
+      "integrity": "sha512-6C8nqWur3j98U6+lXDfTUWIfgvZU+EumvpHKcYjujKH7woYyLj2sUmff0tRhrqM7BohUw7Pz3ZB1jj2gW9Fvmg==",
+      "repository": {
+        "type": "git",
+        "url": "https://github.com/DefinitelyTyped/DefinitelyTyped.git",
+        "directory": "types/geojson"
+      }
+    },
+    {
+      "file": "types--lodash-4.17.25-LICENSE",
+      "sha256": "c2cfccb812fe482101a8f04597dfc5a9991a6b2748266c47ac91b6a5aae15383",
+      "bytes": 1141,
+      "component": "@types/lodash",
+      "version": "4.17.25",
+      "license": "MIT",
+      "kind": "unmodified packaged file; M1b Prisma dependency delta",
+      "copiedFrom": "node_modules/@types/lodash/LICENSE",
+      "source": "https://registry.npmjs.org/@types/lodash/-/lodash-4.17.25.tgz",
+      "integrity": "sha512-+K1NIO8I+F9/wNulfVvu23QYd0Pe9/OCqRrim4NoYIf1VoEDL90Ve4ClzpyqBLc7NpGGWRvYNCKZ1BE/Jpf8dQ==",
+      "repository": {
+        "type": "git",
+        "url": "https://github.com/DefinitelyTyped/DefinitelyTyped.git",
+        "directory": "types/lodash"
+      }
+    },
+    {
+      "file": "visx--curve-4.0.1-alpha.0-LICENSE",
+      "sha256": "8c766533b7d4200b4dfb1a1afff396e3665460d21d7b4c34d059efcb5a332c84",
+      "bytes": 1076,
+      "component": "@visx/curve",
+      "version": "4.0.1-alpha.0",
+      "license": "MIT",
+      "kind": "unmodified packaged file; M1b Prisma dependency delta",
+      "copiedFrom": "node_modules/@visx/curve/LICENSE",
+      "source": "https://registry.npmjs.org/@visx/curve/-/curve-4.0.1-alpha.0.tgz",
+      "integrity": "sha512-jRu61Uz274pV1zyioXmboyrLutYbnKsgjj4njSGCnhdXj5GkZvZbg+ThDb6oOzoAnJOBRLz4rzPlWvNJOzuVMg==",
+      "repository": "https://github.com/airbnb/visx"
+    },
+    {
+      "file": "visx--event-4.0.1-alpha.0-LICENSE",
+      "sha256": "8c766533b7d4200b4dfb1a1afff396e3665460d21d7b4c34d059efcb5a332c84",
+      "bytes": 1076,
+      "component": "@visx/event",
+      "version": "4.0.1-alpha.0",
+      "license": "MIT",
+      "kind": "unmodified packaged file; M1b Prisma dependency delta",
+      "copiedFrom": "node_modules/@visx/event/LICENSE",
+      "source": "https://registry.npmjs.org/@visx/event/-/event-4.0.1-alpha.0.tgz",
+      "integrity": "sha512-EQqCMSv/s8NbFjo+hz3FKsvvYfP+2QslsFJ/24/O5l/W+7UC6J6aAvO0ujVwrTwdYbuQ+vhxKi1xdPdKR/qj1g==",
+      "repository": {
+        "type": "git",
+        "url": "git+https://github.com/airbnb/visx.git"
+      }
+    },
+    {
+      "file": "visx--grid-4.0.1-alpha.0-LICENSE",
+      "sha256": "8c766533b7d4200b4dfb1a1afff396e3665460d21d7b4c34d059efcb5a332c84",
+      "bytes": 1076,
+      "component": "@visx/grid",
+      "version": "4.0.1-alpha.0",
+      "license": "MIT",
+      "kind": "unmodified packaged file; M1b Prisma dependency delta",
+      "copiedFrom": "node_modules/@visx/grid/LICENSE",
+      "source": "https://registry.npmjs.org/@visx/grid/-/grid-4.0.1-alpha.0.tgz",
+      "integrity": "sha512-rycutGmTHO+znNdPumheWMglm7YfpffvRwUkVy5zy4WoORIuKTMkDxwnOzHG2xMxU3EE/YCd37xFV5AxA30yeg==",
+      "repository": {
+        "type": "git",
+        "url": "git+https://github.com/airbnb/visx.git"
+      }
+    },
+    {
+      "file": "visx--group-4.0.1-alpha.0-LICENSE",
+      "sha256": "8c766533b7d4200b4dfb1a1afff396e3665460d21d7b4c34d059efcb5a332c84",
+      "bytes": 1076,
+      "component": "@visx/group",
+      "version": "4.0.1-alpha.0",
+      "license": "MIT",
+      "kind": "unmodified packaged file; M1b Prisma dependency delta",
+      "copiedFrom": "node_modules/@visx/group/LICENSE",
+      "source": "https://registry.npmjs.org/@visx/group/-/group-4.0.1-alpha.0.tgz",
+      "integrity": "sha512-V19l7iQ7jccBv8kao/EByuI6o4xtxzzLV9nqVI1hRvmdzTVsuLpqlwzYCZUXJaTVvUWf8s4D2SQFjGkj/Nw+0w==",
+      "repository": {
+        "type": "git",
+        "url": "git+https://github.com/airbnb/visx.git"
+      }
+    },
+    {
+      "file": "visx--point-4.0.1-alpha.0-LICENSE",
+      "sha256": "8c766533b7d4200b4dfb1a1afff396e3665460d21d7b4c34d059efcb5a332c84",
+      "bytes": 1076,
+      "component": "@visx/point",
+      "version": "4.0.1-alpha.0",
+      "license": "MIT",
+      "kind": "unmodified packaged file; M1b Prisma dependency delta",
+      "copiedFrom": "node_modules/@visx/point/LICENSE",
+      "source": "https://registry.npmjs.org/@visx/point/-/point-4.0.1-alpha.0.tgz",
+      "integrity": "sha512-ijTfr/Nx09f03vIj9nyTr3z4Xth4Y75427UaogJh6dnIRLMEFHQOwNu791sbfiNj0a+ZXuaE32h0vKrFe4/8Qg==",
+      "repository": "https://github.com/airbnb/visx"
+    },
+    {
+      "file": "visx--responsive-4.0.1-alpha.0-LICENSE",
+      "sha256": "8c766533b7d4200b4dfb1a1afff396e3665460d21d7b4c34d059efcb5a332c84",
+      "bytes": 1076,
+      "component": "@visx/responsive",
+      "version": "4.0.1-alpha.0",
+      "license": "MIT",
+      "kind": "unmodified packaged file; M1b Prisma dependency delta",
+      "copiedFrom": "node_modules/@visx/responsive/LICENSE",
+      "source": "https://registry.npmjs.org/@visx/responsive/-/responsive-4.0.1-alpha.0.tgz",
+      "integrity": "sha512-o+1zGywQZY0+yOx3Iw87wc4bbPJRr/HnIukTwfOz4UVyj9pB1OQNVHB7OORO1+LBHJceWpB31co/ZV9KHncKrA==",
+      "repository": {
+        "type": "git",
+        "url": "git+https://github.com/airbnb/visx.git"
+      }
+    },
+    {
+      "file": "visx--scale-4.0.1-alpha.0-LICENSE",
+      "sha256": "8c766533b7d4200b4dfb1a1afff396e3665460d21d7b4c34d059efcb5a332c84",
+      "bytes": 1076,
+      "component": "@visx/scale",
+      "version": "4.0.1-alpha.0",
+      "license": "MIT",
+      "kind": "unmodified packaged file; M1b Prisma dependency delta",
+      "copiedFrom": "node_modules/@visx/scale/LICENSE",
+      "source": "https://registry.npmjs.org/@visx/scale/-/scale-4.0.1-alpha.0.tgz",
+      "integrity": "sha512-nzjeE87vFSAXGWFiiNfBpNLAf0Q8Qmf6syvKLjqNi4kGZkdhbUll3E/59YsgWXmjM8+llPLWzGsP+JPvo5eq1A==",
+      "repository": {
+        "type": "git",
+        "url": "git+https://github.com/airbnb/visx.git"
+      }
+    },
+    {
+      "file": "visx--shape-4.0.1-alpha.0-LICENSE",
+      "sha256": "8c766533b7d4200b4dfb1a1afff396e3665460d21d7b4c34d059efcb5a332c84",
+      "bytes": 1076,
+      "component": "@visx/shape",
+      "version": "4.0.1-alpha.0",
+      "license": "MIT",
+      "kind": "unmodified packaged file; M1b Prisma dependency delta",
+      "copiedFrom": "node_modules/@visx/shape/LICENSE",
+      "source": "https://registry.npmjs.org/@visx/shape/-/shape-4.0.1-alpha.0.tgz",
+      "integrity": "sha512-62QeiVNmPlterQGwhkEDcbq7M0MqY0lBsK5QKXtM9ZoPZWkuGV3aykA3+Xu20B2FAvyJq4LqJzBc7Sxr+EAdbA==",
+      "repository": "https://github.com/airbnb/visx"
+    },
+    {
+      "file": "visx--vendor-4.0.0-alpha.0-LICENSE",
+      "sha256": "8c766533b7d4200b4dfb1a1afff396e3665460d21d7b4c34d059efcb5a332c84",
+      "bytes": 1076,
+      "component": "@visx/vendor",
+      "version": "4.0.0-alpha.0",
+      "license": "MIT and ISC",
+      "kind": "unmodified packaged file; M1b Prisma dependency delta",
+      "copiedFrom": "node_modules/@visx/vendor/LICENSE",
+      "source": "https://registry.npmjs.org/@visx/vendor/-/vendor-4.0.0-alpha.0.tgz",
+      "integrity": "sha512-6I+MuqXBcv9jnlcVowHoHKSdk9gXTWkHLKyqBwRWg7LY6A3Ei8SHfubpqGV5rBUSppxMq2RszPJUS6w+H0YgmQ==",
+      "repository": "https://github.com/airbnb/visx"
+    },
+    {
+      "file": "d3-array-3.2.1-LICENSE",
+      "sha256": "faa682e3e430941f958d26180458f5934a62f58dac4d70ccdd15608c15d0f884",
+      "bytes": 731,
+      "component": "d3-array",
+      "version": "3.2.1",
+      "license": "ISC",
+      "kind": "unmodified packaged file; M1b Prisma dependency delta",
+      "copiedFrom": "node_modules/@visx/vendor/node_modules/d3-array/LICENSE",
+      "source": "https://registry.npmjs.org/d3-array/-/d3-array-3.2.1.tgz",
+      "integrity": "sha512-gUY/qeHq/yNqqoCKNq4vtpFLdoCdvyNpWoC/KNjhGbhDuQpAM9sIQQKkXSNpXa9h5KySs/gzm7R88WkUutgwWQ==",
+      "repository": {
+        "type": "git",
+        "url": "https://github.com/d3/d3-array.git"
+      }
+    },
+    {
+      "file": "aws-ssl-profiles-1.1.2-LICENSE",
+      "sha256": "d56e4f9066438d7528cc00ba09ad572d2b1cef71cf1dcc8c5ad9a8a44d74d9d5",
+      "bytes": 1109,
+      "component": "aws-ssl-profiles",
+      "version": "1.1.2",
+      "license": "MIT",
+      "kind": "unmodified packaged file; M1b Prisma dependency delta",
+      "copiedFrom": "node_modules/aws-ssl-profiles/LICENSE",
+      "source": "https://registry.npmjs.org/aws-ssl-profiles/-/aws-ssl-profiles-1.1.2.tgz",
+      "integrity": "sha512-NZKeq9AfyQvEeNlN0zSYAaWrmBffJh3IELMZfRpJVWgrpEbtEpnjvzqBPf+mxoI287JohRDoa+/nsfqqiZmF6g==",
+      "repository": {
+        "type": "git",
+        "url": "https://github.com/mysqljs/aws-ssl-profiles"
+      }
+    },
+    {
+      "file": "better-result-2.10.0-LICENSE",
+      "sha256": "10ed33bf340d6d63dc0633dfc917a346b369b6aa41fe20734aefc6a3fb75ba17",
+      "bytes": 1070,
+      "component": "better-result",
+      "version": "2.10.0",
+      "license": "MIT",
+      "kind": "unmodified packaged file; M1b Prisma dependency delta",
+      "copiedFrom": "node_modules/better-result/LICENSE",
+      "source": "https://registry.npmjs.org/better-result/-/better-result-2.10.0.tgz",
+      "integrity": "sha512-oQhh0y1qo2/ZKdAAEvHZAqKKiHOFU5k/bW96fE2ScgQOVkJRiHwB+nOS1SgFsYqRlxMDWvefXi9Q3px7QvgNDw==",
+      "repository": {
+        "type": "git",
+        "url": "git+https://github.com/dmmulroy/better-result.git"
+      }
+    },
+    {
+      "file": "c12-3.3.4-LICENSE",
+      "sha256": "46231df5a7733c3f52f11b71f3df61813007745b62b09031acfb45fb42d75082",
+      "bytes": 1078,
+      "component": "c12",
+      "version": "3.3.4",
+      "license": "MIT",
+      "kind": "unmodified packaged file; M1b Prisma dependency delta",
+      "copiedFrom": "node_modules/c12/LICENSE",
+      "source": "https://registry.npmjs.org/c12/-/c12-3.3.4.tgz",
+      "integrity": "sha512-cM0ApFQSBXuourJejzwv/AuPRvAxordTyParRVcHjjtXirtkzM0uK2L9TTn9s0cXZbG7E55jCivRQzoxYmRAlA==",
+      "repository": "unjs/c12"
+    },
+    {
+      "file": "chokidar-5.0.0-LICENSE",
+      "sha256": "bdfd5e0edb6089e6586c8f15e6a86fab83ffbeeda3b3b7b33734ccb8c5906965",
+      "bytes": 1124,
+      "component": "chokidar",
+      "version": "5.0.0",
+      "license": "MIT",
+      "kind": "unmodified packaged file; M1b Prisma dependency delta",
+      "copiedFrom": "node_modules/chokidar/LICENSE",
+      "source": "https://registry.npmjs.org/chokidar/-/chokidar-5.0.0.tgz",
+      "integrity": "sha512-TQMmc3w+5AxjpL8iIiwebF73dRDF4fBIieAqGn9RGCWaEVwQ6Fb2cGe31Yns0RRIzii5goJ1Y7xbMwo1TxMplw==",
+      "repository": {
+        "type": "git",
+        "url": "git+https://github.com/paulmillr/chokidar.git"
+      }
+    },
+    {
+      "file": "classnames-2.5.1-LICENSE",
+      "sha256": "0c1c24dcc129cb0c02ee9803cfa7a50061c236a3b59b36a714c27f3ade66d7be",
+      "bytes": 1077,
+      "component": "classnames",
+      "version": "2.5.1",
+      "license": "MIT",
+      "kind": "unmodified packaged file; M1b Prisma dependency delta",
+      "copiedFrom": "node_modules/classnames/LICENSE",
+      "source": "https://registry.npmjs.org/classnames/-/classnames-2.5.1.tgz",
+      "integrity": "sha512-saHYOzhIQs6wy2sVxTM6bUDsQO4F50V9RQ22qBpEdCW+I+/Wmke2HOl6lS6dTpdxVhb88/I6+Hs+438c3lfUow==",
+      "repository": {
+        "type": "git",
+        "url": "git+https://github.com/JedWatson/classnames.git"
+      }
+    },
+    {
+      "file": "confbox-0.2.4-LICENSE",
+      "sha256": "c6e83b9be7af3b907525722dadbd781848162e4fbfcbe20324f7a237d91ee0f3",
+      "bytes": 1299,
+      "component": "confbox",
+      "version": "0.2.4",
+      "license": "MIT",
+      "kind": "unmodified packaged file; M1b Prisma dependency delta",
+      "copiedFrom": "node_modules/confbox/LICENSE",
+      "source": "https://registry.npmjs.org/confbox/-/confbox-0.2.4.tgz",
+      "integrity": "sha512-ysOGlgTFbN2/Y6Cg3Iye8YKulHw+R2fNXHrgSmXISQdMnomY6eNDprVdW9R5xBguEqI954+S6709UyiO7B+6OQ==",
+      "repository": "unjs/confbox"
+    },
+    {
+      "file": "d3-array-3.2.4-LICENSE",
+      "sha256": "3e6849627f74ff73c257a3ae1efb574015d94fc1035c05ec3c15805165efcbc4",
+      "bytes": 731,
+      "component": "d3-array",
+      "version": "3.2.4",
+      "license": "ISC",
+      "kind": "unmodified packaged file; M1b Prisma dependency delta",
+      "copiedFrom": "node_modules/d3-array/LICENSE",
+      "source": "https://registry.npmjs.org/d3-array/-/d3-array-3.2.4.tgz",
+      "integrity": "sha512-tdQAmyA18i4J7wprpYq8ClcxZy3SC31QMeByyCFyRt7BVHdREQZ5lpzoe5mFEYZUWe+oq8HBvk9JjpibyEV4Jg==",
+      "repository": {
+        "type": "git",
+        "url": "https://github.com/d3/d3-array.git"
+      }
+    },
+    {
+      "file": "d3-color-3.1.0-LICENSE",
+      "sha256": "faa682e3e430941f958d26180458f5934a62f58dac4d70ccdd15608c15d0f884",
+      "bytes": 731,
+      "component": "d3-color",
+      "version": "3.1.0",
+      "license": "ISC",
+      "kind": "unmodified packaged file; M1b Prisma dependency delta",
+      "copiedFrom": "node_modules/d3-color/LICENSE",
+      "source": "https://registry.npmjs.org/d3-color/-/d3-color-3.1.0.tgz",
+      "integrity": "sha512-zg/chbXyeBtMQ1LbD/WSoW2DpC3I0mpmPdW+ynRTj/x2DAWYrIY7qeZIHidozwV24m4iavr15lNwIwLxRmOxhA==",
+      "repository": {
+        "type": "git",
+        "url": "https://github.com/d3/d3-color.git"
+      }
+    },
+    {
+      "file": "d3-delaunay-6.0.2-LICENSE",
+      "sha256": "582c3022bd01942336095f92b58a90b1be624dc547d987555c6c956512dd24c1",
+      "bytes": 757,
+      "component": "d3-delaunay",
+      "version": "6.0.2",
+      "license": "ISC",
+      "kind": "unmodified packaged file; M1b Prisma dependency delta",
+      "copiedFrom": "node_modules/d3-delaunay/LICENSE",
+      "source": "https://registry.npmjs.org/d3-delaunay/-/d3-delaunay-6.0.2.tgz",
+      "integrity": "sha512-IMLNldruDQScrcfT+MWnazhHbDJhcRJyOEBAJfwQnHle1RPh6WDuLvxNArUju2VSMSUuKlY5BGHRJ2cYyoFLQQ==",
+      "repository": {
+        "type": "git",
+        "url": "https://github.com/d3/d3-delaunay.git"
+      }
+    },
+    {
+      "file": "d3-format-3.1.0-LICENSE",
+      "sha256": "e008c5e25a6be382593089c29bfabbc553c6378eee02895aec46ce396cc404ee",
+      "bytes": 731,
+      "component": "d3-format",
+      "version": "3.1.0",
+      "license": "ISC",
+      "kind": "unmodified packaged file; M1b Prisma dependency delta",
+      "copiedFrom": "node_modules/d3-format/LICENSE",
+      "source": "https://registry.npmjs.org/d3-format/-/d3-format-3.1.0.tgz",
+      "integrity": "sha512-YyUI6AEuY/Wpt8KWLgZHsIU86atmikuoOmCfommt0LYHiQSPjvX2AcFc38PX0CBpr2RCyZhjex+NS/LPOv6YqA==",
+      "repository": {
+        "type": "git",
+        "url": "https://github.com/d3/d3-format.git"
+      }
+    },
+    {
+      "file": "d3-geo-3.1.0-LICENSE",
+      "sha256": "c53822a70309da589d4a7821c3a0dfc9449bbb4429cecaa295e0cb0461b950c9",
+      "bytes": 1857,
+      "component": "d3-geo",
+      "version": "3.1.0",
+      "license": "ISC",
+      "kind": "unmodified packaged file; M1b Prisma dependency delta",
+      "copiedFrom": "node_modules/d3-geo/LICENSE",
+      "source": "https://registry.npmjs.org/d3-geo/-/d3-geo-3.1.0.tgz",
+      "integrity": "sha512-JEo5HxXDdDYXCaWdwLRt79y7giK8SbhZJbFWXqbRTolCHFI5jRqteLzCsq51NKbUoX0PjBVSohxrx+NoOUujYA==",
+      "repository": {
+        "type": "git",
+        "url": "https://github.com/d3/d3-geo.git"
+      }
+    },
+    {
+      "file": "d3-interpolate-3.0.1-LICENSE",
+      "sha256": "e008c5e25a6be382593089c29bfabbc553c6378eee02895aec46ce396cc404ee",
+      "bytes": 731,
+      "component": "d3-interpolate",
+      "version": "3.0.1",
+      "license": "ISC",
+      "kind": "unmodified packaged file; M1b Prisma dependency delta",
+      "copiedFrom": "node_modules/d3-interpolate/LICENSE",
+      "source": "https://registry.npmjs.org/d3-interpolate/-/d3-interpolate-3.0.1.tgz",
+      "integrity": "sha512-3bYs1rOD33uo8aqJfKP3JWPAibgw8Zm2+L9vBKEHJ2Rg+viTR7o5Mmv5mZcieN+FRYaAOWX5SJATX6k1PWz72g==",
+      "repository": {
+        "type": "git",
+        "url": "https://github.com/d3/d3-interpolate.git"
+      }
+    },
+    {
+      "file": "d3-path-3.1.0-LICENSE",
+      "sha256": "a09b0d6d76e768fca2085fad05743ee81ddd11946bcda160a3cf5e1081a479aa",
+      "bytes": 731,
+      "component": "d3-path",
+      "version": "3.1.0",
+      "license": "ISC",
+      "kind": "unmodified packaged file; M1b Prisma dependency delta",
+      "copiedFrom": "node_modules/d3-path/LICENSE",
+      "source": "https://registry.npmjs.org/d3-path/-/d3-path-3.1.0.tgz",
+      "integrity": "sha512-p3KP5HCf/bvjBSSKuXid6Zqijx7wIfNW+J/maPs+iwR35at5JCbLUT0LzF1cnjbCHWhqzQTIN2Jpe8pRebIEFQ==",
+      "repository": {
+        "type": "git",
+        "url": "https://github.com/d3/d3-path.git"
+      }
+    },
+    {
+      "file": "d3-scale-4.0.2-LICENSE",
+      "sha256": "e008c5e25a6be382593089c29bfabbc553c6378eee02895aec46ce396cc404ee",
+      "bytes": 731,
+      "component": "d3-scale",
+      "version": "4.0.2",
+      "license": "ISC",
+      "kind": "unmodified packaged file; M1b Prisma dependency delta",
+      "copiedFrom": "node_modules/d3-scale/LICENSE",
+      "source": "https://registry.npmjs.org/d3-scale/-/d3-scale-4.0.2.tgz",
+      "integrity": "sha512-GZW464g1SH7ag3Y7hXjf8RoUuAFIqklOAq3MRl4OaWabTFJY9PN/E1YklhXLh+OQ3fM9yS2nOkCoS+WLZ6kvxQ==",
+      "repository": {
+        "type": "git",
+        "url": "https://github.com/d3/d3-scale.git"
+      }
+    },
+    {
+      "file": "d3-shape-3.2.0-LICENSE",
+      "sha256": "faa682e3e430941f958d26180458f5934a62f58dac4d70ccdd15608c15d0f884",
+      "bytes": 731,
+      "component": "d3-shape",
+      "version": "3.2.0",
+      "license": "ISC",
+      "kind": "unmodified packaged file; M1b Prisma dependency delta",
+      "copiedFrom": "node_modules/d3-shape/LICENSE",
+      "source": "https://registry.npmjs.org/d3-shape/-/d3-shape-3.2.0.tgz",
+      "integrity": "sha512-SaLBuwGm3MOViRq2ABk3eLoxwZELpH6zhl3FbAoJ7Vm1gofKx6El1Ib5z23NUEhF9AsGl7y+dzLe5Cw2AArGTA==",
+      "repository": {
+        "type": "git",
+        "url": "https://github.com/d3/d3-shape.git"
+      }
+    },
+    {
+      "file": "d3-time-3.1.0-LICENSE",
+      "sha256": "faa682e3e430941f958d26180458f5934a62f58dac4d70ccdd15608c15d0f884",
+      "bytes": 731,
+      "component": "d3-time",
+      "version": "3.1.0",
+      "license": "ISC",
+      "kind": "unmodified packaged file; M1b Prisma dependency delta",
+      "copiedFrom": "node_modules/d3-time/LICENSE",
+      "source": "https://registry.npmjs.org/d3-time/-/d3-time-3.1.0.tgz",
+      "integrity": "sha512-VqKjzBLejbSMT4IgbmVgDjpkYrNWUYJnbCGo874u7MMKIWsILRX+OpX/gTk8MqjpT1A/c6HY2dCA77ZN0lkQ2Q==",
+      "repository": {
+        "type": "git",
+        "url": "https://github.com/d3/d3-time.git"
+      }
+    },
+    {
+      "file": "d3-time-format-4.1.0-LICENSE",
+      "sha256": "e008c5e25a6be382593089c29bfabbc553c6378eee02895aec46ce396cc404ee",
+      "bytes": 731,
+      "component": "d3-time-format",
+      "version": "4.1.0",
+      "license": "ISC",
+      "kind": "unmodified packaged file; M1b Prisma dependency delta",
+      "copiedFrom": "node_modules/d3-time-format/LICENSE",
+      "source": "https://registry.npmjs.org/d3-time-format/-/d3-time-format-4.1.0.tgz",
+      "integrity": "sha512-dJxPBlzC7NugB2PDLwo9Q8JiTR3M3e4/XANkreKSUxF8vvXKqm1Yfq4Q5dl8budlunRVlUUaDUgFt7eA8D6NLg==",
+      "repository": {
+        "type": "git",
+        "url": "https://github.com/d3/d3-time-format.git"
+      }
+    },
+    {
+      "file": "deepmerge-ts-7.1.5-LICENSE",
+      "sha256": "734d8fd2baff4a5b7450a5b8242d4a960bc4ade3b0ade5e6cad642965d1d496d",
+      "bytes": 1523,
+      "component": "deepmerge-ts",
+      "version": "7.1.5",
+      "license": "BSD-3-Clause",
+      "kind": "unmodified packaged file; M1b Prisma dependency delta",
+      "copiedFrom": "node_modules/deepmerge-ts/LICENSE",
+      "source": "https://registry.npmjs.org/deepmerge-ts/-/deepmerge-ts-7.1.5.tgz",
+      "integrity": "sha512-HOJkrhaYsweh+W+e74Yn7YStZOilkoPb6fycpwNLKzSPtruFs48nYis0zy5yJz1+ktUhHxoRDJ27RQAWLIJVJw==",
+      "repository": {
+        "type": "git",
+        "url": "git+https://github.com/RebeccaStevens/deepmerge-ts.git"
+      }
+    },
+    {
+      "file": "defu-6.1.7-LICENSE",
+      "sha256": "46231df5a7733c3f52f11b71f3df61813007745b62b09031acfb45fb42d75082",
+      "bytes": 1078,
+      "component": "defu",
+      "version": "6.1.7",
+      "license": "MIT",
+      "kind": "unmodified packaged file; M1b Prisma dependency delta",
+      "copiedFrom": "node_modules/defu/LICENSE",
+      "source": "https://registry.npmjs.org/defu/-/defu-6.1.7.tgz",
+      "integrity": "sha512-7z22QmUWiQ/2d0KkdYmANbRUVABpZ9SNYyH5vx6PZ+nE5bcC0l7uFvEfHlyld/HcGBFTL536ClDt3DEcSlEJAQ==",
+      "repository": "unjs/defu"
+    },
+    {
+      "file": "delaunator-5.1.0-LICENSE",
+      "sha256": "0b348fff56384b43dbb37593906904e56d0f9deb51eae590d4dc6d427fbf1808",
+      "bytes": 738,
+      "component": "delaunator",
+      "version": "5.1.0",
+      "license": "ISC",
+      "kind": "unmodified packaged file; M1b Prisma dependency delta",
+      "copiedFrom": "node_modules/delaunator/LICENSE",
+      "source": "https://registry.npmjs.org/delaunator/-/delaunator-5.1.0.tgz",
+      "integrity": "sha512-AGrQ4QSgssa1NGmWmLPqN5NY2KajF5MqxetNEO+o0n3ZwZZeTmt7bBnvzHWrmkZFxGgr4HdyFgelzgi06otLuQ==",
+      "repository": {
+        "type": "git",
+        "url": "https://github.com/mapbox/delaunator.git"
+      }
+    },
+    {
+      "file": "denque-2.1.0-LICENSE",
+      "sha256": "cd9809cec53323a3e4977bb8f3c7fd4009e32c10966f92165528a457ecedba8e",
+      "bytes": 11355,
+      "component": "denque",
+      "version": "2.1.0",
+      "license": "Apache-2.0",
+      "kind": "unmodified packaged file; M1b Prisma dependency delta",
+      "copiedFrom": "node_modules/denque/LICENSE",
+      "source": "https://registry.npmjs.org/denque/-/denque-2.1.0.tgz",
+      "integrity": "sha512-HVQE3AAb/pxF8fQAoiqpvg9i3evqug3hoiwakOyZAwJm+6vZehbkYXZ0l4JxS+I3QxM97v5aaRNhj8v5oBhekw==",
+      "repository": {
+        "type": "git",
+        "url": "git+https://github.com/invertase/denque.git"
+      }
+    },
+    {
+      "file": "destr-2.0.5-LICENSE",
+      "sha256": "46231df5a7733c3f52f11b71f3df61813007745b62b09031acfb45fb42d75082",
+      "bytes": 1078,
+      "component": "destr",
+      "version": "2.0.5",
+      "license": "MIT",
+      "kind": "unmodified packaged file; M1b Prisma dependency delta",
+      "copiedFrom": "node_modules/destr/LICENSE",
+      "source": "https://registry.npmjs.org/destr/-/destr-2.0.5.tgz",
+      "integrity": "sha512-ugFTXCtDZunbzasqBxrK93Ik/DRYsO6S/fedkWEMKqt04xZ4csmnmwGDBAb07QWNaGMAmnTIemsYZCksjATwsA==",
+      "repository": "unjs/destr"
+    },
+    {
+      "file": "dotenv-17.4.2-LICENSE",
+      "sha256": "74b629b24865e1e83c5277ee84590b7937644d6fd959d0c7bdce758676cd2ced",
+      "bytes": 1294,
+      "component": "dotenv",
+      "version": "17.4.2",
+      "license": "BSD-2-Clause",
+      "kind": "unmodified packaged file; M1b Prisma dependency delta",
+      "copiedFrom": "node_modules/dotenv/LICENSE",
+      "source": "https://registry.npmjs.org/dotenv/-/dotenv-17.4.2.tgz",
+      "integrity": "sha512-nI4U3TottKAcAD9LLud4Cb7b2QztQMUEfHbvhTH09bqXTxnSie8WnjPALV/WMCrJZ6UV/qHJ6L03OqO3LcdYZw==",
+      "repository": {
+        "type": "git",
+        "url": "git://github.com/motdotla/dotenv.git"
+      }
+    },
+    {
+      "file": "effect-3.20.0-LICENSE",
+      "sha256": "774c3bc5924ad8ae6c5a75f1c53db13feb238ade15989625c513d07b60dedf30",
+      "bytes": 1083,
+      "component": "effect",
+      "version": "3.20.0",
+      "license": "MIT",
+      "kind": "unmodified packaged file; M1b Prisma dependency delta",
+      "copiedFrom": "node_modules/effect/LICENSE",
+      "source": "https://registry.npmjs.org/effect/-/effect-3.20.0.tgz",
+      "integrity": "sha512-qMLfDJscrNG8p/aw+IkT9W7fgj50Z4wG5bLBy0Txsxz8iUHjDIkOgO3SV0WZfnQbNG2VJYb0b+rDLMrhM4+Krw==",
+      "repository": {
+        "type": "git",
+        "url": "https://github.com/Effect-TS/effect.git",
+        "directory": "packages/effect"
+      }
+    },
+    {
+      "file": "elkjs-0.11.1-LICENSE.md",
+      "sha256": "89591d4578fb1ebd91501312a3d25f021bd865a2e436641c1cf7b1bc7e3c1617",
+      "bytes": 14480,
+      "component": "elkjs",
+      "version": "0.11.1",
+      "license": "EPL-2.0",
+      "kind": "unmodified packaged file; M1b Prisma dependency delta",
+      "copiedFrom": "node_modules/elkjs/LICENSE.md",
+      "source": "https://registry.npmjs.org/elkjs/-/elkjs-0.11.1.tgz",
+      "integrity": "sha512-zxxR9k+rx5ktMwT/FwyLdPCrq7xN6e4VGGHH8hA01vVYKjTFik7nHOxBnAYtrgYUB1RpAiLvA1/U2YraWxyKKg==",
+      "repository": {
+        "type": "git",
+        "url": "https://github.com/kieler/elkjs.git"
+      }
+    },
+    {
+      "file": "empathic-2.0.0-license",
+      "sha256": "9a9edad7baae52622bddf3c15b2ef8a33d2c89f2d25408ad13e8a7481c6b0c97",
+      "bytes": 1104,
+      "component": "empathic",
+      "version": "2.0.0",
+      "license": "MIT",
+      "kind": "unmodified packaged file; M1b Prisma dependency delta",
+      "copiedFrom": "node_modules/empathic/license",
+      "source": "https://registry.npmjs.org/empathic/-/empathic-2.0.0.tgz",
+      "integrity": "sha512-i6UzDscO/XfAcNYD75CfICkmfLedpyPDdozrLMmQc5ORaQcdMoc21OnlEylMIqI7U8eniKrPMxxtj8k0vhmJhA==",
+      "repository": "lukeed/empathic"
+    },
+    {
+      "file": "env-paths-3.0.0-license",
+      "sha256": "5c932d88256b4ab958f64a856fa48e8bd1f55bc1d96b8149c65689e0c61789d3",
+      "bytes": 1117,
+      "component": "env-paths",
+      "version": "3.0.0",
+      "license": "MIT",
+      "kind": "unmodified packaged file; M1b Prisma dependency delta",
+      "copiedFrom": "node_modules/env-paths/license",
+      "source": "https://registry.npmjs.org/env-paths/-/env-paths-3.0.0.tgz",
+      "integrity": "sha512-dtJUTepzMW3Lm/NPxRf3wP4642UWhjL2sQxc+ym2YMj1m/H2zDNQOlezafzkHwn6sMstjHTwG6iQQsctDW/b1A==",
+      "repository": "sindresorhus/env-paths"
+    },
+    {
+      "file": "exsolve-1.1.3-LICENSE",
+      "sha256": "d37af134e0d0b998393188394202052e2ff6cd5d18efb2fcc81ba7b00ad77b75",
+      "bytes": 4771,
+      "component": "exsolve",
+      "version": "1.1.3",
+      "license": "MIT",
+      "kind": "unmodified packaged file; M1b Prisma dependency delta",
+      "copiedFrom": "node_modules/exsolve/LICENSE",
+      "source": "https://registry.npmjs.org/exsolve/-/exsolve-1.1.3.tgz",
+      "integrity": "sha512-kuzL9zherLQoqDeQaS55AiiIg1kb4KYXaSusTtgZTPlvKP2gGCI82LNmBNh5RjDVUXIcmgx+/Mx7vPwRzBbhJA==",
+      "repository": "unjs/exsolve"
+    },
+    {
+      "file": "fast-check-3.23.2-LICENSE",
+      "sha256": "b2bd24f5c975f659433271170b17e0a769b12ef8065bbca6dcd5511d57e94ce0",
+      "bytes": 1071,
+      "component": "fast-check",
+      "version": "3.23.2",
+      "license": "MIT",
+      "kind": "unmodified packaged file; M1b Prisma dependency delta",
+      "copiedFrom": "node_modules/fast-check/LICENSE",
+      "source": "https://registry.npmjs.org/fast-check/-/fast-check-3.23.2.tgz",
+      "integrity": "sha512-h5+1OzzfCC3Ef7VbtKdcv7zsstUQwUDlYpUTvjeUsJAssPgLn7QzbboPtL5ro04Mq0rPOsMzl7q5hIbRs2wD1A==",
+      "repository": {
+        "type": "git",
+        "url": "git+https://github.com/dubzzz/fast-check.git",
+        "directory": "packages/fast-check"
+      }
+    },
+    {
+      "file": "fast-decode-uri-component-1.0.1-LICENSE",
+      "sha256": "27384b39baee4b476fb876670a75f282286fa55658bf0db14639621dd3801c9a",
+      "bytes": 1174,
+      "component": "fast-decode-uri-component",
+      "version": "1.0.1",
+      "license": "MIT",
+      "kind": "unmodified packaged file; M1b Prisma dependency delta",
+      "copiedFrom": "node_modules/fast-decode-uri-component/LICENSE",
+      "source": "https://registry.npmjs.org/fast-decode-uri-component/-/fast-decode-uri-component-1.0.1.tgz",
+      "integrity": "sha512-WKgKWg5eUxvRZGwW8FvfbaH7AXSh2cL+3j5fMGzUMCxWBJ3dV3a7Wz8y2f/uQ0e3B6WmodD3oS54jTQ9HVTIIg==",
+      "repository": {
+        "type": "git",
+        "url": "git+https://github.com/delvedor/fast-decode-uri-component.git"
+      }
+    },
+    {
+      "file": "fast-querystring-1.1.2-LICENSE",
+      "sha256": "4f8cf48502224399442f7eadd8620d96ef18125f9beb4949c53084ab3b05a4d4",
+      "bytes": 1057,
+      "component": "fast-querystring",
+      "version": "1.1.2",
+      "license": "MIT",
+      "kind": "unmodified packaged file; M1b Prisma dependency delta",
+      "copiedFrom": "node_modules/fast-querystring/LICENSE",
+      "source": "https://registry.npmjs.org/fast-querystring/-/fast-querystring-1.1.2.tgz",
+      "integrity": "sha512-g6KuKWmFXc0fID8WWH0jit4g0AGBoJhCkJMb1RmbsSEUNvQ+ZC8D6CUZ+GtF8nMzSPXnhiePyyqqipzNNEnHjg==",
+      "repository": {
+        "url": "git+https://github.com/anonrig/fast-querystring.git",
+        "type": "git"
+      }
+    },
+    {
+      "file": "fast-uri-3.1.8-LICENSE",
+      "sha256": "b010b0dfdfdb23d7396e03b82cd4621fc9bb8f95d6b0aea70b9c24e12074c786",
+      "bytes": 1813,
+      "component": "fast-uri",
+      "version": "3.1.8",
+      "license": "BSD-3-Clause",
+      "kind": "unmodified packaged file; M1b Prisma dependency delta",
+      "copiedFrom": "node_modules/fast-uri/LICENSE",
+      "source": "https://registry.npmjs.org/fast-uri/-/fast-uri-3.1.8.tgz",
+      "integrity": "sha512-GZMtZUTNRpOVIECoXwLNZS5xUGE+mVNbTB8h/7Rwh2TFWcBQiPzTgyZi05BF9UMZKkLJv8XBRJTlU7zg8+ZfMg==",
+      "repository": {
+        "type": "git",
+        "url": "git+https://github.com/fastify/fast-uri.git"
+      }
+    },
+    {
+      "file": "find-my-way-9.7.0-LICENSE",
+      "sha256": "693f9539655acc1847add1ccd364312ba570bf8ce84706b6059e7e0b5ceb90e6",
+      "bytes": 1080,
+      "component": "find-my-way",
+      "version": "9.7.0",
+      "license": "MIT",
+      "kind": "unmodified packaged file; M1b Prisma dependency delta",
+      "copiedFrom": "node_modules/find-my-way/LICENSE",
+      "source": "https://registry.npmjs.org/find-my-way/-/find-my-way-9.7.0.tgz",
+      "integrity": "sha512-f2JHn75x2JlwUwLenZypgczR7YWMb/uO9BvUXtus+JMgkbIkLADd38cI4EiV+OQqrGo1Zlq6V8wnqMJ8e62wUQ==",
+      "repository": {
+        "type": "git",
+        "url": "git+https://github.com/delvedor/find-my-way.git"
+      }
+    },
+    {
+      "file": "foreground-child-3.3.1-LICENSE",
+      "sha256": "93f5d82a8d59442fe3275383453a255fef761647fb28265644010ba799806148",
+      "bytes": 775,
+      "component": "foreground-child",
+      "version": "3.3.1",
+      "license": "ISC",
+      "kind": "unmodified packaged file; M1b Prisma dependency delta",
+      "copiedFrom": "node_modules/foreground-child/LICENSE",
+      "source": "https://registry.npmjs.org/foreground-child/-/foreground-child-3.3.1.tgz",
+      "integrity": "sha512-gIXjKqtFuWEgzFRJA9WCQeSJLZDjgJUOMCMzxtvFq/37KojM1BFGufqsCy0r4qSQmYLsZYMeyRqzIWOMup03sw==",
+      "repository": {
+        "type": "git",
+        "url": "git+https://github.com/tapjs/foreground-child.git"
+      }
+    },
+    {
+      "file": "generate-function-2.3.1-LICENSE",
+      "sha256": "3fe8d55a98dbf260eace67c00cf9bc53edb46234e840098a0b93df3096b97fb6",
+      "bytes": 1078,
+      "component": "generate-function",
+      "version": "2.3.1",
+      "license": "MIT",
+      "kind": "unmodified packaged file; M1b Prisma dependency delta",
+      "copiedFrom": "node_modules/generate-function/LICENSE",
+      "source": "https://registry.npmjs.org/generate-function/-/generate-function-2.3.1.tgz",
+      "integrity": "sha512-eeB5GfMNeevm/GRYq20ShmsaGcmI81kIX2K9XQx5miC8KdHaC6Jm0qQ8ZNeGOi7wYB8OsdxKs+Y2oVuTFuVwKQ==",
+      "repository": {
+        "type": "git",
+        "url": "https://github.com/mafintosh/generate-function"
+      }
+    },
+    {
+      "file": "get-port-please-3.2.0-LICENSE",
+      "sha256": "46231df5a7733c3f52f11b71f3df61813007745b62b09031acfb45fb42d75082",
+      "bytes": 1078,
+      "component": "get-port-please",
+      "version": "3.2.0",
+      "license": "MIT",
+      "kind": "unmodified packaged file; M1b Prisma dependency delta",
+      "copiedFrom": "node_modules/get-port-please/LICENSE",
+      "source": "https://registry.npmjs.org/get-port-please/-/get-port-please-3.2.0.tgz",
+      "integrity": "sha512-I9QVvBw5U/hw3RmWpYKRumUeaDgxTPd401x364rLmWBJcOQ753eov1eTgzDqRG9bqFIfDc7gfzcQEWrUri3o1A==",
+      "repository": "unjs/get-port-please"
+    },
+    {
+      "file": "giget-3.3.1-LICENSE",
+      "sha256": "858a63872e40ca764098e48cfcec054efaa1330dfa6c7d5c0b3fdcb3a44a9d95",
+      "bytes": 7090,
+      "component": "giget",
+      "version": "3.3.1",
+      "license": "MIT",
+      "kind": "unmodified packaged file; M1b Prisma dependency delta",
+      "copiedFrom": "node_modules/giget/LICENSE",
+      "source": "https://registry.npmjs.org/giget/-/giget-3.3.1.tgz",
+      "integrity": "sha512-r+mvuDjrjMpsdw46Kmeydb8bdHm7wOKw8wNBtTndkjbPjgAp5oUJUxRE76wZFknxIPokfWvep2qSXK37aXE6zg==",
+      "repository": "unjs/giget"
+    },
+    {
+      "file": "graceful-fs-4.2.11-LICENSE",
+      "sha256": "f65c5d9f22a317b2a10803bd1868461ce6499c2ed7217bc80c0cc772a748789c",
+      "bytes": 791,
+      "component": "graceful-fs",
+      "version": "4.2.11",
+      "license": "ISC",
+      "kind": "unmodified packaged file; M1b Prisma dependency delta",
+      "copiedFrom": "node_modules/graceful-fs/LICENSE",
+      "source": "https://registry.npmjs.org/graceful-fs/-/graceful-fs-4.2.11.tgz",
+      "integrity": "sha512-RbJ5/jmFcNNCcDV5o9eTnBLJ/HszWV0P73bc+Ff4nS/rJj+YaS6IGyiOL0VoBYX+l1Wrl3k63h/KrH+nhJ0XvQ==",
+      "repository": {
+        "type": "git",
+        "url": "https://github.com/isaacs/node-graceful-fs"
+      }
+    },
+    {
+      "file": "grammex-3.1.13-license",
+      "sha256": "73aa368a81b1d3f9628520357dabb47f975687a9f501c848673e223a8550c4d0",
+      "bytes": 1091,
+      "component": "grammex",
+      "version": "3.1.13",
+      "license": "MIT",
+      "kind": "unmodified packaged file; M1b Prisma dependency delta",
+      "copiedFrom": "node_modules/grammex/license",
+      "source": "https://registry.npmjs.org/grammex/-/grammex-3.1.13.tgz",
+      "integrity": "sha512-LnPnhOBLEJEVKS8WFDVaA397L9Kq55Q9oSITJiVLHVdhAclfUkWzQv74KhvZHKL2Q09Pb1XdsrOsZ4LfTFFTEg==",
+      "repository": "github:fabiospampinato/grammex"
+    },
+    {
+      "file": "graphmatch-1.1.1-license",
+      "sha256": "0cb826ec0d67e9918daeb89ac839aba3b85cfd7579ee96208b1d81bef46593fd",
+      "bytes": 1091,
+      "component": "graphmatch",
+      "version": "1.1.1",
+      "license": "MIT",
+      "kind": "unmodified packaged file; M1b Prisma dependency delta",
+      "copiedFrom": "node_modules/graphmatch/license",
+      "source": "https://registry.npmjs.org/graphmatch/-/graphmatch-1.1.1.tgz",
+      "integrity": "sha512-5ykVn/EXM1hF0XCaWh05VbYvEiOL2lY1kBxZtaYsyvjp7cmWOU1XsAdfQBwClraEofXDT197lFbXOEVMHpvQOg==",
+      "repository": "github:fabiospampinato/graphmatch"
+    },
+    {
+      "file": "iconv-lite-0.7.3-LICENSE",
+      "sha256": "ac779f7314c74f232ef847ea86e714abe25cf6eeb5cc97b69451b74e2af6492d",
+      "bytes": 1064,
+      "component": "iconv-lite",
+      "version": "0.7.3",
+      "license": "MIT",
+      "kind": "unmodified packaged file; M1b Prisma dependency delta",
+      "copiedFrom": "node_modules/iconv-lite/LICENSE",
+      "source": "https://registry.npmjs.org/iconv-lite/-/iconv-lite-0.7.3.tgz",
+      "integrity": "sha512-IKXpvIzjnC9XTAUbVBcMfGS0EPaIXtW6v+zr+RRp+hqULEpo0owZax6wyRwPOJbWbzjYspQwusTsfVr0ifh4uQ==",
+      "repository": {
+        "type": "git",
+        "url": "https://github.com/pillarjs/iconv-lite.git"
+      }
+    },
+    {
+      "file": "internmap-2.0.3-LICENSE",
+      "sha256": "9ea8903938dab5f12c4572d60725069bec2d1b0dc3bcc210b09bae946a5ebb1f",
+      "bytes": 726,
+      "component": "internmap",
+      "version": "2.0.3",
+      "license": "ISC",
+      "kind": "unmodified packaged file; M1b Prisma dependency delta",
+      "copiedFrom": "node_modules/internmap/LICENSE",
+      "source": "https://registry.npmjs.org/internmap/-/internmap-2.0.3.tgz",
+      "integrity": "sha512-5Hh7Y1wQbvY5ooGgPbDaL5iYLAPzMTUrjMulskHLH6wnv/A+1q5rgEaiuqEjB+oxGXIVZs1FF+R/KPN3ZSQYYg==",
+      "repository": {
+        "type": "git",
+        "url": "https://github.com/mbostock/internmap.git"
+      }
+    },
+    {
+      "file": "is-property-1.0.2-LICENSE",
+      "sha256": "e67aed7df22dc8031e4fcf5338fe91cb33e3817e5c58a99a2a2802eea9069791",
+      "bytes": 1082,
+      "component": "is-property",
+      "version": "1.0.2",
+      "license": "MIT",
+      "kind": "unmodified packaged file; M1b Prisma dependency delta",
+      "copiedFrom": "node_modules/is-property/LICENSE",
+      "source": "https://registry.npmjs.org/is-property/-/is-property-1.0.2.tgz",
+      "integrity": "sha512-Ks/IoX00TtClbGQr4TWXemAnktAQvYB7HzcCxDGqEZU6oCmb2INHuOoKxbtR+HFkmYWBKv/dOZtGRiAjDhj92g==",
+      "repository": {
+        "type": "git",
+        "url": "git://github.com/mikolalysenko/is-property.git"
+      }
+    },
+    {
+      "file": "jiti-2.7.0-LICENSE",
+      "sha256": "46231df5a7733c3f52f11b71f3df61813007745b62b09031acfb45fb42d75082",
+      "bytes": 1078,
+      "component": "jiti",
+      "version": "2.7.0",
+      "license": "MIT",
+      "kind": "unmodified packaged file; M1b Prisma dependency delta",
+      "copiedFrom": "node_modules/jiti/LICENSE",
+      "source": "https://registry.npmjs.org/jiti/-/jiti-2.7.0.tgz",
+      "integrity": "sha512-AC/7JofJvZGrrneWNaEnJeOLUx+JlGt7tNa0wZiRPT4MY1wmfKjt2+6O2p2uz2+skll8OZZmJMNqeke7kKbNgQ==",
+      "repository": "unjs/jiti"
+    },
+    {
+      "file": "lodash-4.18.1-LICENSE",
+      "sha256": "f71e8ed126b46346494aad5486874cd8f0aafe95092ed67d2e3cb6110f939abc",
+      "bytes": 1952,
+      "component": "lodash",
+      "version": "4.18.1",
+      "license": "MIT",
+      "kind": "unmodified packaged file; M1b Prisma dependency delta",
+      "copiedFrom": "node_modules/lodash/LICENSE",
+      "source": "https://registry.npmjs.org/lodash/-/lodash-4.18.1.tgz",
+      "integrity": "sha512-dMInicTPVE8d1e5otfwmmjlxkZoUpiVLwyeTdUsi/Caj/gfzzblBcCE5sRHV/AsjuCmxWrte2TNGSYuCeCq+0Q==",
+      "repository": "lodash/lodash"
+    },
+    {
+      "file": "long-5.3.2-LICENSE",
+      "sha256": "cfc7749b96f63bd31c3c42b5c471bf756814053e847c10f3eb003417bc523d30",
+      "bytes": 11358,
+      "component": "long",
+      "version": "5.3.2",
+      "license": "Apache-2.0",
+      "kind": "unmodified packaged file; M1b Prisma dependency delta",
+      "copiedFrom": "node_modules/long/LICENSE",
+      "source": "https://registry.npmjs.org/long/-/long-5.3.2.tgz",
+      "integrity": "sha512-mNAgZ1GmyNhD7AuqnTG3/VQ26o760+ZYBPKjPvugO8+nLbYfX6TVpJPseBvopbdY+qpZ/lKUnmEc1LeZYS3QAA==",
+      "repository": {
+        "type": "git",
+        "url": "https://github.com/dcodeIO/long.js.git"
+      }
+    },
+    {
+      "file": "lru.min-1.1.5-LICENSE",
+      "sha256": "50c3eddcd1ce10eed9889d4d592c5d2f32907feb16d9141485299cd710ddb917",
+      "bytes": 1094,
+      "component": "lru.min",
+      "version": "1.1.5",
+      "license": "MIT",
+      "kind": "unmodified packaged file; M1b Prisma dependency delta",
+      "copiedFrom": "node_modules/lru.min/LICENSE",
+      "source": "https://registry.npmjs.org/lru.min/-/lru.min-1.1.5.tgz",
+      "integrity": "sha512-5J9ysMYUpYIg9RF2vJpy9SinEmSviFSe0GyPpCQ4L5QSkLAgeLXlTAOu2ZwWUU5m+0SBl6gUU1R1ZQB3aKypfA==",
+      "repository": {
+        "type": "git",
+        "url": "git+https://github.com/wellwelwel/lru.min.git"
+      }
+    },
+    {
+      "file": "mysql2-3.15.3-License",
+      "sha256": "f17f1be30bce27fe6324513a35fa61f6e6766d3028e42e45bdf668a0db7c8d4f",
+      "bytes": 1112,
+      "component": "mysql2",
+      "version": "3.15.3",
+      "license": "MIT",
+      "kind": "unmodified packaged file; M1b Prisma dependency delta",
+      "copiedFrom": "node_modules/mysql2/License",
+      "source": "https://registry.npmjs.org/mysql2/-/mysql2-3.15.3.tgz",
+      "integrity": "sha512-FBrGau0IXmuqg4haEZRBfHNWB5mUARw6hNwPDXXGg0XzVJ50mr/9hb267lvpVMnhZ1FON3qNd4Xfcez1rbFwSg==",
+      "repository": {
+        "type": "git",
+        "url": "git+https://github.com/sidorares/node-mysql2.git"
+      }
+    },
+    {
+      "file": "named-placeholders-1.1.6-LICENSE",
+      "sha256": "d2d9ce3d07931cf6c105b8c70638b768b07d3c21bb682c7ef89ac43caba13043",
+      "bytes": 1081,
+      "component": "named-placeholders",
+      "version": "1.1.6",
+      "license": "MIT",
+      "kind": "unmodified packaged file; M1b Prisma dependency delta",
+      "copiedFrom": "node_modules/named-placeholders/LICENSE",
+      "source": "https://registry.npmjs.org/named-placeholders/-/named-placeholders-1.1.6.tgz",
+      "integrity": "sha512-Tz09sEL2EEuv5fFowm419c1+a/jSMiBjI9gHxVLrVdbUkkNUUfjsVYs9pVZu5oCon/kmRh9TfLEObFtkVxmY0w==",
+      "repository": {
+        "type": "git",
+        "url": "https://github.com/mysqljs/named-placeholders"
+      }
+    },
+    {
+      "file": "ohash-2.0.12-LICENSE",
+      "sha256": "46231df5a7733c3f52f11b71f3df61813007745b62b09031acfb45fb42d75082",
+      "bytes": 1078,
+      "component": "ohash",
+      "version": "2.0.12",
+      "license": "MIT",
+      "kind": "unmodified packaged file; M1b Prisma dependency delta",
+      "copiedFrom": "node_modules/ohash/LICENSE",
+      "source": "https://registry.npmjs.org/ohash/-/ohash-2.0.12.tgz",
+      "integrity": "sha512-65S/5gk9YSsaRjcyf7Nfa6h/d3E8/1gslpXfI4W7Dxn/oap8IKRuNT5VXkLQ1YFKIEg4apRY4Pj6aiwFzrDdmw==",
+      "repository": "unjs/ohash"
+    },
+    {
+      "file": "pathe-2.0.3-LICENSE",
+      "sha256": "52e92576851154bad7737e90cc72818936f43665cb0e3f7428ed8edc8cc5709b",
+      "bytes": 3355,
+      "component": "pathe",
+      "version": "2.0.3",
+      "license": "MIT",
+      "kind": "unmodified packaged file; M1b Prisma dependency delta",
+      "copiedFrom": "node_modules/pathe/LICENSE",
+      "source": "https://registry.npmjs.org/pathe/-/pathe-2.0.3.tgz",
+      "integrity": "sha512-WUjGcAqP1gQacoQe+OBJsFA7Ld4DyXuUIjZ5cc75cLHvJ7dtNsTugphxIADwspS+AraAUePCKrSVtPLFj/F88w==",
+      "repository": "unjs/pathe"
+    },
+    {
+      "file": "perfect-debounce-2.1.0-LICENSE",
+      "sha256": "46231df5a7733c3f52f11b71f3df61813007745b62b09031acfb45fb42d75082",
+      "bytes": 1078,
+      "component": "perfect-debounce",
+      "version": "2.1.0",
+      "license": "MIT",
+      "kind": "unmodified packaged file; M1b Prisma dependency delta",
+      "copiedFrom": "node_modules/perfect-debounce/LICENSE",
+      "source": "https://registry.npmjs.org/perfect-debounce/-/perfect-debounce-2.1.0.tgz",
+      "integrity": "sha512-LjgdTytVFXeUgtHZr9WYViYSM/g8MkcTPYDlPa3cDqMirHjKiSZPYd6DoL7pK8AJQr+uWkQvCjHNdiMqsrJs+g==",
+      "repository": "unjs/perfect-debounce"
+    },
+    {
+      "file": "pkg-types-2.3.3-LICENSE",
+      "sha256": "cb00dc7c358014d300dba2462e57d3f477299c169c7ab14d8fe5e347eca44f48",
+      "bytes": 2267,
+      "component": "pkg-types",
+      "version": "2.3.3",
+      "license": "MIT",
+      "kind": "unmodified packaged file; M1b Prisma dependency delta",
+      "copiedFrom": "node_modules/pkg-types/LICENSE",
+      "source": "https://registry.npmjs.org/pkg-types/-/pkg-types-2.3.3.tgz",
+      "integrity": "sha512-j/lCFdcppV0JxWpCEITdbDltBxPP6cHT+yNJ6Go2OgoSA9518X847X9z0p6LtA4Nc16+eQzCZjRrWanTGvHJ5w==",
+      "repository": {
+        "type": "git",
+        "url": "unjs/pkg-types"
+      }
+    },
+    {
+      "file": "confbox-0.3.1-LICENSE",
+      "sha256": "c6e83b9be7af3b907525722dadbd781848162e4fbfcbe20324f7a237d91ee0f3",
+      "bytes": 1299,
+      "component": "confbox",
+      "version": "0.3.1",
+      "license": "MIT",
+      "kind": "unmodified packaged file; M1b Prisma dependency delta",
+      "copiedFrom": "node_modules/pkg-types/node_modules/confbox/LICENSE",
+      "source": "https://registry.npmjs.org/confbox/-/confbox-0.3.1.tgz",
+      "integrity": "sha512-cKUSoKa8YxFZZSmraVi7onONx3amu77ngK3kGpsYHDH7drPwCRkQE1RYMPlLRrMtnciRj274XNRxcHxnKmDSnA==",
+      "repository": {
+        "type": "git",
+        "url": "unjs/confbox"
+      }
+    },
+    {
+      "file": "prisma-7.10.0-LICENSE",
+      "sha256": "c71d239df91726fc519c6eb72d318ec65820627232b2f796219e87dcf35d0ab4",
+      "bytes": 11357,
+      "component": "prisma",
+      "version": "7.10.0",
+      "license": "Apache-2.0",
+      "kind": "unmodified packaged file; M1b Prisma dependency delta",
+      "copiedFrom": "node_modules/prisma/LICENSE",
+      "source": "https://registry.npmjs.org/prisma/-/prisma-7.10.0.tgz",
+      "integrity": "sha512-o0ornyJOWgygVAzGCpr8PdXV8EJLHyVGDDUr/voBQt8Azzw8cYTByzzPGcA/m4tCkPcnJA8raEOv2CslsKhPEw==",
+      "repository": {
+        "type": "git",
+        "url": "https://github.com/prisma/prisma.git",
+        "directory": "packages/cli"
+      }
+    },
+    {
+      "file": "proper-lockfile-4.1.2-LICENSE",
+      "sha256": "aaa78451b6fecd1b9c4594c796c133c0e90cad100372ff8bc6de615e9ef9adf1",
+      "bytes": 1105,
+      "component": "proper-lockfile",
+      "version": "4.1.2",
+      "license": "MIT",
+      "kind": "unmodified packaged file; M1b Prisma dependency delta",
+      "copiedFrom": "node_modules/proper-lockfile/LICENSE",
+      "source": "https://registry.npmjs.org/proper-lockfile/-/proper-lockfile-4.1.2.tgz",
+      "integrity": "sha512-TjNPblN4BwAWMXU8s9AEz4JmQxnD1NNL7bNOY/AKUzyamc379FWASUhc/K1pL2noVb+XmZKLL68cjzLsiOAMaA==",
+      "repository": {
+        "type": "git",
+        "url": "git@github.com:moxystudio/node-proper-lockfile.git"
+      }
+    },
+    {
+      "file": "signal-exit-3.0.7-LICENSE.txt",
+      "sha256": "e05b1eaf5b5f99b7ad75cd1f38858ff9a311780b97715ead67936d60bf96aa7e",
+      "bytes": 748,
+      "component": "signal-exit",
+      "version": "3.0.7",
+      "license": "ISC",
+      "kind": "unmodified packaged file; M1b Prisma dependency delta",
+      "copiedFrom": "node_modules/proper-lockfile/node_modules/signal-exit/LICENSE.txt",
+      "source": "https://registry.npmjs.org/signal-exit/-/signal-exit-3.0.7.tgz",
+      "integrity": "sha512-wnD2ZE+l+SPC/uoS0vXeE9L1+0wuaMqKlfz9AMUo38JsyLSBWSFcHR1Rri62LZc12vLr1gb3jl7iwQhgwpAbGQ==",
+      "repository": {
+        "type": "git",
+        "url": "https://github.com/tapjs/signal-exit.git"
+      }
+    },
+    {
+      "file": "pure-rand-6.1.0-LICENSE",
+      "sha256": "e9d6a94ab01c6c9ab68c099d3ba8dd9f8aca60f2e2250c2302275405fca9e806",
+      "bytes": 1071,
+      "component": "pure-rand",
+      "version": "6.1.0",
+      "license": "MIT",
+      "kind": "unmodified packaged file; M1b Prisma dependency delta",
+      "copiedFrom": "node_modules/pure-rand/LICENSE",
+      "source": "https://registry.npmjs.org/pure-rand/-/pure-rand-6.1.0.tgz",
+      "integrity": "sha512-bVWawvoZoBYpp6yIoQtQXHZjmz35RSVHnUOTefl8Vcjr8snTPY1wnpSPMWekcFwbxI6gtmT7rSYPFvz71ldiOA==",
+      "repository": {
+        "type": "git",
+        "url": "git+https://github.com/dubzzz/pure-rand.git"
+      }
+    },
+    {
+      "file": "rc9-3.1.0-LICENSE",
+      "sha256": "688222000d499a064a7feb8fa0bb2a3dded5a182f90ef9de986bf7307d777a26",
+      "bytes": 2599,
+      "component": "rc9",
+      "version": "3.1.0",
+      "license": "MIT",
+      "kind": "unmodified packaged file; M1b Prisma dependency delta",
+      "copiedFrom": "node_modules/rc9/LICENSE",
+      "source": "https://registry.npmjs.org/rc9/-/rc9-3.1.0.tgz",
+      "integrity": "sha512-ufjkNVzbRHKcCOmTahZkmVsyc3W+MSk3jY03m+a7tGHkIsdVMG9l10/3HvFbWkkKzY5VFp3pkRsIo/UYgmFL7Q==",
+      "repository": "unjs/rc9"
+    },
+    {
+      "file": "readdirp-5.1.1-LICENSE",
+      "sha256": "dffec71d93f273d2af7b54c6c7e7e70b3289c632ec0d7253210ec21ac336d5ac",
+      "bytes": 1114,
+      "component": "readdirp",
+      "version": "5.1.1",
+      "license": "MIT",
+      "kind": "unmodified packaged file; M1b Prisma dependency delta",
+      "copiedFrom": "node_modules/readdirp/LICENSE",
+      "source": "https://registry.npmjs.org/readdirp/-/readdirp-5.1.1.tgz",
+      "integrity": "sha512-Kko+Y5XQ6fM+Ce3dq3m9YGxnacYZYl9cA1wZjaF3Vbry2L3i1qVg8+CAgNPsXRArPMUMCaOR7oa9Nqntc43JKA==",
+      "repository": {
+        "type": "git",
+        "url": "https://github.com/paulmillr/readdirp.git"
+      }
+    },
+    {
+      "file": "require-from-string-2.0.2-license",
+      "sha256": "6ee0feb1f6ef996ff5a68600f8cf98909cf412d39ef3cdceaefd87d636fa1b7f",
+      "bytes": 1128,
+      "component": "require-from-string",
+      "version": "2.0.2",
+      "license": "MIT",
+      "kind": "unmodified packaged file; M1b Prisma dependency delta",
+      "copiedFrom": "node_modules/require-from-string/license",
+      "source": "https://registry.npmjs.org/require-from-string/-/require-from-string-2.0.2.tgz",
+      "integrity": "sha512-Xf0nWe6RseziFMu+Ap9biiUbmplq6S9/p+7w7YXP/JBHhrUDDUhwa+vANyubuqfZWTveU//DYVGsDG7RKL/vEw==",
+      "repository": "floatdrop/require-from-string"
+    },
+    {
+      "file": "ret-0.5.0-LICENSE",
+      "sha256": "bfc2c678db20d806b3787956f607a1509da5fca45b4d40a97c671cbee737159d",
+      "bytes": 1065,
+      "component": "ret",
+      "version": "0.5.0",
+      "license": "MIT",
+      "kind": "unmodified packaged file; M1b Prisma dependency delta",
+      "copiedFrom": "node_modules/ret/LICENSE",
+      "source": "https://registry.npmjs.org/ret/-/ret-0.5.0.tgz",
+      "integrity": "sha512-I1XxrZSQ+oErkRR4jYbAyEEu2I0avBvvMM5JN+6EBprOGRCs63ENqZ3vjavq8fBw2+62G5LF5XelKwuJpcvcxw==",
+      "repository": {
+        "type": "git",
+        "url": "git://github.com/fent/ret.js.git"
+      }
+    },
+    {
+      "file": "retry-0.12.0-License",
+      "sha256": "01ad164273e8e095abc9dbd1c21e194594a671af7d528cb43ee7b4c903ba7da3",
+      "bytes": 1139,
+      "component": "retry",
+      "version": "0.12.0",
+      "license": "MIT",
+      "kind": "unmodified packaged file; M1b Prisma dependency delta",
+      "copiedFrom": "node_modules/retry/License",
+      "source": "https://registry.npmjs.org/retry/-/retry-0.12.0.tgz",
+      "integrity": "sha512-9LkiTwjUh6rT555DtE9rTX+BKByPfrMzEAtnlEtdEwr3Nkffwiihqe2bWADg+OQRjt9gl6ICdmB/ZFDCGAtSow==",
+      "repository": {
+        "type": "git",
+        "url": "git://github.com/tim-kos/node-retry.git"
+      }
+    },
+    {
+      "file": "robust-predicates-3.0.3-LICENSE",
+      "sha256": "88d9b4eb60579c191ec391ca04c16130572d7eedc4a86daa58bf28c6e14c9bcd",
+      "bytes": 1210,
+      "component": "robust-predicates",
+      "version": "3.0.3",
+      "license": "Unlicense",
+      "kind": "unmodified packaged file; M1b Prisma dependency delta",
+      "copiedFrom": "node_modules/robust-predicates/LICENSE",
+      "source": "https://registry.npmjs.org/robust-predicates/-/robust-predicates-3.0.3.tgz",
+      "integrity": "sha512-NS3levdsRIUOmiJ8FZWCP7LG3QpJyrs/TE0Zpf1yvZu8cAJJ6QMW92H1c7kWpdIHo8RvmLxN/o2JXTKHp74lUA==",
+      "repository": {
+        "type": "git",
+        "url": "https://github.com/mourner/robust-predicates.git"
+      }
+    },
+    {
+      "file": "safe-regex2-5.1.1-LICENSE",
+      "sha256": "3871c31d0cc373951d836b8bb97275a2227f8af7464df7c51bc3f98769b87653",
+      "bytes": 1123,
+      "component": "safe-regex2",
+      "version": "5.1.1",
+      "license": "MIT",
+      "kind": "unmodified packaged file; M1b Prisma dependency delta",
+      "copiedFrom": "node_modules/safe-regex2/LICENSE",
+      "source": "https://registry.npmjs.org/safe-regex2/-/safe-regex2-5.1.1.tgz",
+      "integrity": "sha512-mOSBvHGDZMuIEZMdOz/aCEYDCv0E7nfcNsIhUF+/P+xC7Hyf3FkvymqgPbg9D1EdSGu+uKbJgy09K/RKKc7kJA==",
+      "repository": {
+        "type": "git",
+        "url": "git://github.com/fastify/safe-regex2.git"
+      }
+    },
+    {
+      "file": "safer-buffer-2.1.2-LICENSE",
+      "sha256": "4bc935e71be198c67ddf3c2b5fddb195f6edc182bfc155a96a6db61b44b494b9",
+      "bytes": 1094,
+      "component": "safer-buffer",
+      "version": "2.1.2",
+      "license": "MIT",
+      "kind": "unmodified packaged file; M1b Prisma dependency delta",
+      "copiedFrom": "node_modules/safer-buffer/LICENSE",
+      "source": "https://registry.npmjs.org/safer-buffer/-/safer-buffer-2.1.2.tgz",
+      "integrity": "sha512-YZo3K82SD7Riyi0E1EQPojLz7kpepnSQI9IyPbHHg1XXXevb5dJI7tpyN2ADxGcQbHG7vcyRHk0cbwqcQriUtg==",
+      "repository": {
+        "type": "git",
+        "url": "git+https://github.com/ChALkeR/safer-buffer.git"
+      }
+    },
+    {
+      "file": "seq-queue-0.0.5-LICENSE",
+      "sha256": "dcba4e24de35d4e5f0d9e14804f925babe6d670afc2989eb650eb1aec4e43dd1",
+      "bytes": 1106,
+      "component": "seq-queue",
+      "version": "0.0.5",
+      "kind": "unmodified packaged file; M1b Prisma dependency delta",
+      "copiedFrom": "node_modules/seq-queue/LICENSE",
+      "source": "https://registry.npmjs.org/seq-queue/-/seq-queue-0.0.5.tgz",
+      "integrity": "sha512-hr3Wtp/GZIc/6DAGPDcV4/9WoZhjrkXsi5B/07QgX8tsdc6ilr7BFM6PM6rbdAX1kFSDYeZGLipIZZKyQP0O5Q==",
+      "repository": {
+        "type": "git",
+        "url": "git@github.com:changchang/seq-queue.git"
+      }
+    },
+    {
+      "file": "signal-exit-4.1.0-LICENSE.txt",
+      "sha256": "b173e19b9a78df305577ace0e52ef45a4bcc915ea28b47b256dc3b68dcb1f7e7",
+      "bytes": 790,
+      "component": "signal-exit",
+      "version": "4.1.0",
+      "license": "ISC",
+      "kind": "unmodified packaged file; M1b Prisma dependency delta",
+      "copiedFrom": "node_modules/signal-exit/LICENSE.txt",
+      "source": "https://registry.npmjs.org/signal-exit/-/signal-exit-4.1.0.tgz",
+      "integrity": "sha512-bzyZ1e88w9O1iNJbKnOlvYTrWPDl46O1bG0D3XInv+9tkPrxrN8jUUTiFlDkkmKWgn1M6CfIA13SuGqOa9Korw==",
+      "repository": {
+        "type": "git",
+        "url": "https://github.com/tapjs/signal-exit.git"
+      }
+    },
+    {
+      "file": "sqlstring-2.3.3-LICENSE",
+      "sha256": "e5b780d4f38d1d3328e3e53186c4e62d3fa149ea6f2bacd5de5ad0c30ac85343",
+      "bytes": 1118,
+      "component": "sqlstring",
+      "version": "2.3.3",
+      "license": "MIT",
+      "kind": "unmodified packaged file; M1b Prisma dependency delta",
+      "copiedFrom": "node_modules/sqlstring/LICENSE",
+      "source": "https://registry.npmjs.org/sqlstring/-/sqlstring-2.3.3.tgz",
+      "integrity": "sha512-qC9iz2FlN7DQl3+wjwn3802RTyjCx7sDvfQEXchwa6CWOx07/WVfh91gBmQ9fahw8snwGEWU3xGzOt4tFyHLxg==",
+      "repository": "mysqljs/sqlstring"
+    },
+    {
+      "file": "valibot-1.4.2-LICENSE.md",
+      "sha256": "1ca6c9ca372cffe26c313464b9d9f0aef2417b27b2bad20396f4769005122d4d",
+      "bytes": 1065,
+      "component": "valibot",
+      "version": "1.4.2",
+      "license": "MIT",
+      "kind": "unmodified packaged file; M1b Prisma dependency delta",
+      "copiedFrom": "node_modules/valibot/LICENSE.md",
+      "source": "https://registry.npmjs.org/valibot/-/valibot-1.4.2.tgz",
+      "integrity": "sha512-gjdCvJ6d3RyHAneqxMYMW9QMCwYMb3jpOO0IyHZV1bnRHFBHrX3VkIILt5XYR0WhwHiH7Mty8ovuPZ/O3gamrg==",
+      "repository": {
+        "type": "git",
+        "url": "https://github.com/open-circle/valibot"
+      }
+    },
+    {
+      "file": "zeptomatch-2.1.0-license",
+      "sha256": "73aa368a81b1d3f9628520357dabb47f975687a9f501c848673e223a8550c4d0",
+      "bytes": 1091,
+      "component": "zeptomatch",
+      "version": "2.1.0",
+      "license": "MIT",
+      "kind": "unmodified packaged file; M1b Prisma dependency delta",
+      "copiedFrom": "node_modules/zeptomatch/license",
+      "source": "https://registry.npmjs.org/zeptomatch/-/zeptomatch-2.1.0.tgz",
+      "integrity": "sha512-KiGErG2J0G82LSpniV0CtIzjlJ10E04j02VOudJsPyPwNZgGnRKQy7I1R7GMyg/QswnE4l7ohSGrQbQbjXPPDA==",
+      "repository": "github:fabiospampinato/zeptomatch"
+    },
+    {
+      "file": "radix-ui--react-compose-refs-1.1.2-upstream-LICENSE",
+      "sha256": "0e80a2d229d2fd4fc7e8636142ec5d0ff0bc031f14c15b682e2ac01dfd5b5138",
+      "bytes": 1063,
+      "component": "@radix-ui/react-compose-refs",
+      "version": "1.1.2",
+      "license": "MIT",
+      "kind": "authentic supplemental license from exact registry gitHead; M1b Prisma dependency delta",
+      "source": "https://raw.githubusercontent.com/radix-ui/primitives/fcef0668a5c827e5a4baac405474d75680f9a4eb/LICENSE",
+      "commit": "fcef0668a5c827e5a4baac405474d75680f9a4eb",
+      "integrity": "sha512-z4eqJvfiNnFMHIIvXP3CY57y2WJs5g2v3X0zm9mEJkrkNv4rDxu+sg9Jh8EkXyeqBkB7SOcboo9dMVqhyrACIg=="
+    },
+    {
+      "file": "radix-ui--react-use-layout-effect-1.1.1-upstream-LICENSE",
+      "sha256": "0e80a2d229d2fd4fc7e8636142ec5d0ff0bc031f14c15b682e2ac01dfd5b5138",
+      "bytes": 1063,
+      "component": "@radix-ui/react-use-layout-effect",
+      "version": "1.1.1",
+      "license": "MIT",
+      "kind": "authentic supplemental license from exact registry gitHead; M1b Prisma dependency delta",
+      "source": "https://raw.githubusercontent.com/radix-ui/primitives/fcef0668a5c827e5a4baac405474d75680f9a4eb/LICENSE",
+      "commit": "fcef0668a5c827e5a4baac405474d75680f9a4eb",
+      "integrity": "sha512-RbJRS4UWQFkzHTTwVymMTUv8EqYhOp8dOOviLj2ugtTiXRaRQS7GLGxZTLL1jWhMeoSCf5zmcZkqTl9IiYfXcQ=="
+    },
+    {
+      "file": "postgres-3.4.7-upstream-UNLICENSE",
+      "sha256": "b5065838cbac452dfc855ba6e6e031481ad2c68406f70d21ead9321374653e6c",
+      "bytes": 1212,
+      "component": "postgres",
+      "version": "3.4.7",
+      "license": "Unlicense",
+      "kind": "authentic supplemental license from exact registry gitHead; M1b Prisma dependency delta",
+      "source": "https://raw.githubusercontent.com/porsager/postgres/9b92b65da6a5121545581a6dd5de859c2a70177f/UNLICENSE",
+      "commit": "9b92b65da6a5121545581a6dd5de859c2a70177f",
+      "integrity": "sha512-Jtc2612XINuBjIl/QTWsV5UvE8UHuNblcO3vVADSrKsrc6RqGX6lOW1cEo3CM2v0XG4Nat8nI+YM7/f26VxXLw=="
+    },
+    {
+      "file": "remeda-2.33.4-upstream-LICENSE",
+      "sha256": "acf30083045d768ce20640237313ee31a45d548d66ef76df5bb5fb0745479535",
+      "bytes": 1063,
+      "component": "remeda",
+      "version": "2.33.4",
+      "license": "MIT",
+      "kind": "authentic supplemental license from exact registry gitHead; M1b Prisma dependency delta",
+      "source": "https://raw.githubusercontent.com/remeda/remeda/f9e681a707fd8cac00c43c10591c44e17f577610/LICENSE",
+      "commit": "f9e681a707fd8cac00c43c10591c44e17f577610",
+      "integrity": "sha512-ygHswjlc/opg2VrtiYvUOPLjxjtdKvjGz1/plDhkG66hjNjFr1xmfrs2ClNFo/E6TyUFiwYNh53bKV26oBoMGQ=="
     }
   ],
   "provenanceAttempt": [

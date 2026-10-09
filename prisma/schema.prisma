@@ -1,0 +1,47 @@
+generator client {
+  provider               = "prisma-client"
+  output                 = "../src/generated/prisma"
+  moduleFormat           = "esm"
+  generatedFileExtension = "ts"
+  importFileExtension    = "ts"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model User {
+  id              String                    @id @default(uuid()) @db.Uuid
+  email           String                    @db.VarChar(254)
+  emailKey        String                    @unique @db.VarChar(254)
+  emailVerifiedAt DateTime?                 @db.Timestamptz(3)
+  createdAt       DateTime                  @default(now()) @db.Timestamptz(3)
+  updatedAt       DateTime                  @updatedAt @db.Timestamptz(3)
+  profile         Profile?
+  challenges      EmailOwnershipChallenge[]
+
+  // The composite foreign key binds every challenge to the current email.
+  @@unique([id, emailKey])
+}
+
+model Profile {
+  userId      String   @id @db.Uuid
+  displayName String   @db.VarChar(60)
+  createdAt   DateTime @default(now()) @db.Timestamptz(3)
+  updatedAt   DateTime @updatedAt @db.Timestamptz(3)
+  user        User     @relation(fields: [userId], references: [id], onDelete: Restrict, onUpdate: Restrict)
+}
+
+model EmailOwnershipChallenge {
+  id         String    @id @default(uuid()) @db.Uuid
+  userId     String    @db.Uuid
+  emailKey   String    @db.VarChar(254)
+  tokenDigest String   @unique @db.VarChar(64)
+  createdAt  DateTime  @default(now()) @db.Timestamptz(3)
+  expiresAt  DateTime  @db.Timestamptz(3)
+  consumedAt DateTime? @db.Timestamptz(3)
+  revokedAt  DateTime? @db.Timestamptz(3)
+  user       User      @relation(fields: [userId, emailKey], references: [id, emailKey], onDelete: Restrict, onUpdate: Restrict)
+
+  @@index([userId, expiresAt])
+}

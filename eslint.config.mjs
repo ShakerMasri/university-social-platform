@@ -10,7 +10,7 @@ export default defineConfig([
     extends: [js.configs.recommended],
   },
   {
-    files: ["**/*.{ts,tsx}"],
+    files: ["**/*.{ts,tsx,mts}"],
     extends: [js.configs.recommended, tseslint.configs.recommended],
   },
   {
@@ -33,6 +33,7 @@ export default defineConfig([
     "test-results/**",
     ".tools/**",
     ".cache/**",
+    "src/generated/**",
     "next-env.d.ts",
   ]),
 ]);
