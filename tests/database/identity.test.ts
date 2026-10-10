@@ -215,6 +215,50 @@ describe("M2 on real disposable PostgreSQL", () => {
     } finally { await locker.query("ROLLBACK"); await locker.end(); await save; }
   });
 
+  it("rolls back a profile save when the session expires during an actual profile row lock wait", async () => {
+    const fixture = await issue();
+    const { token } = (await confirmSignIn(db, options, fixture))!;
+    const session = await db.session.findUniqueOrThrow({ where: { tokenDigest: digest(token) } });
+    const user = await db.user.findUniqueOrThrow({ where: { id: session.userId } });
+    const before = await db.profile.create({ data: { userId: user.id, displayName: "Before expiry علي" } });
+    const locker = new Client({ connectionString: databaseUrl(manifest, name!, "migration") }); await locker.connect();
+    let save: ReturnType<typeof updateOwnProfile> | undefined;
+    let settled = false;
+    try {
+      await locker.query("BEGIN");
+      const { rows: [{ pid }] } = await locker.query<{ pid: number }>("SELECT pg_backend_pid() AS pid");
+      await locker.query('SELECT "userId" FROM "Profile" WHERE "userId" = $1 FOR UPDATE', [user.id]);
+      await migration.query('UPDATE "Session" SET "expiresAt" = clock_timestamp() + interval \'2 seconds\' WHERE id = $1', [session.id]);
+      save = updateOwnProfile(db, token, "After expiry");
+      // Attach both handlers immediately so a premature database failure is not
+      // an unhandled rejection while observing the real PostgreSQL lock wait.
+      void save.then(() => { settled = true; }, () => { settled = true; });
+      let blocked = false;
+      for (let i = 0; i < 40; i++) {
+        await migration.query("SELECT pg_stat_clear_snapshot()");
+        const result = await migration.query<{ blocked: boolean }>(
+          "SELECT EXISTS(SELECT 1 FROM pg_stat_activity WHERE datname = current_database() AND $1::integer = ANY(pg_blocking_pids(pid))) AS blocked", [pid]);
+        if (result.rows[0].blocked) { blocked = true; break; }
+        await new Promise((done) => setTimeout(done, 25));
+      }
+      expect(blocked).toBe(true);
+      expect(settled).toBe(false);
+      const expired = async () => (await migration.query<{ expired: boolean }>(
+        'SELECT "expiresAt" <= clock_timestamp() AS expired FROM "Session" WHERE id = $1', [session.id])).rows[0].expired;
+      expect(await expired()).toBe(false); // Authorization passed before expiry.
+      await new Promise((done) => setTimeout(done, 2100));
+      expect(await expired()).toBe(true); // Prove expiry before releasing the row.
+      expect(settled).toBe(false);
+      await locker.query("COMMIT");
+      const saved = await save;
+      const profile = await db.profile.findUniqueOrThrow({ where: { userId: user.id } });
+      expect({ saved, profile }).toEqual({ saved: false, profile: before });
+    } finally {
+      try { await locker.query("ROLLBACK"); }
+      finally { await locker.end(); await save?.catch(() => {}); }
+    }
+  });
+
   it("rechecks challenge expiry after actually waiting for a user lock", async () => {
     const fixture = await issue();
     const challenge = await db.emailOwnershipChallenge.findUniqueOrThrow({ where: { tokenDigest: digest(fixture.token) } });

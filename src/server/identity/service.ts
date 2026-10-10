@@ -142,6 +142,8 @@ export function ownProfile(db: PrismaClient, token: unknown) {
   });
 }
 
+class ProfileSessionExpired extends Error {}
+
 export function updateOwnProfile(db: PrismaClient, token: unknown, name: unknown) {
   const displayName = validateDisplayName(name);
   return db.$transaction(async (tx) => {
@@ -149,7 +151,14 @@ export function updateOwnProfile(db: PrismaClient, token: unknown, name: unknown
     if (!access) return false;
     const userId = access.session.userId; // Ownership comes only from the live session.
     await tx.profile.upsert({ where: { userId }, create: { userId, displayName }, update: { displayName } });
+    // The session row stays locked against revocation, but time can advance
+    // during the profile write's lock wait. Throw to roll back; returning false
+    // here would commit the unauthorized write.
+    if (access.session.expiresAt <= await time(tx)) throw new ProfileSessionExpired();
     return true;
+  }).catch((error: unknown) => {
+    if (error instanceof ProfileSessionExpired) return false;
+    throw error; // Database/commit failures must still reach the safe 503 boundary.
   });
 }
 
