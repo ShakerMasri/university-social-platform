@@ -290,6 +290,38 @@ At the correction checkpoint no fresh CI/Linux, Chromium, deployment, provider o
 
 Subsequent [independent review](docs/project-brief.md#m1b-independent-review-and-git-authorization--2026-10-09) verified both fixes and reran 50 unit tests, 16 real PostgreSQL tests, migration/Compose/identity guards, schema validation, lint, typecheck, build and Unicode artifact comparison successfully. Review-owned database resources were cleaned up; the previously approved Docker Desktop engine was started for the review and remains running. The owner now authorizes commit, push and merge of this local checkpoint after fresh CI and PR review, with publication evidence in the PR/Git history. Database CI remains a follow-up; deployment and M2 protected/provider flows are not authorized.
 
+## M3 communities and memberships — local checkpoint, 2026-10-10
+
+The local M3 slice adds community creation/discovery and membership join/request/approve/reject/leave/remove through the existing synthetic identity runner. The [approved permissions and evidence](docs/project-brief.md#m3-communities-and-memberships--local-checkpoint-2026-10-10) record its scope and acceptance criteria. Private existence/name/description are discoverable to verified users; private spaces require current membership. Creator-only membership management is enforced server-side. A saved profile is required for creation. Posts, comments/voting and notifications follow in separate checkpoints.
+
+Use the pinned runtime below. For an existing local setup, inspect it with `npm.cmd run db:status`; do not rerun setup or reset its data. Review [the additive community migration](prisma/migrations/20261010010000_m3_communities/migration.sql), then use the commands below. `db:review` replays full history on a fresh owned database and checks the current schema; `db:migrate` repeats that guard before migrating the owned development database and assigning only the required runtime grants. `db:test` creates/removes two complete-history databases plus separate populated Unicode/M2/M3 upgrade fixtures. `test:e2e:identity` now covers communities as well as identity and the shell on an owned synthetic browser database. Ordinary startup leaves both identity and community database flows disabled. No live email, real-user onboarding or deployment is part of this checkpoint.
+
+```powershell
+$env:Path = "$PWD\.tools\node-v24.21.0-win-x64;$env:Path"
+$env:PLAYWRIGHT_BROWSERS_PATH = "$PWD\.cache\ms-playwright"
+$env:NEXT_TELEMETRY_DISABLED = '1'
+# db:status for an existing manifest; db:setup only if no setup exists.
+npm.cmd run db:validate
+npm.cmd run db:generate
+npm.cmd run db:review
+npm.cmd run db:migrate
+npm.cmd run lint
+npm.cmd run typecheck
+npm.cmd test
+npm.cmd run build
+npm.cmd run db:guard-check
+npm.cmd run db:test
+npm.cmd run test:e2e
+npm.cmd run test:e2e:identity
+npm.cmd run db:cleanup
+```
+
+The forward migration adds two tables/two enums and leaves identity/profile/session/challenge data intact. It is a local development migration; no production database was inspected or migrated. For a future populated environment, back up and verify restoration before the authorized migration, deploy schema before these routes, and retain the additive tables when rolling application code back. Do not reverse/drop them or delete membership data as a rollback. A failed transaction leaves the previous schema intact; investigate failed migration history before retrying. Real-user transfer/deletion, moderation/teacher powers, content permissions and any hidden-existence variant for sensitive topics remain [release gates](docs/project-brief.md#before-public-release).
+
+Observed local gates: 57 unit tests, 33 PostgreSQL tests, 8 ordinary / 26 synthetic Chromium checks, schema validation/generation, guarded migration/history/privilege checks, lint, typecheck and build passed. The new UI is reached from the saved-profile page in the synthetic runner. Runtime grants allow community INSERT/SELECT and membership INSERT/SELECT/status UPDATE/DELETE, with no community UPDATE/DELETE or membership-key reassignment. APIs recheck live sessions, current membership and creator ownership, use exact-origin POST checks and private/no-store responses, and impose bounded input/pagination plus database-backed mutation limits. This remains local synthetic evidence; CI, real-user release, live delivery, usability feedback and deployment are pending.
+
+The completed run's owned local container/volume/development database and credentials were cleaned up. Docker Desktop and cached image remain. To run the slice again, create a fresh guarded setup and follow the commands above; no application database or synthetic server is left running by this checkpoint.
+
 ## M2 local identity — 2026-10-10
 
 The owner has now authorized the **synthetic local** email-link → confirmation → seven-day database session → saved display-name profile → return → logout slice. See the [approved decisions and acceptance criteria](docs/project-brief.md#m2-identity-design-checkpoint--2026-10-10). Real users and live email remain gated by the [public-release checklist](docs/project-brief.md#before-public-release), including deletion, retention, recovery and broader profile visibility decisions. No live provider, teacher role, enrollment claim, deployment, new dependency or asset was added.

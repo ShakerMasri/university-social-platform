@@ -171,7 +171,12 @@ async function migrate(m: LocalManifest, name: string) {
     GRANT INSERT (id, "userId", "tokenDigest", "createdAt", "expiresAt") ON "Session" TO ${identifier(m.runtimeRole)};
     GRANT UPDATE ("revokedAt") ON "Session" TO ${identifier(m.runtimeRole)};
     GRANT INSERT ("keyDigest", "startedAt", hits) ON "IdentityRateLimit" TO ${identifier(m.runtimeRole)};
-    GRANT UPDATE ("startedAt", hits) ON "IdentityRateLimit" TO ${identifier(m.runtimeRole)};`);
+    GRANT UPDATE ("startedAt", hits) ON "IdentityRateLimit" TO ${identifier(m.runtimeRole)};
+    GRANT SELECT ON "Community", "CommunityMembership" TO ${identifier(m.runtimeRole)};
+    GRANT INSERT (id, "ownerId", name, description, visibility, "createdAt") ON "Community" TO ${identifier(m.runtimeRole)};
+    GRANT INSERT ("communityId", "userId", status, "createdAt") ON "CommunityMembership" TO ${identifier(m.runtimeRole)};
+    GRANT UPDATE (status) ON "CommunityMembership" TO ${identifier(m.runtimeRole)};
+    GRANT DELETE ON "CommunityMembership" TO ${identifier(m.runtimeRole)};`);
   console.log(`Reviewed migration history applied: ${name}`);
 }
 
@@ -255,8 +260,8 @@ async function setup() {
 
 async function test(m: LocalManifest) {
   verifyResources(m);
-  // Two complete-history databases and populated Unicode/M2 forward-upgrade fixtures.
-  const records: DatabaseRecord[] = [0, 1, 2, 3].map(() => ({
+  // Two complete-history databases and populated Unicode/M2/M3 forward-upgrade fixtures.
+  const records: DatabaseRecord[] = [0, 1, 2, 3, 4].map(() => ({
     name: `usp_m1b_${m.owner}_test_${randomBytes(6).toString("hex")}`, kind: "test", ready: false,
   }));
   m.databases.push(...records);
@@ -268,7 +273,7 @@ async function test(m: LocalManifest) {
     }
     const result = spawnSync(process.execPath, ["node_modules/vitest/vitest.mjs", "run", "--config", "vitest.database.config.mjs"], {
       env: { ...process.env, M1B_TEST_DATABASE: records[0].name, M1B_REPLAY_DATABASE: records[1].name,
-        M1B_UPGRADE_DATABASE: records[2].name, M2_UPGRADE_DATABASE: records[3].name },
+        M1B_UPGRADE_DATABASE: records[2].name, M2_UPGRADE_DATABASE: records[3].name, M3_UPGRADE_DATABASE: records[4].name },
       encoding: "utf8", windowsHide: true,
     });
     process.stdout.write(result.stdout ?? "");
@@ -281,12 +286,18 @@ async function test(m: LocalManifest) {
     await client.connect();
     try {
       const before = await client.query('SELECT id, email, "emailKey" FROM "User" ORDER BY id');
+      const communityBefore = await client.query('SELECT * FROM "Community" ORDER BY id');
+      const membershipBefore = await client.query('SELECT * FROM "CommunityMembership" ORDER BY "communityId", "userId"');
       await migrate(m, records[0].name);
       const after = await client.query('SELECT id, email, "emailKey" FROM "User" ORDER BY id');
-      if (!before.rows.length || JSON.stringify(before.rows) !== JSON.stringify(after.rows)) {
+      const communityAfter = await client.query('SELECT * FROM "Community" ORDER BY id');
+      const membershipAfter = await client.query('SELECT * FROM "CommunityMembership" ORDER BY "communityId", "userId"');
+      if (!before.rows.length || !communityBefore.rows.length || !membershipBefore.rows.length ||
+          JSON.stringify([before.rows, communityBefore.rows, membershipBefore.rows]) !==
+          JSON.stringify([after.rows, communityAfter.rows, membershipAfter.rows])) {
         throw new Error("Migration reapplication changed synthetic data");
       }
-      console.log("Migration reapplication preserved populated database records");
+      console.log("Migration reapplication preserved populated user, community and membership records");
     } finally { await client.end(); }
   } finally {
     for (const record of records) {

@@ -7,6 +7,8 @@ import { ownProfile } from "@/server/identity/service";
 import { sessionCookie } from "@/server/identity/policy";
 import { IdentityShell } from "../identity-shell";
 import { ProfileForm } from "../identity-forms";
+import Link from "next/link";
+import { communityText } from "@/i18n/communities";
 
 export const dynamic = "force-dynamic";
 export default async function Profile({ params }: { params: Promise<{ locale: string }> }) {
@@ -20,5 +22,5 @@ export default async function Profile({ params }: { params: Promise<{ locale: st
     return <IdentityShell locale={locale} path="profile"><h1>{identityText[locale].profile}</h1><p>{identityText[locale].failed}</p></IdentityShell>;
   }
   if (!profile) redirect(`/${locale}/signin`);
-  return <IdentityShell locale={locale} path="profile"><ProfileForm locale={locale} profile={profile} /></IdentityShell>;
+  return <IdentityShell locale={locale} path="profile"><ProfileForm locale={locale} profile={profile} /><p><Link prefetch={false} href={`/${locale}/communities`}>{communityText[locale].title}</Link></p></IdentityShell>;
 }

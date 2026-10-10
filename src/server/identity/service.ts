@@ -119,7 +119,7 @@ export async function confirmSignIn(db: PrismaClient, options: IdentityOptions, 
   return db.$transaction((tx) => confirmInTransaction(tx, { token, browser, previousSession: input.previousSession }));
 }
 
-async function sessionInTransaction(tx: Transaction, token: unknown) {
+export async function sessionInTransaction(tx: Transaction, token: unknown) {
   if (!tokenValid(token)) return null;
   const candidate = await tx.session.findUnique({ where: { tokenDigest: digest(token) }, select: { userId: true } });
   if (!candidate) return null;
