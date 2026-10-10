@@ -57,6 +57,7 @@ export function createCommunity(db: PrismaClient, token: unknown, input: Record<
     // A per-user advisory lock enforces the local resource cap across sessions.
     await tx.$queryRaw`SELECT pg_advisory_xact_lock(hashtextextended(${`community-budget:${ownerId}`}::text, 0))::text`;
     if (await tx.community.count({ where: { ownerId } }) >= 50) throw new CommunityError(429);
+    if (await tx.communityMembership.count({ where: { userId: ownerId } }) >= 500) throw new CommunityError(429);
     const community = await tx.community.create({ data: { ...data, ownerId,
       memberships: { create: { userId: ownerId, status: "MEMBER" } } }, select: { id: true } });
     return community;

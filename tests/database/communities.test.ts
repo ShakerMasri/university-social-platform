@@ -33,15 +33,31 @@ async function user(profile = true) {
 }
 const input = (visibility: "PUBLIC" | "PRIVATE" = "PRIVATE") => ({ name: "هندسة Computer 😀", description: "English / عربي\nSynthetic description", visibility });
 const denied = (result: Promise<unknown>, status: number) => expect(result).rejects.toMatchObject({ status });
-async function waiting() {
+async function waiting(expected = 1) {
   for (let i = 0; i < 150; i++) {
     await migration.query("SELECT pg_stat_clear_snapshot()");
-    const result = await migration.query("SELECT EXISTS(SELECT 1 FROM pg_locks l JOIN pg_stat_activity a ON a.pid = l.pid WHERE a.datname = current_database() AND NOT l.granted AND l.locktype = 'advisory') AS blocked");
-    if (result.rows[0].blocked) return;
+    const result = await migration.query<{ count: string }>("SELECT count(*) FROM pg_locks l JOIN pg_stat_activity a ON a.pid = l.pid WHERE a.datname = current_database() AND NOT l.granted AND l.locktype = 'advisory'");
+    if (Number(result.rows[0].count) >= expected) return;
     await new Promise((resolve) => setTimeout(resolve, 20));
   }
   throw new Error("Expected a real community lock wait");
 }
+async function seedMembershipBudget(userId: string, count: number, owned = 0) {
+  // Bulk synthetic boundary fixtures; other creators remain within their own 50 cap.
+  const creatorIds = Array.from({ length: Math.ceil((count - owned) / 50) }, () => randomUUID());
+  const ids = Array.from({ length: count }, () => randomUUID());
+  const ownerIds = ids.map((_, index) => index < owned ? userId : creatorIds[Math.floor((index - owned) / 50)]);
+  await migration.query("BEGIN");
+  try {
+    await migration.query('INSERT INTO "User" (id, email, "emailKey", "updatedAt", "emailVerifiedAt") SELECT id, \'cap.\' || id::text || \'@university.test\', \'cap.\' || id::text || \'@university.test\', now(), now() FROM unnest($1::uuid[]) AS id', [creatorIds]);
+    await migration.query('INSERT INTO "Profile" ("userId", "displayName", "updatedAt") SELECT id, \'Synthetic cap creator\', now() FROM unnest($1::uuid[]) AS id', [creatorIds]);
+    await migration.query('INSERT INTO "Community" (id, "ownerId", name, description, visibility) SELECT id, owner, \'Membership cap fixture\', \'\', \'PRIVATE\' FROM unnest($1::uuid[], $2::uuid[]) AS pair(id, owner)', [ids, ownerIds]);
+    await migration.query('INSERT INTO "CommunityMembership" ("communityId", "userId", status) SELECT id, owner, \'MEMBER\' FROM unnest($1::uuid[], $2::uuid[]) AS pair(id, owner)', [ids, ownerIds]);
+    await migration.query('INSERT INTO "CommunityMembership" ("communityId", "userId", status) SELECT id, $2::uuid, CASE WHEN ordinal % 2 = 0 THEN \'PENDING\' ELSE \'MEMBER\' END::"MembershipStatus" FROM unnest($1::uuid[]) WITH ORDINALITY AS fixture(id, ordinal)', [ids.slice(owned), userId]);
+    await migration.query("COMMIT");
+  } catch (error) { await migration.query("ROLLBACK"); throw error; }
+}
+const totals = () => Promise.all([db.community.count(), db.communityMembership.count()]);
 describe("M3 real PostgreSQL persistence and authorization", () => {
   it("adds community tables without changing populated M2 identity, profile, challenge or session data", async () => {
     const url = databaseUrl(manifest, upgradeName!, "migration");
@@ -167,4 +183,63 @@ describe("M3 real PostgreSQL persistence and authorization", () => {
     await changeMembership(db, member.token, id, { action: "join" });
     expect((await db.identityRateLimit.findUniqueOrThrow({ where: { keyDigest: key } })).hits).toBe(1);
   });
+  for (const initial of [499, 500]) {
+    it(`enforces the creation membership cap starting at ${initial}, with atomic rejection and a retained attempt reservation`, async () => {
+      const creator = await user();
+      await seedMembershipBudget(creator.id, initial);
+      expect(await db.communityMembership.count({ where: { userId: creator.id } })).toBe(initial);
+      if (initial === 499) {
+        const { id } = await createCommunity(db, creator.token, input());
+        expect(await readCommunity(db, creator.token, id)).toMatchObject({ isOwner: true, membership: "MEMBER" });
+      }
+      expect(await db.communityMembership.count({ where: { userId: creator.id } })).toBe(500);
+      const before = await totals();
+      await denied(createCommunity(db, creator.token, input()), 429);
+      expect(await totals()).toEqual(before);
+      expect(await db.communityMembership.count({ where: { userId: creator.id } })).toBe(500);
+      expect(await db.community.count({ where: { ownerId: creator.id } })).toBe(initial === 499 ? 1 : 0);
+      expect((await db.identityRateLimit.findUniqueOrThrow({ where: { keyDigest: digest(`m3-community-write:${creator.id}`) } })).hits).toBe(initial === 499 ? 2 : 1);
+    });
+  }
+  it("preserves the separate 50-owned-community cap below the membership cap", async () => {
+    const creator = await user();
+    await seedMembershipBudget(creator.id, 49, 49);
+    await createCommunity(db, creator.token, input());
+    const before = await totals();
+    await denied(createCommunity(db, creator.token, input()), 429);
+    expect(await totals()).toEqual(before);
+    expect(await db.community.count({ where: { ownerId: creator.id } })).toBe(50);
+    expect(await db.communityMembership.count({ where: { userId: creator.id } })).toBe(50);
+  });
+  for (const first of ["join", "create"] as const) {
+    it(`serializes competing ${first}-first join/create writes from distinct sessions at membership 499`, async () => {
+      const creator = await user(), targetOwner = await user();
+      await seedMembershipBudget(creator.id, 499);
+      const { id } = await createCommunity(db, targetOwner.token, input("PUBLIC"));
+      const secondToken = newToken();
+      await migration.query('INSERT INTO "Session" (id, "userId", "tokenDigest", "expiresAt") VALUES ($1, $2, $3, now() + interval \'1 day\')', [randomUUID(), creator.id, digest(secondToken)]);
+      const locker = new Client({ connectionString: databaseUrl(manifest, name!, "migration") }); await locker.connect();
+      const outcomes: Promise<PromiseSettledResult<unknown>>[] = [];
+      const write = (action: "join" | "create", token: string) => action === "join" ? changeMembership(db, token, id, { action }) : createCommunity(db, token, input());
+      const capture = (result: Promise<unknown>) => Promise.allSettled([result]).then(([outcome]) => outcome);
+      const before = await totals();
+      try {
+        await locker.query("BEGIN");
+        await locker.query("SELECT pg_advisory_xact_lock(hashtextextended($1::text, 0))", [`community-budget:${creator.id}`]);
+        outcomes.push(capture(write(first, creator.token)));
+        await waiting();
+        outcomes.push(capture(write(first === "join" ? "create" : "join", secondToken)));
+        await waiting(2); // Both writes reached the real shared per-user budget lock.
+        await locker.query("COMMIT");
+        const [winner, loser] = await Promise.all(outcomes);
+        expect(winner.status).toBe("fulfilled");
+        expect(loser).toMatchObject({ status: "rejected", reason: { status: 429 } });
+        expect(await db.communityMembership.count({ where: { userId: creator.id } })).toBe(500);
+        expect(await db.community.count({ where: { ownerId: creator.id } })).toBe(first === "create" ? 1 : 0);
+        expect(await db.communityMembership.count({ where: { communityId: id, userId: creator.id } })).toBe(first === "join" ? 1 : 0);
+        expect(await totals()).toEqual([before[0] + (first === "create" ? 1 : 0), before[1] + 1]);
+        expect((await db.identityRateLimit.findUniqueOrThrow({ where: { keyDigest: digest(`m3-community-write:${creator.id}`) } })).hits).toBe(2);
+      } finally { await locker.query("ROLLBACK"); await locker.end(); await Promise.all(outcomes); }
+    });
+  }
 });

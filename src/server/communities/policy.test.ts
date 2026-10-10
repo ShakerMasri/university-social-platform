@@ -18,4 +18,18 @@ describe("community input boundaries", () => {
     for (const input of [{ name: "x", description: "", visibility: "SECRET" }, { name: "x", description: "", visibility: "PUBLIC", ownerId: id }]) expect(() => communityInput(input)).toThrow();
     for (const value of [undefined, "", "../private", "' OR true", []]) expect(() => communityId(value)).toThrow();
   });
+  it("requires an exact string action before applying its target rules", () => {
+    const id = "aaaaaaaa-1111-2222-3333-bbbbbbbbbbbb";
+    for (const action of [["remove"], ["approve"], ["join"], ["leave"], [], {}, null, undefined, 1, true, new String("remove"), { toString: () => "remove" }, "REMOVE", " remove"]) {
+      for (const target of [{}, { userId: id }]) expect(() => membershipInput({ action, ...target })).toThrow("Invalid membership input");
+    }
+    for (const action of ["join", "leave"]) {
+      expect(membershipInput({ action })).toEqual({ action, userId: undefined });
+      for (const userId of [id, undefined, null]) expect(() => membershipInput({ action, userId })).toThrow("Self membership only");
+    }
+    for (const action of ["approve", "remove"]) {
+      expect(membershipInput({ action, userId: id.toUpperCase() })).toEqual({ action, userId: id });
+      for (const userId of [undefined, null, [id], "bad"]) expect(() => membershipInput({ action, userId })).toThrow("Invalid identifier");
+    }
+  });
 });

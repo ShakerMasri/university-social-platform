@@ -27,7 +27,8 @@ export function communityId(value: unknown): string {
 }
 export function membershipInput(value: Record<string, unknown>) {
   if (Object.keys(value).some((key) => !["action", "userId"].includes(key)) ||
-      !["join", "leave", "approve", "remove"].includes(String(value.action))) throw new Error("Invalid membership input");
+      typeof value.action !== "string" ||
+      !["join", "leave", "approve", "remove"].includes(value.action)) throw new Error("Invalid membership input");
   const action = value.action as MembershipAction;
   if (action === "join" || action === "leave") {
     if ("userId" in value) throw new Error("Self membership only");

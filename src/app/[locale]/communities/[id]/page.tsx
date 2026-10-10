@@ -34,6 +34,7 @@ export default async function CommunityPage({ params, searchParams }: { params: 
       {members && <section aria-labelledby="members-heading"><h2 id="members-heading">{text.members}</h2>
         {members.items.length === 0 ? <p>{text.noMembers}</p> : <ul className="community-list">{members.items.map((member) => <li key={member.userId} className="community-card">
           <p><bdi>{member.displayName ?? text.joined}</bdi> · {member.isOwner ? text.owner : member.status === "PENDING" ? text.pending : text.joined}</p>
+          <p>{text.userId}: <bdi dir="ltr">{member.userId}</bdi></p>
           {!member.isOwner && <MembershipControls locale={locale} id={id} userId={member.userId} membership={member.status} actions={member.status === "PENDING" ? ["approve", "remove"] : ["remove"]} />}
         </li>)}</ul>}
         {members.next && <p><Link prefetch={false} href={`/${locale}/communities/${id}?after=${members.next}`}>{text.next}</Link></p>}

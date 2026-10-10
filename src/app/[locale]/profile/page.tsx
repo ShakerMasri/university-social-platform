@@ -22,5 +22,5 @@ export default async function Profile({ params }: { params: Promise<{ locale: st
     return <IdentityShell locale={locale} path="profile"><h1>{identityText[locale].profile}</h1><p>{identityText[locale].failed}</p></IdentityShell>;
   }
   if (!profile) redirect(`/${locale}/signin`);
-  return <IdentityShell locale={locale} path="profile"><ProfileForm locale={locale} profile={profile} />{profile.displayName && <p><Link prefetch={false} href={`/${locale}/communities`}>{communityText[locale].title}</Link></p>}</IdentityShell>;
+  return <IdentityShell locale={locale} path="profile"><ProfileForm locale={locale} profile={profile} /><p><Link prefetch={false} href={`/${locale}/communities`}>{communityText[locale].title}</Link></p></IdentityShell>;
 }

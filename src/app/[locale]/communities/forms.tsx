@@ -56,6 +56,7 @@ export function MembershipControls({ locale, id, actions, userId, visibility, me
   return <div aria-busy={busy}>
     <div className="community-actions">{actions.map((action) => <button key={action} disabled={busy} type="button" onClick={() => void change(action)}>
       {busy ? text.busy : action === "join" ? visibility === "PRIVATE" ? text.request : text.join : action === "leave" ? membership === "PENDING" ? text.cancel : text.leave : action === "approve" ? text.approve : membership === "PENDING" ? text.reject : text.remove}
+      {userId && <span className="visually-hidden"> · {text.userId}: <bdi dir="ltr">{userId}</bdi></span>}
     </button>)}</div>
     <p ref={feedback} role="status" tabIndex={-1}>{message}</p>
   </div>;
