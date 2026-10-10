@@ -4,7 +4,7 @@ import type { Locale } from "@/i18n/locales";
 import { dictionaries } from "@/i18n/dictionaries";
 import { identityText } from "@/i18n/identity";
 
-export function IdentityShell({ locale, children, path }: { locale: Locale; children: ReactNode; path: "signin" | "verify" | "profile" }) {
+export function IdentityShell({ locale, children, path }: { locale: Locale; children: ReactNode; path: "signin" | "verify" | "profile" | "communities" | `communities/${string}` }) {
   const text = dictionaries[locale];
   return <div className="shell">
     <a className="skip-link" href="#main-content">{text.skipToContent}</a>

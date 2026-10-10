@@ -20,6 +20,8 @@ model User {
   profile         Profile?
   challenges      EmailOwnershipChallenge[]
   sessions        Session[]
+  ownedCommunities Community[]
+  memberships     CommunityMembership[]
 
   // The composite foreign key binds every challenge to the current email.
   @@unique([id, emailKey])
@@ -64,4 +66,39 @@ model IdentityRateLimit {
   keyDigest   String   @id @db.VarChar(64)
   startedAt   DateTime @default(now()) @db.Timestamptz(3)
   hits        Int      @default(0)
+}
+
+enum CommunityVisibility {
+  PUBLIC
+  PRIVATE
+}
+
+enum MembershipStatus {
+  PENDING
+  MEMBER
+}
+
+model Community {
+  id          String @id @default(uuid()) @db.Uuid
+  ownerId     String @db.Uuid
+  name        String @db.VarChar(80)
+  description String @db.VarChar(1000)
+  visibility  CommunityVisibility
+  createdAt   DateTime @default(now()) @db.Timestamptz(3)
+  owner       User @relation(fields: [ownerId], references: [id], onDelete: Restrict, onUpdate: Restrict)
+  memberships CommunityMembership[]
+
+  @@index([createdAt, id])
+}
+
+model CommunityMembership {
+  communityId String @db.Uuid
+  userId      String @db.Uuid
+  status      MembershipStatus
+  createdAt   DateTime @default(now()) @db.Timestamptz(3)
+  community   Community @relation(fields: [communityId], references: [id], onDelete: Restrict, onUpdate: Restrict)
+  user        User @relation(fields: [userId], references: [id], onDelete: Restrict, onUpdate: Restrict)
+
+  @@id([communityId, userId])
+  @@index([userId, status])
 }

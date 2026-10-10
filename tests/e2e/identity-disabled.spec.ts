@@ -7,4 +7,9 @@ test("ordinary startup leaves synthetic identity disabled", async ({ request, pa
   await page.goto("/en/signin");
   await expect(page.getByText("Identity testing is available through the dedicated local test runner.")).toBeVisible();
   await expect(page.getByRole("textbox")).toHaveCount(0);
+  expect((await request.get("/api/communities")).status()).toBe(503);
+  expect((await request.post("/api/communities", { data: { name: "Synthetic", description: "", visibility: "PUBLIC" }, headers: { Origin: "http://127.0.0.1:3100" } })).status()).toBe(503);
+  await page.goto("/ar/communities");
+  await expect(page.getByRole("main").getByRole("alert")).toBeVisible();
+  await expect(page.getByRole("textbox")).toHaveCount(0);
 });
