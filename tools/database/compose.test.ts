@@ -1,14 +1,16 @@
 import { describe, expect, it } from "vitest";
 import { resolve } from "node:path";
+import { bootstrapPasswordPath } from "./runtime-files";
+import { postgresHostPort } from "./ports";
 import { composeEnvironment, validateComposeConfig } from "./compose";
-import { image, type LocalManifest } from "./targets";
+import { databaseUrl, image, type LocalManifest } from "./targets";
 
 const owner = "abcdef123456";
 const project = `usp-m1b-${owner}`;
 const m: LocalManifest = {
   version: 1, root: resolve("."), owner, project, container: `${project}-postgres`,
   dockerContext: "desktop-linux", dockerEndpoint: "npipe:////./pipe/dockerDesktopLinuxEngine", containerId: null,
-  volume: `${project}-data`, image, port: 55432,
+  volume: `${project}-data`, image, port: postgresHostPort,
   migrationRole: `usp_m1b_${owner}_migrate`, migrationPassword: "b".repeat(64),
   runtimeRole: `usp_m1b_${owner}_runtime`, runtimePassword: "c".repeat(64),
   databases: [{ name: `usp_m1b_${owner}_dev`, kind: "development", ready: false }],
@@ -29,18 +31,35 @@ function config() {
       volumes: [{ type: "volume", source: "data", target: "/var/lib/postgresql", volume: {} }],
     } },
     volumes: { data: { name: m.volume, labels: { "edu.usp.m1b.owner": owner } } },
-    secrets: { bootstrap_password: { name: `${project}_bootstrap_password`, file: resolve(".cache/m1b/bootstrap-password") } },
+    secrets: { bootstrap_password: { name: `${project}_bootstrap_password`, file: bootstrapPasswordPath } },
   };
 }
 
 describe("Compose provisioning preflight", () => {
+  it("uses the verified host port consistently while keeping container port 5432", () => {
+    expect(postgresHostPort).toBe(55432);
+    expect(composeEnvironment(m).M1B_PORT).toBe(String(postgresHostPort));
+    expect(config().services.postgres.ports[0]).toMatchObject({ host_ip: "127.0.0.1", published: String(postgresHostPort), target: 5432 });
+    expect(new URL(databaseUrl(m, m.databases[0].name, "runtime")).port).toBe(String(postgresHostPort));
+    expect(new URL(databaseUrl(m, m.databases[0].name, "migration")).port).toBe(String(postgresHostPort));
+    expect(() => validateComposeConfig(config(), m)).not.toThrow();
+  });
+
+  it("checks an existing manifest's port rather than overriding it with the new default", () => {
+    const existing = { ...m, port: 25432 }, resolved = config();
+    resolved.services.postgres.ports[0].published = String(existing.port);
+    expect(composeEnvironment(existing).M1B_PORT).toBe("25432");
+    expect(() => validateComposeConfig(resolved, existing)).not.toThrow();
+    expect(() => validateComposeConfig(config(), existing)).toThrow("provisioning refused");
+  });
+
   it("makes validated manifest values authoritative over all inherited overrides", () => {
     const inherited = { NODE_ENV: "test" as const, PATH: "synthetic-path", DOCKER_CONTEXT: "desktop-linux", M1B_OWNER: "other",
-      M1B_CONTAINER: "synthetic-unowned-container", M1B_VOLUME: "synthetic-unowned-volume", M1B_PORT: "65432",
+      M1B_CONTAINER: "synthetic-unowned-container", M1B_VOLUME: "synthetic-unowned-volume", M1B_PORT: "65432", M1B_BOOTSTRAP_FILE: "synthetic-unowned-file",
       m1b_volume: "synthetic-lowercase-volume", COMPOSE_FILE: "other.yaml", compose_project_name: "other",
       COMPOSE_PROFILES: "other", COMPOSE_ENV_FILES: "other.env", M1B_FUTURE_VARIABLE: "other" };
     expect(composeEnvironment(m, inherited)).toEqual({ NODE_ENV: "test", PATH: inherited.PATH, DOCKER_CONTEXT: inherited.DOCKER_CONTEXT,
-      M1B_OWNER: m.owner, M1B_CONTAINER: m.container, M1B_VOLUME: m.volume, M1B_PORT: String(m.port) });
+      M1B_OWNER: m.owner, M1B_CONTAINER: m.container, M1B_VOLUME: m.volume, M1B_PORT: String(m.port), M1B_BOOTSTRAP_FILE: bootstrapPasswordPath });
     expect(inherited.M1B_VOLUME).toBe("synthetic-unowned-volume");
     expect(() => composeEnvironment({ ...m, volume: "synthetic-unowned-volume" }, inherited)).toThrow();
   });

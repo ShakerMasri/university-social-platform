@@ -1,15 +1,34 @@
-import { spawnSync } from "node:child_process";
+import { formatOperationalError, parseOperationalJson } from "./operational-errors.ts";
+import { finishManualRun } from "./manual-shutdown.ts";
+import { spawn, spawnSync } from "node:child_process";
 import { randomBytes } from "node:crypto";
-import { existsSync, mkdirSync, readFileSync, writeFileSync, unlinkSync, rmdirSync } from "node:fs";
-import { createServer } from "node:net";
+import { existsSync, readFileSync, unlinkSync, rmdirSync } from "node:fs";
 import { dirname, resolve } from "node:path";
+import { createInterface } from "node:readline";
 import { Client } from "pg";
 import { composeEnvironment, validateComposeConfig } from "./compose.ts";
+import { ensurePortFree, ensurePostgresPortAvailable } from "./ports.ts";
+import { readLocalDatabaseConfig, configuredPostgresPort } from "./local-database.ts";
 import {
   assertDatabaseIdentity, databaseUrl, image, manifestPath, readManifest, validateManifest,
   type LocalManifest, type DatabaseRecord,
 } from "./targets.ts";
+import {
+  acquireLifecycleLock, assertLocalPath, authorizeManualOperation, beginManualRun, checkManualFiles, cleanupSession,
+  lifecycleLockPath, manualControlPath, manualSessionPath, newManualSession, prepareSession, readManualSession,
+  stoppedSession, validateManualControl, writeManualSession, type ManualSession,
+} from "./manual-session.ts";
+import { type LifecycleLease } from "./lifecycle-lock.ts";
+import { inspectProcesses } from "./windows-process.ts";
+import { recoverManualQa, RecoveryRefusal } from "./manual-recovery.ts";
+import { deliverManualToken, requestManualToken, syntheticManualEmail } from "../identity/manual-mailbox.ts";
 
+import { assertPrivatePath, browserControlPath, databaseDirectory, readPrivateFile, writePrivateFile } from "./runtime-files.ts";
+
+import { assertNoResourceCollisions, readIsolationProfile } from "./isolation.ts";
+
+let isolation: ReturnType<typeof readIsolationProfile>;
+let localConfiguration: ReturnType<typeof readLocalDatabaseConfig>;
 const localDirectory = dirname(manifestPath);
 const composeFile = resolve("compose.m1b.yaml");
 const bootstrapRole = "usp_m1b_bootstrap";
@@ -34,12 +53,14 @@ function checkCompose(m: LocalManifest, inherited = process.env) {
 
 function save(m: LocalManifest) {
   validateManifest(m);
-  writeFileSync(manifestPath, JSON.stringify(m, null, 2), { mode: 0o600 });
+  writePrivateFile(manifestPath, JSON.stringify(m, null, 2));
 }
 
 function removeOperationalFiles() {
-  if (localDirectory !== resolve(".cache/m1b")) throw new Error("Local cleanup path mismatch");
-  for (const file of ["bootstrap-password", "compose.env", "manifest.json"]) unlinkSync(resolve(localDirectory, file));
+  if (localDirectory !== databaseDirectory) throw new Error("Local cleanup path mismatch");
+  for (const file of ["bootstrap-password", "compose.env", "manifest.json"]) {
+    const path = resolve(localDirectory, file); assertPrivatePath(path); unlinkSync(path);
+  }
   rmdirSync(localDirectory);
 }
 
@@ -100,21 +121,10 @@ function verifyResources(m: LocalManifest) {
   return c.Id;
 }
 
-async function ensurePortFree(port: number) {
-  await new Promise<void>((accept, reject) => {
-    const server = createServer();
-    server.once("error", () => reject(new Error("Project-local PostgreSQL port is occupied")));
-    server.listen(port, "127.0.0.1", () => server.close(() => accept()));
-  });
-}
-
 function checkNoExistingResources(m: LocalManifest) {
-  const containers = execute("docker", ["ps", "-a", "--format", "{{.Names}}\t{{.Label \"com.docker.compose.project\"}}"]);
-  const volumes = execute("docker", ["volume", "ls", "--format", "{{.Name}}\t{{.Label \"com.docker.compose.project\"}}"]);
-  if (containers.split("\n").some((line) => line.split("\t")[0] === m.container || line.split("\t")[1] === m.project) ||
-    volumes.split("\n").some((line) => line.split("\t")[0] === m.volume || line.split("\t")[1] === m.project)) {
-    throw new Error("Refusing to adopt pre-existing local resources");
-  }
+  const containers = execute("docker", ["ps", "-a", "--format", '{{.Names}}\t{{.Label "com.docker.compose.project"}}\t{{.Label "edu.usp.m1b.owner"}}']);
+  const volumes = execute("docker", ["volume", "ls", "--format", '{{.Name}}\t{{.Label "com.docker.compose.project"}}\t{{.Label "edu.usp.m1b.owner"}}']);
+  assertNoResourceCollisions(m, containers, volumes);
 }
 
 function initializeRoles(m: LocalManifest) {
@@ -222,25 +232,25 @@ async function setup() {
   const docker = localDocker();
   execute("docker", ["info", "--format", "{{.ServerVersion}}"]);
   execute("docker", ["compose", "version"]);
-  const owner = randomBytes(6).toString("hex");
+  const owner = isolation?.owner ?? randomBytes(6).toString("hex");
   const project = `usp-m1b-${owner}`;
   const prefix = `usp_m1b_${owner}`;
   const m: LocalManifest = {
     version: 1, root: resolve("."), owner, project, container: `${project}-postgres`, containerId: null,
     ...docker,
-    volume: `${project}-data`, port: 55432, image,
+    volume: `${project}-data`, port: configuredPostgresPort(localConfiguration, isolation), image,
     migrationRole: `${prefix}_migrate`, migrationPassword: randomBytes(32).toString("hex"),
     runtimeRole: `${prefix}_runtime`, runtimePassword: randomBytes(32).toString("hex"),
     databases: [{ name: `${prefix}_dev`, kind: "development", ready: false }],
   };
   validateManifest(m);
-  await ensurePortFree(m.port);
+  await ensurePostgresPortAvailable(m.port);
   checkNoExistingResources(m);
-  mkdirSync(localDirectory, { recursive: true });
-  writeFileSync(manifestPath, JSON.stringify(m, null, 2), { flag: "wx", mode: 0o600 });
-  writeFileSync(resolve(localDirectory, "bootstrap-password"), randomBytes(32).toString("hex"), { flag: "wx", mode: 0o600 });
-  writeFileSync(resolve(localDirectory, "compose.env"),
-    `M1B_OWNER=${m.owner}\nM1B_CONTAINER=${m.container}\nM1B_VOLUME=${m.volume}\nM1B_PORT=${m.port}\n`, { flag: "wx", mode: 0o600 });
+  assertPrivatePath(localDirectory, true);
+  writePrivateFile(manifestPath, JSON.stringify(m, null, 2), true);
+  writePrivateFile(resolve(localDirectory, "bootstrap-password"), randomBytes(32).toString("hex"), true);
+  writePrivateFile(resolve(localDirectory, "compose.env"),
+    `M1B_OWNER=${m.owner}\nM1B_CONTAINER=${m.container}\nM1B_VOLUME=${m.volume}\nM1B_PORT=${m.port}\n`, true);
   try {
     checkCompose(m);
     // Check the same authoritative names again immediately before provisioning.
@@ -308,7 +318,7 @@ async function test(m: LocalManifest) {
 
 async function identityBrowser(m: LocalManifest) {
   verifyResources(m);
-  const controlPath = resolve(".cache/m2-browser.json");
+  const controlPath = browserControlPath;
   if (existsSync(controlPath)) throw new Error("Existing identity browser control file requires inspection; not overwritten");
   const record: DatabaseRecord = { name: `usp_m1b_${m.owner}_test_${randomBytes(6).toString("hex")}`, kind: "test", ready: false };
   m.databases.push(record); save(m);
@@ -316,7 +326,7 @@ async function identityBrowser(m: LocalManifest) {
     await createDatabase(m, record);
     await migrate(m, record.name);
     const result = spawnSync(process.execPath, ["node_modules/@playwright/test/cli.js", "test"], {
-      env: { ...process.env, M2_IDENTITY_E2E: "1", M2_BROWSER_DATABASE: record.name },
+      env: { ...process.env, M2_IDENTITY_E2E: "1", M2_BROWSER_DATABASE: record.name, USP_MANUAL_IDENTITY: "0" },
       encoding: "utf8", windowsHide: true,
     });
     process.stdout.write(result.stdout ?? ""); process.stderr.write(result.stderr ?? "");
@@ -330,12 +340,14 @@ async function identityBrowser(m: LocalManifest) {
 }
 
 function removeBrowserControl(path: string, name: string) {
-  const control = JSON.parse(readFileSync(path, "utf8")) as { databaseName: string };
-  if (path !== resolve(".cache/m2-browser.json") || control.databaseName !== name) throw new Error("Refusing another runner's control-file cleanup");
+  const control = parseOperationalJson(readPrivateFile(path), "CONTROL_JSON") as { databaseName: string };
+  if (path !== browserControlPath || control.databaseName !== name) throw new Error("Refusing another runner's control-file cleanup");
   unlinkSync(path);
 }
 
 async function cleanup(m: LocalManifest) {
+  assertLocalPath(manualSessionPath);
+  if (existsSync(manualSessionPath)) throw new Error("Clean the retained manual session separately before whole-setup cleanup");
   verifyResources(m);
   for (const record of m.databases) {
     if (!record.ready) throw new Error("Incomplete database setup requires inspection; automatic cleanup refused");
@@ -397,12 +409,202 @@ async function guardCheck(m: LocalManifest) {
   }
 }
 
+async function manualPrepare(m: LocalManifest) {
+  if (existsSync(manualSessionPath) || existsSync(manualControlPath) || existsSync(browserControlPath)) {
+    throw new Error("Existing manual/browser state requires inspection; preparation refused");
+  }
+  verifyResources(m);
+  await reviewMigration(m);
+  const session = newManualSession(m);
+  writeManualSession(session, m, true);
+  const record: DatabaseRecord = { name: session.databaseName, kind: "test", ready: false };
+  await prepareSession(session, {
+    save: (value) => writeManualSession(value, m),
+    register: () => { m.databases.push(record); save(m); },
+    create: () => createDatabase(m, record),
+    migrate: () => migrate(m, record.name),
+    verify: () => assertDatabaseIdentity(databaseUrl(m, record.name, "runtime"), m, "runtime"),
+  });
+  console.log("Manual QA prepared; the owned test database is retained until manual:cleanup");
+}
+
+async function manualStart(m: LocalManifest, lease: LifecycleLease) {
+  let session = readManualSession(m);
+  authorizeManualOperation(session, m, "start");
+  if (existsSync(manualControlPath) || existsSync(browserControlPath)) throw new Error("Existing control state requires inspection");
+  verifyResources(m);
+  await assertDatabaseIdentity(databaseUrl(m, session.databaseName, "runtime"), m, "runtime");
+  if (!existsSync(resolve(".next/BUILD_ID"))) throw new Error("Build the application before manual:start");
+  await ensurePortFree(3100);
+  session = beginManualRun(session, m, lease);
+  writeManualSession(session, m);
+  const child = spawn(process.execPath, ["tools/identity/local-server.mts"], {
+    env: { ...process.env, M2_IDENTITY_E2E: "1", M2_BROWSER_DATABASE: session.databaseName,
+      USP_MANUAL_IDENTITY: "1", USP_MANUAL_SESSION_ID: session.sessionId, USP_MANUAL_RUN_ID: session.runId! },
+    windowsHide: true, stdio: ["ignore", "ignore", "ignore", "ipc"],
+  });
+  await new Promise<void>((accept, reject) => {
+    let acknowledged = false, stopRequested = false, failed = false;
+    let ownedControl: string | null = null;
+    let shutdownWarning: ReturnType<typeof setTimeout> | undefined;
+    const input = createInterface({ input: process.stdin });
+    const persist = (value: ManualSession) => {
+      session = value;
+      try { lease.assertHeld(); writeManualSession(session, m); } catch { failed = true; }
+    };
+    const stop = () => {
+      if (stopRequested) return;
+      stopRequested = true;
+      persist({ ...session, phase: "stopping" });
+      if (child.connected) child.send({ type: "manual-stop", runId: session.runId }, (error) => { if (error) failed = true; });
+      shutdownWarning = setTimeout(() => {
+        failed = true;
+        console.error("Shutdown not confirmed; keeping the lifecycle lock. Inspect this owned child; no process was killed");
+      }, 20000);
+    };
+    const startupDeadline = setTimeout(() => { failed = true; stop(); }, 60000);
+    input.on("line", (line) => { if (line.trim() === "stop") stop(); });
+    input.once("close", stop);
+    process.on("SIGINT", stop); process.on("SIGTERM", stop);
+    child.once("error", () => { failed = true; });
+    child.on("message", (message: unknown) => {
+      if (!message || typeof message !== "object" || !("runId" in message) || message.runId !== session.runId || !("type" in message)) return;
+      if (message.type === "manual-ready" && !stopRequested && session.phase === "starting") {
+        try {
+          checkManualFiles();
+          ownedControl = readPrivateFile(manualControlPath);
+          const control = validateManualControl(parseOperationalJson(ownedControl, "CONTROL_JSON"), session);
+          if (!session.execution) throw new Error("Server incarnation missing");
+          persist({ ...session, phase: "running", execution: { ...session.execution, controlPort: control.port } });
+          if (failed) { stop(); return; }
+          clearTimeout(startupDeadline);
+          console.log("Manual QA ready at http://127.0.0.1:3100. Type stop + Enter (or Ctrl+C); data will be retained");
+        } catch { failed = true; stop(); }
+      } else if (message.type === "manual-stopped") acknowledged = true;
+    });
+    child.once("close", (code) => {
+      clearTimeout(startupDeadline); clearTimeout(shutdownWarning);
+      process.off("SIGINT", stop); process.off("SIGTERM", stop);
+      input.removeListener("close", stop); input.close();
+      try {
+        persist(finishManualRun(session, ownedControl, { requested: stopRequested, acknowledged, failed, code }, {
+          assertLease: () => lease.assertHeld(),
+          readSession: () => readManualSession(m),
+          read: () => existsSync(manualControlPath) ? readPrivateFile(manualControlPath) : null,
+          remove: () => { assertPrivatePath(manualControlPath); unlinkSync(manualControlPath); },
+        }));
+      } catch { failed = true; persist(stoppedSession(session, false, code)); }
+      if (session.phase !== "stopped" || failed) reject(new Error("Manual server interrupted; retained state requires inspection"));
+      else { console.log("Manual server stopped; test data retained"); accept(); }
+    });
+    if (child.pid) {
+      persist({ ...session, pid: child.pid });
+      try {
+        const server = inspectProcesses([child.pid]).processes.find((p) => p.pid === child.pid);
+        if (!server) throw new Error("Child identity unavailable");
+        persist({ ...session, execution: { server, supervisor: lease.lock!.process, leaseNonce: lease.lock!.nonce, controlPort: null } });
+        if (!failed && child.connected) child.send({ type: "manual-initialize", runId: session.runId }, (error) => { if (error) { failed = true; stop(); } });
+        else failed = true;
+      } catch { failed = true; }
+    } else failed = true;
+    if (failed) stop();
+  });
+}
+
+async function manualStatus(m: LocalManifest) {
+  const session = readManualSession(m);
+  console.log(`Manual QA recorded state: ${session.phase}`);
+  console.log("State is a lifecycle record, not an HTTP health assertion. Postman must verify request/confirm/profile");
+  verifyResources(m);
+  const record = m.databases.find((item) => item.name === session.databaseName && item.kind === "test");
+  const ready = !!record?.ready;
+  if (ready) await assertDatabaseIdentity(databaseUrl(m, session.databaseName, "runtime"), m, "runtime");
+  console.log(`Owned test target: ${ready ? "identity verified" : "incomplete/unregistered"}`);
+  if (session.phase === "running") {
+    validateManualControl(parseOperationalJson(readPrivateFile(manualControlPath), "CONTROL_JSON"), session);
+    console.log("Matching control metadata present; base URL http://127.0.0.1:3100");
+  }
+}
+
+async function manualToken(m: LocalManifest, email: string) {
+  const session = readManualSession(m);
+  authorizeManualOperation(session, m, "token");
+  verifyResources(m);
+  await assertDatabaseIdentity(databaseUrl(m, session.databaseName, "runtime"), m, "runtime");
+  await deliverManualToken(async () => {
+    checkManualFiles();
+    const current = readManualSession(m);
+    authorizeManualOperation(current, m, "token");
+    if (current.sessionId !== session.sessionId || current.runId !== session.runId) throw new Error("Manual session changed");
+    const control = validateManualControl(parseOperationalJson(readPrivateFile(manualControlPath), "CONTROL_JSON"), current);
+    const token = await requestManualToken(control, email);
+    const after = readManualSession(m);
+    authorizeManualOperation(after, m, "token");
+    if (after.sessionId !== session.sessionId || after.runId !== session.runId) throw new Error("Manual session changed during retrieval");
+    return token;
+  }, () => console.log("Synthetic token copied locally for 30 seconds; paste into Postman. Keep this helper open until it finishes"));
+  console.log("Clipboard delivery finished; no token was printed or written to a file");
+}
+
+async function manualCleanup(m: LocalManifest) {
+  const session = readManualSession(m);
+  await cleanupSession(session, m, {
+    controlExists: () => existsSync(manualControlPath) || existsSync(browserControlPath),
+    verify: async () => {
+      verifyResources(m);
+      await assertDatabaseIdentity(databaseUrl(m, session.databaseName, "migration"), m, "migration");
+    },
+    save: (value) => writeManualSession(value, m),
+    drop: (record) => removeTestDatabase(m, record),
+    forget: () => {
+      const current = readManualSession(m);
+      if (current.sessionId !== session.sessionId || current.phase !== "cleaning") throw new Error("Manual cleanup identity changed");
+      unlinkSync(manualSessionPath);
+    },
+  });
+  console.log("Only the manual test database and its session record were removed; local development resources were preserved");
+}
+
+let releaseLock: LifecycleLease | undefined;
 try {
+  isolation = readIsolationProfile();
+  localConfiguration = readLocalDatabaseConfig();
+  configuredPostgresPort(localConfiguration, isolation);
   const pkg = JSON.parse(readFileSync(resolve("package.json"), "utf8")) as { name: string };
   if (pkg.name !== "university-social-platform" || !existsSync(composeFile)) throw new Error("Run from this project root");
   const command = process.argv[2];
-  if (process.argv.length !== 3) throw new Error("Use exactly one local database command");
-  if (command === "setup") await setup();
+  const commands = ["setup", "migrate", "review", "test", "identity-browser", "cleanup", "guard-check", "status",
+    "manual-prepare", "manual-start", "manual-status", "manual-token", "manual-cleanup", "manual-recover"];
+  if (!commands.includes(command)) throw new Error("Unknown local database command");
+  if (command === "manual-token") {
+    if (process.argv.length !== 5 || process.argv[3] !== "--email") throw new Error("Use manual:token -- --email <synthetic-address>");
+    syntheticManualEmail(process.argv[4]);
+  } else if (process.argv.length !== 3) throw new Error("Use exactly one local database command");
+  assertLocalPath(manifestPath); // Surface actionable legacy refusal before any lease/credential work.
+  if (!["status", "manual-status", "manual-token", "manual-recover"].includes(command)) releaseLock = await acquireLifecycleLock(command);
+  if (command === "manual-recover") {
+    await recoverManualQa(async (m, session) => {
+      verifyResources(m);
+      await assertDatabaseIdentity(databaseUrl(m, session.databaseName, "runtime"), m, "runtime");
+    });
+    console.log("Manual QA recovered after a proven interruption; existing test data preserved. Run manual:start separately");
+  } else if (command.startsWith("manual-")) {
+    assertLocalPath(manualSessionPath);
+    if (command === "manual-status" && !existsSync(manualSessionPath)) {
+      assertLocalPath(manualControlPath); assertLocalPath(lifecycleLockPath);
+      if (existsSync(manualControlPath)) throw new Error("Orphaned manual control metadata requires inspection");
+      console.log(`No retained manual QA session; lifecycle lock ${existsSync(lifecycleLockPath) ? "present (inspect before changes)" : "absent"}`);
+    } else {
+      checkManualFiles(command === "manual-prepare");
+      const m = readManifest();
+      if (command === "manual-prepare") await manualPrepare(m);
+      else if (command === "manual-start") await manualStart(m, releaseLock!);
+      else if (command === "manual-status") await manualStatus(m);
+      else if (command === "manual-token") await manualToken(m, process.argv[4]);
+      else await manualCleanup(m);
+    }
+  }
+  else if (command === "setup") await setup();
   else {
     const m = readManifest();
     if (command === "migrate") {
@@ -424,7 +626,11 @@ try {
     } else throw new Error("Unknown local database command");
   }
 } catch (error) {
-  // Only this module's safe errors are reported; provider errors are hidden at boundaries.
-  console.error(error instanceof Error && !/postgres(?:ql)?:\/\/|password=/i.test(error.message) ? error.message : "Local database operation failed");
+  console.error(process.argv[2] === "manual-recover"
+    ? "Manual recovery refused (" + (error instanceof RecoveryRefusal ? error.code : "IO") + "); retained state requires inspection"
+    : formatOperationalError(error, process.argv[2]?.startsWith("manual-")));
   process.exitCode = 1;
+} finally {
+  try { await releaseLock?.(); }
+  catch { console.error("Lifecycle lock release refused; inspect local state"); process.exitCode = 1; }
 }

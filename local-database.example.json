@@ -1,0 +1,5 @@
+{
+  "version": 1,
+  "root": "<absolute path to this checkout>",
+  "postgresPort": 55432
+}

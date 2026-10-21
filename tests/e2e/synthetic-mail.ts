@@ -1,9 +1,9 @@
 import { connect } from "node:net";
-import { readFileSync } from "node:fs";
+import { browserControlPath, readPrivateFile } from "../../tools/database/runtime-files";
 // Test-only private mailbox. Errors omit credentials; never import in app code.
 export async function syntheticTokenFor(email: string) {
   try {
-    const control = JSON.parse(readFileSync(".cache/m2-browser.json", "utf8")) as { port: number; key: string; databaseName: string };
+    const control = JSON.parse(readPrivateFile(browserControlPath)) as { port: number; key: string; databaseName: string };
     if (control.databaseName !== process.env.M2_BROWSER_DATABASE) throw new Error("Wrong target");
     const token = await new Promise<string | undefined>((accept, reject) => {
       const socket = connect(control.port, "127.0.0.1", () => socket.write(JSON.stringify({ key: control.key, email }) + "\n"));

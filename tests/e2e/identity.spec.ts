@@ -1,7 +1,7 @@
 import { expect, test, type Page, type APIRequestContext, type BrowserContext } from "@playwright/test";
 import { randomUUID } from "node:crypto";
 import { connect } from "node:net";
-import { readFileSync } from "node:fs";
+import { browserControlPath, readPrivateFile } from "../../tools/database/runtime-files";
 import { Client } from "pg";
 import { identityText } from "../../src/i18n/identity";
 import { databaseUrl, assertDatabaseIdentity, readManifest } from "../../tools/database/targets";
@@ -17,7 +17,7 @@ async function post(request: APIRequestContext, operation: string, data: object,
 }
 async function mailbox(email: string): Promise<string | undefined> {
   try {
-    const control = JSON.parse(readFileSync(".cache/m2-browser.json", "utf8")) as { port: number; key: string; databaseName: string };
+    const control = JSON.parse(readPrivateFile(browserControlPath)) as { port: number; key: string; databaseName: string };
     if (control.databaseName !== process.env.M2_BROWSER_DATABASE) throw new Error("Wrong control target");
     return await new Promise((accept, reject) => {
       const socket = connect(control.port, "127.0.0.1", () => socket.write(JSON.stringify({ key: control.key, email }) + "\n"));
