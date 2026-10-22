@@ -85,6 +85,8 @@ export async function requestSignIn(db: PrismaClient, options: IdentityOptions, 
   }
 }
 
+class ConfirmationChallengeExpired extends Error {}
+
 export async function confirmInTransaction(tx: Transaction, input: { token: string; browser: string; previousSession?: string }) {
   const candidate = await tx.emailOwnershipChallenge.findUnique({ where: { tokenDigest: digest(input.token) }, select: { id: true, userId: true } });
   if (!candidate) return null;
@@ -108,6 +110,10 @@ export async function confirmInTransaction(tx: Transaction, input: { token: stri
   const session = await tx.session.create({ data: {
     userId: candidate.userId, tokenDigest: digest(token), createdAt: now, expiresAt: new Date(now.getTime() + sessionLifetime),
   }, select: { expiresAt: true } });
+  // Revoking the previous account's session (or another write) can wait on a
+  // row lock after the first eligibility check. Recheck after all writes and
+  // throw to roll back every mutation; returning null here would commit them.
+  if (challenge.expiresAt <= await time(tx)) throw new ConfirmationChallengeExpired();
   return { token, expiresAt: session.expiresAt };
 }
 
@@ -116,7 +122,10 @@ export async function confirmSignIn(db: PrismaClient, options: IdentityOptions, 
 }) {
   if ((!options.ipReserved && !await allowIP(db, options, input.ip, "confirm")) || !tokenValid(input.token) || !tokenValid(input.browser)) return null;
   const token = input.token, browser = input.browser;
-  return db.$transaction((tx) => confirmInTransaction(tx, { token, browser, previousSession: input.previousSession }));
+  return db.$transaction((tx) => confirmInTransaction(tx, { token, browser, previousSession: input.previousSession })).catch((error: unknown) => {
+    if (error instanceof ConfirmationChallengeExpired) return null;
+    throw error; // Database/commit failures still reach the safe HTTP 503 boundary.
+  });
 }
 
 export async function sessionInTransaction(tx: Transaction, token: unknown) {

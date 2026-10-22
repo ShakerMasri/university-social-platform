@@ -281,4 +281,111 @@ describe("M2 on real disposable PostgreSQL", () => {
       expect(await attempt).toBeNull();
     } finally { await locker.query("ROLLBACK"); await locker.end(); await attempt; }
   });
+
+  it.each([
+    { expiresDuringWait: true, databaseFailure: false, outcome: "rolls back an expired" },
+    { expiresDuringWait: false, databaseFailure: false, outcome: "completes an unexpired" },
+    { expiresDuringWait: false, databaseFailure: true, outcome: "propagates a database failure in an unexpired" },
+  ])("$outcome account switch after an actual previous-session row lock wait", async ({ expiresDuringWait, databaseFailure }) => {
+    const accountA = await issue();
+    const previous = (await confirmSignIn(db, options, accountA))!;
+    const previousRow = await db.session.findUniqueOrThrow({ where: { tokenDigest: digest(previous.token) } });
+    const accountB = await issue();
+    const target = await db.emailOwnershipChallenge.findUniqueOrThrow({ where: { tokenDigest: digest(accountB.token) } });
+    // A second synthetic pending challenge makes sibling rollback observable.
+    const sibling = await db.emailOwnershipChallenge.create({ data: {
+      userId: target.userId, emailKey: target.emailKey, tokenDigest: digest(newToken()),
+      browserDigest: digest(accountB.browser), createdAt: target.createdAt, expiresAt: target.expiresAt,
+    } });
+    const state = async () => ({
+      challenge: await db.emailOwnershipChallenge.findUniqueOrThrow({ where: { id: target.id }, select: { consumedAt: true, revokedAt: true } }),
+      sibling: await db.emailOwnershipChallenge.findUniqueOrThrow({ where: { id: sibling.id }, select: { consumedAt: true, revokedAt: true } }),
+      user: await db.user.findUniqueOrThrow({ where: { id: target.userId }, select: { emailVerifiedAt: true, updatedAt: true } }),
+      previous: await db.session.findUniqueOrThrow({ where: { id: previousRow.id }, select: { revokedAt: true } }),
+      sessions: await db.session.count({ where: { userId: target.userId } }),
+    });
+    const before = await state();
+    expect(before.user.emailVerifiedAt).toBeNull();
+    expect(before.sessions).toBe(0);
+    const locker = new Client({ connectionString: databaseUrl(manifest, name!, "migration"), connectionTimeoutMillis: 5000 });
+    await locker.connect();
+    let attempt: ReturnType<typeof confirmSignIn> | undefined;
+    let settled = false;
+    let functionCreated = false, triggerCreated = false;
+    try {
+      if (databaseFailure) {
+        // Static fault fixture only in this marker-verified disposable database.
+        await migration.query("CREATE FUNCTION public.usp_m2_confirmation_reject_session() RETURNS trigger LANGUAGE plpgsql AS $$ BEGIN RAISE EXCEPTION 'Synthetic confirmation failure'; END $$");
+        functionCreated = true;
+        await migration.query('CREATE TRIGGER usp_m2_confirmation_reject_session BEFORE INSERT ON "Session" FOR EACH ROW EXECUTE FUNCTION public.usp_m2_confirmation_reject_session()');
+        triggerCreated = true;
+      }
+      await locker.query("BEGIN");
+      const { rows: [{ pid }] } = await locker.query<{ pid: number }>("SELECT pg_backend_pid() AS pid");
+      await locker.query('SELECT id FROM "Session" WHERE id = $1 FOR UPDATE', [previousRow.id]);
+      if (expiresDuringWait) await migration.query(
+        'UPDATE "EmailOwnershipChallenge" SET "expiresAt" = clock_timestamp() + interval \'2 seconds\' WHERE id = $1', [target.id]);
+      const expired = async () => (await migration.query<{ expired: boolean }>(
+        'SELECT "expiresAt" <= clock_timestamp() AS expired FROM "EmailOwnershipChallenge" WHERE id = $1', [target.id])).rows[0].expired;
+      expect(await expired()).toBe(false);
+      attempt = confirmSignIn(db, options, { ...accountB, previousSession: previous.token });
+      // Observe the actual waiter for this exact blocker, not an unrelated lock
+      // or a simulated service delay. Both handlers prevent unhandled rejection.
+      void attempt.then(() => { settled = true; }, () => { settled = true; });
+      let waiter: number | undefined;
+      for (let i = 0; i < 40; i++) {
+        await migration.query("SELECT pg_stat_clear_snapshot()");
+        const { rows } = await migration.query<{ pid: number; waiting: boolean }>(
+          "SELECT a.pid, EXISTS(SELECT 1 FROM pg_locks l WHERE l.pid = a.pid AND NOT l.granted) AS waiting FROM pg_stat_activity a WHERE a.datname = current_database() AND $1::integer = ANY(pg_blocking_pids(a.pid))", [pid]);
+        if (rows.length === 1 && rows[0].waiting) { waiter = rows[0].pid; break; }
+        await new Promise((done) => setTimeout(done, 25));
+      }
+      expect(waiter).toBeDefined();
+      expect(settled).toBe(false);
+      expect(await expired()).toBe(false); // B was eligible when revocation blocked.
+      if (expiresDuringWait) {
+        for (let i = 0; i < 120 && !await expired(); i++) await new Promise((done) => setTimeout(done, 25));
+      }
+      expect(await expired()).toBe(expiresDuringWait);
+      expect(settled).toBe(false);
+      expect((await migration.query<{ blocked: boolean }>(
+        "SELECT $1::integer = ANY(pg_blocking_pids($2::integer)) AS blocked", [pid, waiter])).rows[0].blocked).toBe(true);
+      await locker.query("COMMIT");
+      let result: Awaited<ReturnType<typeof confirmSignIn>> = null;
+      let databaseErrorPropagated = false;
+      try { result = await attempt; } catch { databaseErrorPropagated = true; }
+      const after = await state();
+      // Report only booleans/counts: a failing assertion must never print a token.
+      const evidence = {
+        authenticated: Boolean(result), databaseErrorPropagated,
+        challengeUnchanged: JSON.stringify(after.challenge) === JSON.stringify(before.challenge),
+        verificationUnchanged: JSON.stringify(after.user) === JSON.stringify(before.user),
+        siblingUnchanged: JSON.stringify(after.sibling) === JSON.stringify(before.sibling),
+        previousSessionUnchanged: JSON.stringify(after.previous) === JSON.stringify(before.previous),
+        sessionsForB: after.sessions,
+      };
+      console.info("Observed PostgreSQL account-switch lock", { expiresDuringWait, blocker: pid, waiter, ...evidence });
+      const rollback = expiresDuringWait || databaseFailure;
+      expect(evidence).toEqual({
+        authenticated: !rollback, databaseErrorPropagated: databaseFailure,
+        challengeUnchanged: rollback, verificationUnchanged: rollback,
+        siblingUnchanged: rollback, previousSessionUnchanged: rollback, sessionsForB: rollback ? 0 : 1,
+      });
+      const reservation = await db.identityRateLimit.findUniqueOrThrow({ where: { keyDigest: keyedDigest(options.rateKey, `ip:confirm:${accountB.ip}`) } });
+      expect(reservation.hits).toBe(1); // Rejected authentication does not erase its committed IP attempt.
+      if (result) {
+        expect(await ownProfile(db, previous.token)).toBeNull();
+        expect((await ownProfile(db, result.token))?.email).toBe(accountB.email);
+      } else expect((await ownProfile(db, previous.token))?.email).toBe(accountA.email);
+    } finally {
+      try { await locker.query("ROLLBACK"); }
+      finally {
+        try { await locker.end(); await attempt?.catch(() => {}); }
+        finally {
+          if (triggerCreated) await migration.query('DROP TRIGGER usp_m2_confirmation_reject_session ON "Session"');
+          if (functionCreated) await migration.query("DROP FUNCTION public.usp_m2_confirmation_reject_session()");
+        }
+      }
+    }
+  });
 });
