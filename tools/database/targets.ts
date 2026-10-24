@@ -44,10 +44,10 @@ export function validateManifest(value: unknown): LocalManifest {
 
 function manifestMetadataError(error: unknown) {
   const code = error && typeof error === "object" && "code" in error ? error.code : undefined;
-  const cause = new Error(code === "ENOENT" || code === "ENOTDIR" ? code : "Manifest metadata inspection failed");
   if (code === "ENOENT" || code === "ENOTDIR") {
-    return new Error("Local PostgreSQL setup has not been initialized; manifest is missing", { cause });
+    return new OperationalError("MANIFEST_MISSING");
   }
+  const cause = new Error("Manifest metadata inspection failed");
   return new Error("Local PostgreSQL manifest metadata check failed; inspect permissions without printing credentials", { cause });
 }
 

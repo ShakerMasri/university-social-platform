@@ -3,9 +3,10 @@ import { readIsolationProfile } from "./isolation";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { dirname, resolve } from "node:path";
 import { spawnSync } from "node:child_process";
-import { readFileSync } from "node:fs";
+import { mkdirSync, readFileSync } from "node:fs";
 import { image, manifestPath, readManifest, type LocalManifest } from "./targets";
 import { postgresHostPort } from "./ports";
+import { formatOperationalError } from "./operational-errors";
 import {
   assertPrivatePath, bootstrapPasswordPath, browserControlPath, databaseDirectory, runtimeDirectory,
   runtimeRootFor, validateWindowsAcl, writePrivateFile, type WindowsAcl,
@@ -23,6 +24,7 @@ vi.mock("./isolation.ts", async () => ({
 const virtual = vi.hoisted(() => ({
   paths: new Map<string, WindowsAcl>(), files: new Map<string, string>(), events: [] as string[],
   statErrors: new Map<string, string>(),
+  modes: new Map<string, number>(), owners: new Map<string, number>(),
   failCreated: false, sid: "S-1-5-21-111-222-333-1001",
 }));
 function privateAcl(path: string, directory = true): WindowsAcl {
@@ -34,7 +36,8 @@ vi.mock("node:fs", () => ({
   lstatSync: (path: string) => {
     const code = virtual.statErrors.get(path) ?? (virtual.paths.has(path) ? undefined : "ENOENT");
     if (code) throw Object.assign(new Error("Synthetic metadata failure"), { code });
-    return { isSymbolicLink: () => virtual.paths.get(path)?.reparse ?? false,
+    return { mode: virtual.modes.get(path) ?? 0o700, uid: virtual.owners.get(path) ?? 1000,
+      isSymbolicLink: () => virtual.paths.get(path)?.reparse ?? false,
       isDirectory: () => virtual.paths.get(path)?.directory ?? false, isFile: () => !(virtual.paths.get(path)?.directory ?? false) };
   },
   mkdirSync: vi.fn(),
@@ -54,7 +57,7 @@ beforeEach(() => {
   vi.mocked(readIsolationProfile).mockReturnValue(null);
   vi.mocked(readLocalDatabaseConfig).mockReturnValue(null);
   Object.defineProperty(process, "platform", { value: "win32" });
-  virtual.paths.clear(); virtual.files.clear(); virtual.statErrors.clear(); virtual.events.length = 0; virtual.failCreated = false;
+  virtual.paths.clear(); virtual.files.clear(); virtual.statErrors.clear(); virtual.modes.clear(); virtual.owners.clear(); virtual.events.length = 0; virtual.failCreated = false;
   let parent = dirname(runtimeDirectory);
   while (true) {
     virtual.paths.set(parent, privateAcl(parent));
@@ -95,6 +98,12 @@ describe("manifest existence and ACL diagnostics (no real files or credentials)"
   it.each(["ENOENT", "ENOTDIR"])("reports uninitialized setup for %s before any ACL subprocess or content read", (code) => {
     virtual.statErrors.set(manifestPath, code);
     expect(() => readManifest()).toThrow("Local PostgreSQL setup has not been initialized; manifest is missing");
+    let error: unknown;
+    try { readManifest(); } catch (value) { error = value; }
+    expect(error).toMatchObject({ code: "MANIFEST_MISSING" });
+    expect(error).not.toHaveProperty("cause");
+    expect(formatOperationalError(error)).toContain("[MANIFEST_MISSING]");
+    expect(formatOperationalError(error)).not.toContain(manifestPath);
     expect(spawnSync).not.toHaveBeenCalled();
     expect(readFileSync).not.toHaveBeenCalled();
     expect(virtual.files.size).toBe(0);
@@ -103,6 +112,10 @@ describe("manifest existence and ACL diagnostics (no real files or credentials)"
   it.each(["EACCES", "EPERM", "EIO"])("rejects metadata error %s without misclassifying it as missing", (code) => {
     virtual.statErrors.set(manifestPath, code);
     expect(() => readManifest()).toThrow("Local PostgreSQL manifest metadata check failed");
+    let error: unknown;
+    try { readManifest(); } catch (value) { error = value; }
+    expect(formatOperationalError(error)).toContain("[DATABASE]");
+    expect(formatOperationalError(error)).not.toContain(manifestPath);
     expect(readFileSync).not.toHaveBeenCalled();
     expect(spawnSync).not.toHaveBeenCalled();
   });
@@ -143,6 +156,43 @@ describe("manifest existence and ACL diagnostics (no real files or credentials)"
     virtual.events.length = 0;
     expect(readManifest()).toEqual(manifest);
     expect(virtual.events).toEqual([`inspect:${manifestPath}`, `read:${manifestPath}`]);
+  });
+});
+
+describe("POSIX permission refusal before sensitive writes (mock filesystem)", () => {
+  const getuidDescriptor = Object.getOwnPropertyDescriptor(process, "getuid");
+  beforeEach(() => {
+    Object.defineProperty(process, "platform", { value: "linux" });
+    Object.defineProperty(process, "getuid", { configurable: true, value: () => 1000 });
+    virtual.paths.set(runtimeDirectory, privateAcl(runtimeDirectory));
+    virtual.paths.set(databaseDirectory, privateAcl(databaseDirectory));
+    virtual.modes.set(runtimeDirectory, 0o755);
+  });
+  afterEach(() => {
+    if (getuidDescriptor) Object.defineProperty(process, "getuid", getuidDescriptor);
+    else Reflect.deleteProperty(process, "getuid");
+  });
+  it.each(["historical-0755", "group-writable", "foreign-owner"])("refuses %s directory before creating or overwriting a manifest", (reason) => {
+    virtual.modes.set(databaseDirectory, reason === "group-writable" ? 0o770 : reason === "historical-0755" ? 0o755 : 0o700);
+    if (reason === "foreign-owner") virtual.owners.set(databaseDirectory, 2000);
+    const original = "SYNTHETIC_RETAINED_MANIFEST";
+    virtual.paths.set(manifestPath, privateAcl(manifestPath, false)); virtual.files.set(manifestPath, original);
+    expect(() => assertPrivatePath(databaseDirectory, true)).toThrow("[RUNTIME_PERMISSIONS]");
+    expect(() => writePrivateFile(manifestPath, "replacement")).toThrow("[RUNTIME_PERMISSIONS]");
+    expect(() => writePrivateFile(bootstrapPasswordPath, "new-secret", true)).toThrow("[RUNTIME_PERMISSIONS]");
+    expect(virtual.files).toEqual(new Map([[manifestPath, original]]));
+    expect(virtual.events).toEqual([]); expect(spawnSync).not.toHaveBeenCalled();
+    expect(mkdirSync).not.toHaveBeenCalled();
+  });
+  it("allows the listable 0755 cache container with an owner-only 0700 sensitive child", () => {
+    expect(() => assertPrivatePath(runtimeDirectory)).not.toThrow();
+    expect(() => writePrivateFile(manifestPath, "synthetic-manifest", true)).not.toThrow();
+    expect(virtual.files.get(manifestPath)).toBe("synthetic-manifest");
+  });
+  it.each([0o775, 0o777])("still refuses a writable cache container at mode %s", (mode) => {
+    virtual.modes.set(runtimeDirectory, mode);
+    expect(() => assertPrivatePath(runtimeDirectory, true)).toThrow("[RUNTIME_PERMISSIONS]");
+    expect(virtual.events).toEqual([]);
   });
 });
 afterEach(() => { Object.defineProperty(process, "platform", { value: originalPlatform }); vi.clearAllMocks(); });

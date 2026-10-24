@@ -8,6 +8,8 @@ const messages = {
   LOCAL_CONFIG: "Local database configuration is invalid or unreadable; inspect local-database.json without printing it",
   LOCAL_PORT_CONFLICT: "Local PostgreSQL port conflicts with the isolation profile or existing manifest; preserve the recorded port and review configuration",
   LEGACY_RUNTIME: "Legacy repository runtime state requires inspection; relocation refused. Run npm run db:compatibility for metadata-only guidance; do not delete or copy state",
+  RUNTIME_PERMISSIONS: "Private runtime permissions or ownership refused; preserve existing state and run npm run db:compatibility for metadata-only guidance; no automatic permission repair",
+  MANIFEST_MISSING: "Local PostgreSQL setup has not been initialized; manifest is missing. Preserve any existing resources and review README Existing contributor before setup",
   MANIFEST_JSON: "Local database manifest JSON is invalid; inspect private metadata without printing it",
   SESSION_JSON: "Manual session JSON is invalid; retain evidence for inspection",
   CONTROL_JSON: "Local control JSON is invalid; retain evidence for inspection",

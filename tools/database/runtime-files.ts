@@ -1,4 +1,4 @@
-import { inspectLegacyRuntime } from "./legacy-runtime.ts";
+import { hasPrivatePosixPermissions, inspectLegacyRuntime } from "./legacy-runtime.ts";
 import { OperationalError } from "./operational-errors.ts";
 import { createHash } from "node:crypto";
 import { spawnSync } from "node:child_process";
@@ -145,7 +145,7 @@ export function assertPrivatePath(path: string, createDirectory = false) {
     const stat = lstatSync(target);
     // On POSIX the existing .cache container may be listable, but never writable
     // by others; sensitive children retain owner-only modes.
-    if ((stat.mode & (target === runtimeDirectory ? 0o022 : 0o077)) !== 0 || stat.uid !== process.getuid?.()) throw new Error("Private runtime permissions refused");
+    if (!hasPrivatePosixPermissions(stat, target === runtimeDirectory, process.getuid?.())) throw new OperationalError("RUNTIME_PERMISSIONS");
   }
 }
 
