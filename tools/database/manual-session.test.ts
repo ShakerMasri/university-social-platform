@@ -1,19 +1,17 @@
+import { manualPaths } from "./manual-paths";
 import { beforeEach, afterEach, describe, expect, it, vi } from "vitest";
 import { basename, dirname, resolve } from "node:path";
 import { recoverSession, type RecoveryOperations } from "./manual-recovery";
-import { manualControlPath } from "./manual-session";
-import { runtimeDirectory } from "./runtime-files";
-import { postgresHostPort } from "./ports";
+
+
+import { manualPostgresPort as postgresHostPort } from "./manual-paths";
 import { EventEmitter } from "node:events";
 import { connect, type Socket } from "node:net";
-import { image, type LocalManifest } from "./targets";
-import {
-  acquireLifecycleLock, authorizeManualOperation, cleanupSession, lifecycleLockPath, newManualSession,
-  prepareSession, stoppedSession, validateManualControl, validateManualSession, type ManualSession,
-} from "./manual-session";
+import { image, type LocalManifest } from "./manual-targets";
+import { acquireLifecycleLock, authorizeManualOperation, cleanupSession, newManualSession, prepareSession, stoppedSession, validateManualControl, validateManualSession, type ManualSession } from "./manual-session";
 import { mailboxTokenResponse, requestManualToken, syntheticManualEmail } from "../identity/manual-mailbox";
 import { acquireOperationGate } from "./lifecycle-lock";
-import { manualSessionPath, readManualSession, writeManualSession } from "./manual-session";
+import { readManualSession, writeManualSession } from "./manual-session";
 
 // No PostgreSQL, filesystem resources, process launch, clipboard or network is
 // touched by this suite. Real Windows ACL/IPC/cleanup checks remain separate gates.
@@ -78,7 +76,7 @@ vi.mock("./runtime-files.ts", async () => {
 }; });
 
 function fixture() {
-  const owner = "abcdef123456", prefix = `usp_m1b_${owner}`, project = `usp-m1b-${owner}`;
+  const owner = "abcdef123456", prefix = `usp_qa_${owner}`, project = `usp-qa-${owner}`;
   const manifest: LocalManifest = {
     version: 1, root: resolve("."), owner, project, container: `${project}-postgres`,
     dockerContext: "desktop-linux", dockerEndpoint: "npipe:////./pipe/dockerDesktopLinuxEngine",
@@ -96,10 +94,11 @@ const controlFor = (s: ManualSession) => ({ databaseName: s.databaseName, port: 
 
 const originalPlatform = process.platform;
 beforeEach(() => {
+  vi.stubEnv("LOCALAPPDATA", resolve("synthetic-local-appdata"));
   Object.defineProperty(process, "platform", { value: "win32" });
   virtual.files.clear(); virtual.links.clear(); virtual.gateBusy = false; virtual.renameFail = false; vi.clearAllMocks();
 });
-afterEach(() => { vi.useRealTimers(); Object.defineProperty(process, "platform", { value: originalPlatform }); });
+afterEach(() => { vi.unstubAllEnvs(); vi.useRealTimers(); Object.defineProperty(process, "platform", { value: originalPlatform }); });
 
 describe("manual QA target and lifecycle authorization", () => {
   it("reuses an exact complete temporary state after an interrupted atomic rename", () => {
@@ -112,7 +111,7 @@ describe("manual QA target and lifecycle authorization", () => {
     virtual.renameFail = false;
     writeManualSession(next, m);
     expect(readManualSession(m).phase).toBe("starting");
-    expect([...virtual.files.keys()]).toEqual([manualSessionPath]);
+    expect([...virtual.files.keys()]).toEqual([manualPaths.manualSessionPath]);
   });
 
   it("refuses a damaged temporary state while preserving the committed state", () => {
@@ -121,7 +120,7 @@ describe("manual QA target and lifecycle authorization", () => {
     const next: ManualSession = { ...s, phase: "starting", runId: "a".repeat(32), pid: null };
     virtual.renameFail = true;
     expect(() => writeManualSession(next, m)).toThrow();
-    const temporary = [...virtual.files.keys()].find((path) => path !== manualSessionPath)!;
+    const temporary = [...virtual.files.keys()].find((path) => path !== manualPaths.manualSessionPath)!;
     virtual.files.set(temporary, "truncated synthetic write"); virtual.renameFail = false;
     expect(() => writeManualSession(next, m)).toThrow("Incomplete session write");
     expect(readManualSession(m).phase).toBe("prepared");
@@ -137,7 +136,7 @@ describe("manual QA target and lifecycle authorization", () => {
   it("refuses development, foreign roots/owners, unregistered and non-ready targets", () => {
     const { manifest: m, session: s } = fixture();
     for (const changed of [{ ...s, databaseName: m.databases[0].name }, { ...s, root: resolve("..") },
-      { ...s, owner: "000000000000" }, { ...s, databaseName: `usp_m1b_${m.owner}_test_000000000000` }]) {
+      { ...s, owner: "000000000000" }, { ...s, databaseName: `usp_qa_${m.owner}_test_000000000000` }]) {
       expect(() => authorizeManualOperation(changed, m, "cleanup")).toThrow();
     }
     m.databases[1].ready = false;
@@ -205,7 +204,7 @@ describe("manual QA target and lifecycle authorization", () => {
 
   it("cleans only the session's registered test target, after verification", async () => {
     const { manifest: m, session: s } = fixture();
-    const unrelated = { ...m.databases[1], name: `usp_m1b_${m.owner}_test_000000000000` };
+    const unrelated = { ...m.databases[1], name: `usp_qa_${m.owner}_test_000000000000` };
     m.databases.push(unrelated);
     const calls: string[] = [];
     await cleanupSession(s, m, {
@@ -241,17 +240,17 @@ describe("manual QA target and lifecycle authorization", () => {
     await expect(acquireLifecycleLock("cleanup")).rejects.toThrow();
     await release();
     const next = await acquireLifecycleLock("manual-cleanup"); await next();
-    virtual.files.set(lifecycleLockPath, '{"pid":99999999}');
+    virtual.files.set(manualPaths.lifecycleLockPath, '{"pid":99999999}');
     await expect(acquireLifecycleLock("setup")).rejects.toThrow();
   });
 
   it("refuses to remove another owner's lock or follow an operational symlink", async () => {
     const release = await acquireLifecycleLock("manual-start");
-    virtual.files.set(lifecycleLockPath, "replacement");
+    virtual.files.set(manualPaths.lifecycleLockPath, "replacement");
     expect(() => release.assertHeld()).toThrow("ownership changed");
     await expect(release()).rejects.toThrow();
-    expect(virtual.files.get(lifecycleLockPath)).toBe("replacement");
-    virtual.files.clear(); virtual.links.add(runtimeDirectory);
+    expect(virtual.files.get(manualPaths.lifecycleLockPath)).toBe("replacement");
+    virtual.files.clear(); virtual.links.add(manualPaths.runtimeDirectory);
     await expect(acquireLifecycleLock("cleanup")).rejects.toThrow();
   });
 });
@@ -307,23 +306,23 @@ describe("atomic recovery writes across a fresh recovery invocation (virtual dis
       execution: { supervisor, server: { ...supervisor, pid: 101, parentPid: 100, started: "638900000020000000" },
         leaseNonce: "b".repeat(32), controlPort: 54321 } };
     writeManualSession(s, m, true);
-    virtual.files.set(manualControlPath, JSON.stringify(controlFor(s)));
+    virtual.files.set(manualPaths.manualControlPath, JSON.stringify(controlFor(s)));
     // New ops and a new state read on every invocation: no retained journal in memory.
     const operations = (): RecoveryOperations => ({
       gate: { assertHeld: vi.fn(), release: vi.fn(async () => {}) },
-      readSession: () => readManualSession(m), readControl: () => virtual.files.get(manualControlPath) ?? null,
+      readSession: () => readManualSession(m), readControl: () => virtual.files.get(manualPaths.manualControlPath) ?? null,
       readLease: () => null, inspect: () => ({ boot: supervisor.boot, processes: [] }),
       ports: async () => {}, verify: async () => {},
       claim: () => Object.assign(async () => {}, { lock: null, bind: vi.fn(), assertHeld: vi.fn() }),
       save: (value) => writeManualSession(value, m),
       retireControl: (expected) => {
-        expect(virtual.files.get(manualControlPath)).toBe(expected); virtual.files.delete(manualControlPath);
+        expect(virtual.files.get(manualPaths.manualControlPath)).toBe(expected); virtual.files.delete(manualPaths.manualControlPath);
       },
     });
     return { m, s, operations };
   }
   it("refuses a newly generated journal after first-write rename interruption and preserves all evidence", async () => {
-    const f = diskFixture(), control = virtual.files.get(manualControlPath);
+    const f = diskFixture(), control = virtual.files.get(manualPaths.manualControlPath);
     virtual.renameFail = true;
     await expect(recoverSession(readManualSession(f.m), f.m, f.operations())).rejects.toThrow("rename interruption");
     virtual.renameFail = false;
@@ -331,22 +330,22 @@ describe("atomic recovery writes across a fresh recovery invocation (virtual dis
     await expect(recoverSession(readManualSession(f.m), f.m, f.operations())).rejects.toThrow("Ambiguous session write");
     expect(virtual.files).toEqual(files);
     expect(readManualSession(f.m).phase).toBe("running");
-    expect(virtual.files.get(manualControlPath)).toBe(control);
+    expect(virtual.files.get(manualPaths.manualControlPath)).toBe(control);
   });
   it("retries the exact final write from the committed journal without duplicating history", async () => {
     const f = diskFixture(), first = f.operations(), save = first.save;
     first.save = (value) => { virtual.renameFail = value.phase === "recovered"; save(value); };
     await expect(recoverSession(readManualSession(f.m), f.m, first)).rejects.toThrow("rename interruption");
     const pending = readManualSession(f.m);
-    expect(pending.phase).toBe("recovering"); expect(virtual.files.has(manualControlPath)).toBe(false);
+    expect(pending.phase).toBe("recovering"); expect(virtual.files.has(manualPaths.manualControlPath)).toBe(false);
     virtual.renameFail = false;
     const recovered = await recoverSession(readManualSession(f.m), f.m, f.operations());
     expect(recovered.phase).toBe("recovered"); expect(recovered.recoveries).toEqual(pending.recoveries);
-    expect([...virtual.files.keys()]).toEqual([manualSessionPath]);
+    expect([...virtual.files.keys()]).toEqual([manualPaths.manualSessionPath]);
     expect(await recoverSession(readManualSession(f.m), f.m, f.operations())).toEqual(recovered);
   });
   it.each(["session.next.json", "session.next-foreign.json", "session.next-incomplete.json"])("preserves ambiguous residue %s", (name) => {
-    const f = diskFixture(), path = resolve(dirname(manualSessionPath), name);
+    const f = diskFixture(), path = resolve(dirname(manualPaths.manualSessionPath), name);
     virtual.files.set(path, "synthetic incomplete journal");
     const files = new Map(virtual.files);
     expect(() => writeManualSession({ ...f.s, phase: "stopping" }, f.m)).toThrow("Ambiguous session write");
@@ -356,9 +355,9 @@ describe("atomic recovery writes across a fresh recovery invocation (virtual dis
 
 it("refuses new session creation over uncommitted residue and preserves it", () => {
   const { manifest, session } = fixture();
-  const residue = resolve(dirname(manualSessionPath), "session.next-incomplete.json");
+  const residue = resolve(dirname(manualPaths.manualSessionPath), "session.next-incomplete.json");
   virtual.files.set(residue, "synthetic interrupted write");
   expect(() => writeManualSession(session, manifest, true)).toThrow("Ambiguous session write");
-  expect(virtual.files.has(manualSessionPath)).toBe(false);
+  expect(virtual.files.has(manualPaths.manualSessionPath)).toBe(false);
   expect(virtual.files.get(residue)).toBe("synthetic interrupted write");
 });

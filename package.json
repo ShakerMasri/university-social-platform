@@ -29,12 +29,13 @@
     "db:migrate": "node tools/database/local.mts migrate",
     "db:test": "node tools/database/local.mts test",
     "db:cleanup": "node tools/database/local.mts cleanup",
-    "manual:prepare": "node tools/database/local.mts manual-prepare",
-    "manual:start": "node tools/database/local.mts manual-start",
-    "manual:status": "node tools/database/local.mts manual-status",
-    "manual:recover": "node tools/database/local.mts manual-recover",
-    "manual:token": "node tools/database/local.mts manual-token",
-    "manual:cleanup": "node tools/database/local.mts manual-cleanup"
+    "manual:prepare": "node tools/database/manual.mts manual-prepare",
+    "manual:start": "node tools/database/manual.mts manual-start",
+    "manual:status": "node tools/database/manual.mts manual-status",
+    "manual:recover": "node tools/database/manual.mts manual-recover",
+    "manual:token": "node tools/database/manual.mts manual-token",
+    "manual:cleanup": "node tools/database/manual.mts manual-cleanup",
+    "manual:build": "node tools/database/manual-build.mts"
   },
   "dependencies": {
     "@prisma/adapter-pg": "7.10.0",

@@ -1,5 +1,5 @@
+import { resolve } from "node:path";
 import { validateManifest, type LocalManifest } from "./targets.ts";
-import { bootstrapPasswordPath } from "./runtime-files.ts";
 
 // Windows environment names are case insensitive. Remove ambient interpolation
 // and Compose controls, then supply only the validated manifest's resource names.
@@ -10,7 +10,6 @@ export function composeEnvironment(m: LocalManifest, inherited: NodeJS.ProcessEn
   return {
     ...env,
     M1B_OWNER: m.owner, M1B_CONTAINER: m.container, M1B_VOLUME: m.volume, M1B_PORT: String(m.port),
-    M1B_BOOTSTRAP_FILE: bootstrapPasswordPath,
   };
 }
 
@@ -39,7 +38,7 @@ export function validateComposeConfig(value: unknown, m: LocalManifest) {
       },
     },
     volumes: { data: { name: m.volume, labels: { "edu.usp.m1b.owner": m.owner } } },
-    secrets: { bootstrap_password: { name: `${m.project}_bootstrap_password`, file: bootstrapPasswordPath } },
+    secrets: { bootstrap_password: { name: `${m.project}_bootstrap_password`, file: resolve(".cache/m1b/bootstrap-password") } },
   };
   const canonical = (input: unknown): string => JSON.stringify(input, (_, item) => {
     if (item && typeof item === "object" && !Array.isArray(item)) {

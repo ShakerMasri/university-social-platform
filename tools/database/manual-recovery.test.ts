@@ -3,7 +3,7 @@ import { describe, expect, it, vi } from "vitest";
 import { resolve } from "node:path";
 import { recoverSession, type RecoveryOperations } from "./manual-recovery";
 import { authorizeManualOperation, beginManualRun, validateManualSession, type ManualSession } from "./manual-session";
-import { image, type LocalManifest } from "./targets";
+import { image, type LocalManifest } from "./manual-targets";
 import { type LifecycleLease, type LifecycleLock } from "./lifecycle-lock";
 import { assertProvenDead, validateProcessIdentity, type ProcessIdentity, type ProcessSnapshot } from "./windows-process";
 
@@ -12,7 +12,7 @@ function identity(pid: number, parentPid: number, started = "638900000010000000"
   return { pid, parentPid, boot, started, executable: process.execPath, sid: "S-1-5-21-111-222-333-1001" };
 }
 function fixture() {
-  const owner = "abcdef123456", project = `usp-m1b-${owner}`, prefix = `usp_m1b_${owner}`;
+  const owner = "abcdef123456", project = `usp-qa-${owner}`, prefix = `usp_qa_${owner}`;
   const m: LocalManifest = { version: 1, root: resolve("."), owner, project, container: `${project}-postgres`, dockerContext: "desktop-linux",
     dockerEndpoint: "npipe:////./pipe/dockerDesktopLinuxEngine", containerId: "a".repeat(64), volume: `${project}-data`, image, port: 15432,
     migrationRole: `${prefix}_migrate`, migrationPassword: "b".repeat(64), runtimeRole: `${prefix}_runtime`, runtimePassword: "c".repeat(64),
@@ -78,13 +78,13 @@ describe("explicit Manual QA recovery, simulated OS/files/resources only", () =>
     expect(live.ops.claim).not.toHaveBeenCalled();
   });
 
-  it.each(["server", "supervisor"] as const)("refuses a live original %s even with port 3100 free", async (which) => {
+  it.each(["server", "supervisor"] as const)("refuses a live original %s even with port 3200 free", async (which) => {
     const f = fixture(); f.state.snapshot = { boot, processes: [f.s.execution![which]] };
     await expect(recoverSession(f.s, f.m, f.ops)).rejects.toMatchObject({ code: "PROCESS" });
     expect(f.ops.claim).not.toHaveBeenCalled();
   });
 
-  it.each([3100, 54321])("refuses an unknown listener on recorded port %s", async (port) => {
+  it.each([3200, 54321])("refuses an unknown listener on recorded port %s", async (port) => {
     const f = fixture(); f.ops.ports = vi.fn(async (ports) => { if (ports.includes(port)) throw new Error("Busy"); });
     await expect(recoverSession(f.s, f.m, f.ops)).rejects.toMatchObject({ code: "PORT" });
     expect(f.ops.claim).not.toHaveBeenCalled(); expect(f.ops.save).not.toHaveBeenCalled();

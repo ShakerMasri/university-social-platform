@@ -42,7 +42,7 @@ function entries(directory) {
 }
 try {
   entries(resolve(root, "tools"));
-  for (const name of ["prisma.config.ts", "next.config.ts"]) audit(resolve(root, name));
+  for (const name of ["prisma.config.ts", "prisma.manual.config.ts", "next.config.ts"]) audit(resolve(root, name));
   process.stdout.write(JSON.stringify({ node: process.versions.node, mode: "strip", files: [...files].map((file) => relative(root, file).replaceAll(sep, "/")).sort() }) + "\n");
 } catch (error) {
   process.stderr.write("Native TypeScript compatibility check failed: " + error.message + "\n");

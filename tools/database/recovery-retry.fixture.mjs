@@ -27,7 +27,6 @@ mock.module("node:fs", { namedExports: {
   },
 } });
 mock.module(new URL("./runtime-files.ts", import.meta.url), { namedExports: {
-  runtimeDirectory: root, databaseDirectory: resolve(root, "m1b"), browserControlPath: resolve(root, "browser.json"),
   assertLocalPath: guard, assertPrivatePath: guard,
   powershellPath: () => { throw new Error("TEST_NATIVE_OPERATION_FORBIDDEN"); },
   readPrivateFile: (path) => { guard(path); if (!files.has(path)) throw new Error("TEST_MISSING_FILE"); return files.get(path); },
@@ -35,10 +34,19 @@ mock.module(new URL("./runtime-files.ts", import.meta.url), { namedExports: {
     guard(path); if (initial && files.has(path)) throw new Error("TEST_EXISTING_FILE"); files.set(path, contents);
   },
 } });
-const { image } = await import("./targets.ts");
-const { readManualSession, writeManualSession, manualControlPath } = await import("./manual-session.ts");
+mock.module(new URL("./manual-paths.ts", import.meta.url), { namedExports: {
+  manualHttpPort: 3200, manualPostgresPort: 55433,
+  manualPaths: {
+    runtimeDirectory: root, databaseDirectory: resolve(root, "m1b"), browserControlPath: resolve(root, "browser.json"),
+    manualDirectory: resolve(root, "manual-identity"), manualSessionPath: resolve(root, "manual-identity/session.json"),
+    manualControlPath: resolve(root, "manual-identity/control.json"), lifecycleLockPath: resolve(root, "lease.json"),
+  },
+} });
+const { manualPaths } = await import("./manual-paths.ts");
+const { image } = await import("./manual-targets.ts");
+const { readManualSession, writeManualSession } = await import("./manual-session.ts");
 const { recoverSession } = await import("./manual-recovery.ts");
-const owner = "abcdef123456", prefix = "usp_m1b_" + owner, project = "usp-m1b-" + owner;
+const owner = "abcdef123456", prefix = "usp_qa_" + owner, project = "usp-qa-" + owner;
 const m = { version: 1, root: resolve("."), owner, project, container: project + "-postgres",
   dockerContext: "desktop-linux", dockerEndpoint: "npipe:////./pipe/dockerDesktopLinuxEngine", containerId: "a".repeat(64),
   volume: project + "-data", image, port: 15432, migrationRole: prefix + "_migrate", migrationPassword: "b".repeat(64),
@@ -52,20 +60,20 @@ if (!input.files) {
     execution: { supervisor: parent, server: { ...parent, pid: 101, parentPid: 100, started: "638900000020000000" },
       leaseNonce: "f".repeat(32), controlPort: 54321 } };
   writeManualSession(s, m, true);
-  files.set(manualControlPath, JSON.stringify({ port: 54321, key: "a".repeat(64), databaseName: s.databaseName,
+  files.set(manualPaths.manualControlPath, JSON.stringify({ port: 54321, key: "a".repeat(64), databaseName: s.databaseName,
     sessionId: s.sessionId, runId: s.runId, pid: s.pid }));
 }
 let error = null;
 try {
   await recoverSession(readManualSession(m), m, {
     gate: { assertHeld() {}, async release() {} }, readSession: () => readManualSession(m),
-    readControl: () => files.get(manualControlPath) ?? null, readLease: () => null,
+    readControl: () => files.get(manualPaths.manualControlPath) ?? null, readLease: () => null,
     inspect: () => ({ boot: parent.boot, processes: [] }), ports: async () => {}, verify: async () => {},
     claim: () => Object.assign(async () => {}, { lock: null, bind() {}, assertHeld() {} }),
     save: (s) => { failRename = s.phase === input.failPhase; writeManualSession(s, m); },
     retireControl: (expected) => {
-      if (files.get(manualControlPath) !== expected) throw new Error("TEST_CHANGED_CONTROL");
-      files.delete(manualControlPath);
+      if (files.get(manualPaths.manualControlPath) !== expected) throw new Error("TEST_CHANGED_CONTROL");
+      files.delete(manualPaths.manualControlPath);
     },
   });
 } catch (caught) { error = caught.message; }

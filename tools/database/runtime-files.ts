@@ -1,21 +1,9 @@
-import { hasPrivatePosixPermissions, inspectLegacyRuntime } from "./legacy-runtime.ts";
+import { manualPaths } from "./manual-paths.ts";
+import { hasPrivatePosixPermissions } from "./legacy-runtime.ts";
 import { OperationalError } from "./operational-errors.ts";
-import { createHash } from "node:crypto";
 import { spawnSync } from "node:child_process";
 import { existsSync, lstatSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { dirname, isAbsolute, parse, relative, resolve, sep } from "node:path";
-
-// One deterministic location per checkout; no CLI override or fallback after refusal.
-export function runtimeRootFor(platform: string, localAppData: string | undefined, checkout: string) {
-  if (platform !== "win32") return resolve(checkout, ".cache");
-  if (!localAppData || !isAbsolute(localAppData)) throw new Error("Windows local application data path unavailable");
-  const id = createHash("sha256").update(resolve(checkout).toLowerCase()).digest("hex").slice(0, 24);
-  return resolve(localAppData, `usp-runtime-${id}`);
-}
-export const runtimeDirectory = runtimeRootFor(process.platform, process.env.LOCALAPPDATA, resolve("."));
-export const databaseDirectory = resolve(runtimeDirectory, "m1b");
-export const bootstrapPasswordPath = resolve(databaseDirectory, "bootstrap-password");
-export const browserControlPath = resolve(runtimeDirectory, "m2-browser.json");
 
 export function powershellPath() {
   if (process.platform !== "win32") throw new Error("Manual QA requires the reviewed Windows local transport");
@@ -23,11 +11,7 @@ export function powershellPath() {
 }
 
 export function assertLocalPath(path: string) {
-  // Changing the location must never make an old owned setup invisible to guards.
-  // No copying/adoption of credentials or resource identities is automatic.
-  if (process.platform === "win32" && runtimeDirectory !== resolve(".cache") &&
-      inspectLegacyRuntime().status === "review-required") throw new OperationalError("LEGACY_RUNTIME");
-  const target = resolve(path), suffix = relative(runtimeDirectory, target);
+  const target = resolve(path), suffix = relative(manualPaths.runtimeDirectory, target);
   if (suffix === ".." || suffix.startsWith(`..${sep}`) || isAbsolute(suffix)) throw new Error("Local operational path refused");
   let current = target;
   while (true) {
@@ -107,7 +91,7 @@ try {
 
 function inspectWindows(path: string, create = false) {
   const result = spawnSync(powershellPath(), ["-NoLogo", "-NoProfile", "-NonInteractive", "-Command", aclScript], {
-    input: JSON.stringify({ root: runtimeDirectory, path, create }), encoding: "utf8", windowsHide: true, timeout: 10000,
+    input: JSON.stringify({ root: manualPaths.runtimeDirectory, path, create }), encoding: "utf8", windowsHide: true, timeout: 10000,
     stdio: ["pipe", "pipe", "ignore"],
   });
   if (result.error || result.status !== 0) throw new Error("Private Windows ACL check failed; inspect permissions without printing credentials");
@@ -117,7 +101,7 @@ function inspectWindows(path: string, create = false) {
     let current = path;
     for (const entry of report.entries) {
       if (entry.path !== current) throw new Error("Incomplete ACL chain");
-      const suffix = relative(runtimeDirectory, current);
+      const suffix = relative(manualPaths.runtimeDirectory, current);
       const privateTarget = !isAbsolute(suffix) && suffix !== ".." && !suffix.startsWith(`..${sep}`);
       validateWindowsAcl(entry, report.sid, privateTarget);
       if (current !== path && !entry.directory) throw new Error("Invalid parent");
@@ -132,7 +116,7 @@ export function assertPrivatePath(path: string, createDirectory = false) {
   const target = resolve(path);
   if (createDirectory && !existsSync(target)) {
     const parent = dirname(target);
-    if (target !== runtimeDirectory) assertPrivatePath(parent, true);
+    if (target !== manualPaths.runtimeDirectory) assertPrivatePath(parent, true);
     if (process.platform === "win32") {
       inspectWindows(parent); // Validate the entire existing chain before creation.
       inspectWindows(target, true); // Atomic DACL, then validate the final result.
@@ -145,7 +129,7 @@ export function assertPrivatePath(path: string, createDirectory = false) {
     const stat = lstatSync(target);
     // On POSIX the existing .cache container may be listable, but never writable
     // by others; sensitive children retain owner-only modes.
-    if (!hasPrivatePosixPermissions(stat, target === runtimeDirectory, process.getuid?.())) throw new OperationalError("RUNTIME_PERMISSIONS");
+    if (!hasPrivatePosixPermissions(stat, false, process.getuid?.())) throw new OperationalError("RUNTIME_PERMISSIONS");
   }
 }
 
@@ -161,3 +145,5 @@ export function readPrivateFile(path: string) {
   assertPrivatePath(path);
   return readFileSync(path, "utf8");
 }
+
+export { runtimeRootFor } from "./manual-paths.ts";

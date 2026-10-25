@@ -1,13 +1,9 @@
 import { OperationalError, parseOperationalJson } from "./operational-errors.ts";
-import { lstatSync } from "node:fs";
+import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
 import { Client } from "pg";
-import { assertLocalPath, databaseDirectory, readPrivateFile } from "./runtime-files.ts";
 
-import { assertIsolatedManifest, readIsolationProfile } from "./isolation.ts";
-import { assertConfiguredManifestPort, readLocalDatabaseConfig, configuredPostgresPort } from "./local-database.ts";
-
-export const manifestPath = resolve(databaseDirectory, "manifest.json");
+export const manifestPath = resolve(".cache/m1b/manifest.json");
 export const image = "postgres:18.6-bookworm@sha256:afc7e2d441324c0388fa80c3d24f733b4194a4eb7f47dd8ee2b08eb1a24a647c";
 export type DatabaseRecord = { name: string; kind: "development" | "test"; ready: boolean };
 export type LocalManifest = {
@@ -42,29 +38,15 @@ export function validateManifest(value: unknown): LocalManifest {
   return m;
 }
 
-function manifestMetadataError(error: unknown) {
-  const code = error && typeof error === "object" && "code" in error ? error.code : undefined;
-  if (code === "ENOENT" || code === "ENOTDIR") {
-    return new OperationalError("MANIFEST_MISSING");
-  }
-  const cause = new Error("Manifest metadata inspection failed");
-  return new Error("Local PostgreSQL manifest metadata check failed; inspect permissions without printing credentials", { cause });
-}
-
 export function readManifest(): LocalManifest {
-  const isolation = readIsolationProfile(), local = readLocalDatabaseConfig();
-  configuredPostgresPort(local, isolation); // Reject conflicting public settings before credential access.
-  try {
-    assertLocalPath(manifestPath);
-    lstatSync(manifestPath); // Metadata only; no contents before ACL verification.
-  } catch (error) {
-    if (error instanceof OperationalError) throw error;
-    throw manifestMetadataError(error);
+  let text: string;
+  try { text = readFileSync(manifestPath, "utf8"); }
+  catch (error) {
+    const code = error && typeof error === "object" && "code" in error ? error.code : undefined;
+    if (code === "ENOENT" || code === "ENOTDIR") throw new OperationalError("MANIFEST_MISSING");
+    throw new OperationalError("DATABASE");
   }
-  const manifest = validateManifest(parseOperationalJson(readPrivateFile(manifestPath), "MANIFEST_JSON"));
-  assertIsolatedManifest(manifest, isolation);
-  assertConfiguredManifestPort(manifest.port, local, isolation);
-  return manifest;
+  return validateManifest(parseOperationalJson(text, "MANIFEST_JSON"));
 }
 
 export function databaseUrl(m: LocalManifest, name: string, role: "runtime" | "migration") {

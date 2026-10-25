@@ -1,18 +1,16 @@
+import { manualPaths } from "./manual-paths.ts";
 import { parseOperationalJson } from "./operational-errors.ts";
 import { createHash, randomBytes } from "node:crypto";
 import { existsSync, readdirSync, renameSync } from "node:fs";
 import { resolve } from "node:path";
-import { validateManifest, type LocalManifest, type DatabaseRecord } from "./targets.ts";
+import { validateManifest, type LocalManifest, type DatabaseRecord } from "./manual-targets.ts";
 
-import { assertLocalPath, assertPrivatePath, databaseDirectory, powershellPath, readPrivateFile, runtimeDirectory, writePrivateFile } from "./runtime-files.ts";
+import { assertLocalPath, assertPrivatePath, powershellPath, readPrivateFile, writePrivateFile } from "./runtime-files.ts";
 import { validateProcessIdentity, type ProcessIdentity } from "./windows-process.ts";
 import { type LifecycleLease } from "./lifecycle-lock.ts";
 export { assertLocalPath, assertPrivatePath, powershellPath } from "./runtime-files.ts";
-export { acquireLifecycleLock, lifecycleLockPath } from "./lifecycle-lock.ts";
+export { acquireLifecycleLock } from "./lifecycle-lock.ts";
 
-export const manualDirectory = resolve(runtimeDirectory, "manual-identity");
-export const manualSessionPath = resolve(manualDirectory, "session.json");
-export const manualControlPath = resolve(manualDirectory, "control.json");
 export const manualPhases = ["preparing", "prepared", "starting", "running", "stopping", "stopped", "interrupted", "cleaning", "recovering", "recovered"] as const;
 export type ManualPhase = typeof manualPhases[number];
 export type RunExecution = { server: ProcessIdentity; supervisor: ProcessIdentity; leaseNonce: string; controlPort: number | null };
@@ -47,15 +45,15 @@ function validateRecovery(value: unknown): RecoveryRecord {
 
 export function checkManualFiles(createDirectory = false) {
   powershellPath(); // Preserve the reviewed Windows-only manual transport gate.
-  assertPrivatePath(manualDirectory, createDirectory);
-  for (const path of [databaseDirectory, ...["manifest.json", "bootstrap-password", "compose.env"].map((name) => resolve(databaseDirectory, name))]) assertPrivatePath(path);
-  for (const path of [manualSessionPath, manualControlPath]) if (existsSync(path)) assertPrivatePath(path);
+  assertPrivatePath(manualPaths.manualDirectory, createDirectory);
+  for (const path of [manualPaths.databaseDirectory, ...["manifest.json", "bootstrap-password", "compose.env"].map((name) => resolve(manualPaths.databaseDirectory, name))]) assertPrivatePath(path);
+  for (const path of [manualPaths.manualSessionPath, manualPaths.manualControlPath]) if (existsSync(path)) assertPrivatePath(path);
 }
 
 export function newManualSession(m: LocalManifest): ManualSession {
   validateManifest(m);
   return { version: 1, root: resolve("."), owner: m.owner,
-    databaseName: `usp_m1b_${m.owner}_test_${randomBytes(6).toString("hex")}`,
+    databaseName: `usp_qa_${m.owner}_test_${randomBytes(6).toString("hex")}`,
     sessionId: randomBytes(16).toString("hex"), phase: "preparing", runId: null, pid: null };
 }
 
@@ -65,7 +63,7 @@ export function validateManualSession(value: unknown, m: LocalManifest): ManualS
   const s = value as ManualSession;
   if (Object.keys(s).filter((key) => !["execution", "recoveries"].includes(key)).sort().join(",") !== "databaseName,owner,phase,pid,root,runId,sessionId,version" ||
       s.version !== 1 || s.root !== resolve(".") || s.owner !== m.owner ||
-      typeof s.databaseName !== "string" || !new RegExp(`^usp_m1b_${m.owner}_test_[a-f0-9]{12}$`).test(s.databaseName) ||
+      typeof s.databaseName !== "string" || !new RegExp(`^usp_qa_${m.owner}_test_[a-f0-9]{12}$`).test(s.databaseName) ||
       typeof s.sessionId !== "string" || !/^[a-f0-9]{32}$/.test(s.sessionId) || !manualPhases.includes(s.phase) ||
       !(s.runId === null || (typeof s.runId === "string" && /^[a-f0-9]{32}$/.test(s.runId))) ||
       !(s.pid === null || (Number.isSafeInteger(s.pid) && s.pid > 0)) ||
@@ -88,34 +86,34 @@ export function validateManualSession(value: unknown, m: LocalManifest): ManualS
 }
 
 export function readManualSession(m: LocalManifest) {
-  assertLocalPath(manualSessionPath);
-  return validateManualSession(parseOperationalJson(readPrivateFile(manualSessionPath), "SESSION_JSON"), m);
+  assertLocalPath(manualPaths.manualSessionPath);
+  return validateManualSession(parseOperationalJson(readPrivateFile(manualPaths.manualSessionPath), "SESSION_JSON"), m);
 }
 
 export function writeManualSession(s: ManualSession, m: LocalManifest, initial = false) {
   validateManualSession(s, m);
-  assertLocalPath(manualSessionPath);
+  assertLocalPath(manualPaths.manualSessionPath);
   if (initial) {
-    assertPrivatePath(manualDirectory, true);
-    if (readdirSync(manualDirectory).some((name) => name.startsWith("session.next"))) throw new Error("Ambiguous session write requires inspection");
-    writePrivateFile(manualSessionPath, JSON.stringify(s), true);
+    assertPrivatePath(manualPaths.manualDirectory, true);
+    if (readdirSync(manualPaths.manualDirectory).some((name) => name.startsWith("session.next"))) throw new Error("Ambiguous session write requires inspection");
+    writePrivateFile(manualPaths.manualSessionPath, JSON.stringify(s), true);
     return;
   }
   const current = readManualSession(m);
   if (current.sessionId !== s.sessionId || current.databaseName !== s.databaseName) throw new Error("Refusing another manual session's state");
   const contents = JSON.stringify(s);
-  const temporary = resolve(manualDirectory, `session.next-${createHash("sha256").update(contents).digest("hex")}.json`);
+  const temporary = resolve(manualPaths.manualDirectory, `session.next-${createHash("sha256").update(contents).digest("hex")}.json`);
   assertLocalPath(temporary);
-  assertPrivatePath(manualDirectory);
+  assertPrivatePath(manualPaths.manualDirectory);
   // Preserve competing writes; they may contain an uncommitted recovery journal.
-  if (readdirSync(manualDirectory).some((name) => name.startsWith("session.next") && resolve(manualDirectory, name) !== temporary)) {
+  if (readdirSync(manualPaths.manualDirectory).some((name) => name.startsWith("session.next") && resolve(manualPaths.manualDirectory, name) !== temporary)) {
     throw new Error("Ambiguous session write requires inspection");
   }
   if (existsSync(temporary)) {
     if (readPrivateFile(temporary) !== contents) throw new Error("Incomplete session write requires inspection");
   } else writePrivateFile(temporary, contents, true, true);
-  assertPrivatePath(manualSessionPath);
-  renameSync(temporary, manualSessionPath);
+  assertPrivatePath(manualPaths.manualSessionPath);
+  renameSync(temporary, manualPaths.manualSessionPath);
 }
 
 export function authorizeManualOperation(s: ManualSession, m: LocalManifest, operation: "start" | "token" | "cleanup"): DatabaseRecord {

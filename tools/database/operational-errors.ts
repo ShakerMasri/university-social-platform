@@ -6,6 +6,8 @@ const messages = {
   PORT_DENIED: "Selected loopback TCP port was denied (EACCES); inspect exclusions and permissions",
   PORT_CHECK: "Loopback TCP preflight failed; inspect local configuration without changing resources",
   LOCAL_CONFIG: "Local database configuration is invalid or unreadable; inspect local-database.json without printing it",
+  MANUAL_CONFIG: "Manual QA configuration is invalid or unreadable; inspect manual-qa.json without printing it",
+  MANUAL_PORT_CONFLICT: "Manual QA port conflicts with the traditional default or a recorded Docker binding; preserve existing resources and select an independent QA port before new setup",
   LOCAL_PORT_CONFLICT: "Local PostgreSQL port conflicts with the isolation profile or existing manifest; preserve the recorded port and review configuration",
   LEGACY_RUNTIME: "Legacy repository runtime state requires inspection; relocation refused. Run npm run db:compatibility for metadata-only guidance; do not delete or copy state",
   RUNTIME_PERMISSIONS: "Private runtime permissions or ownership refused; preserve existing state and run npm run db:compatibility for metadata-only guidance; no automatic permission repair",

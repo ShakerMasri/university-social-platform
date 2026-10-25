@@ -1,17 +1,12 @@
+import { manualPaths, manualHttpPort } from "./manual-paths.ts";
 import { createHash, randomBytes } from "node:crypto";
 import { existsSync, lstatSync, unlinkSync } from "node:fs";
 import { resolve } from "node:path";
-import { readManifest, validateManifest, type LocalManifest } from "./targets.ts";
-import { assertPrivatePath, browserControlPath, readPrivateFile } from "./runtime-files.ts";
+import { readManifest, validateManifest, type LocalManifest } from "./manual-targets.ts";
+import { assertPrivatePath, readPrivateFile } from "./runtime-files.ts";
 import { ensurePortFree } from "./ports.ts";
-import {
-  acquireOperationGate, createLifecycleLease, lifecycleLockPath, validateLifecycleLock,
-  type LifecycleLock, type LifecycleLease, type OperationGate, type RunScope,
-} from "./lifecycle-lock.ts";
-import {
-  checkManualFiles, manualDirectory, manualControlPath, readManualSession, validateManualControl,
-  validateManualSession, writeManualSession, type ManualSession, type RecoveryRecord,
-} from "./manual-session.ts";
+import { acquireOperationGate, createLifecycleLease, validateLifecycleLock, type LifecycleLock, type LifecycleLease, type OperationGate, type RunScope } from "./lifecycle-lock.ts";
+import { checkManualFiles, readManualSession, validateManualControl, validateManualSession, writeManualSession, type ManualSession, type RecoveryRecord } from "./manual-session.ts";
 import { assertProvenDead, inspectProcesses, sameProcess, type ProcessSnapshot } from "./windows-process.ts";
 
 export class RecoveryRefusal extends Error {
@@ -77,7 +72,7 @@ export async function recoverSession(s: ManualSession, m: LocalManifest, ops: Re
     } catch { throw new RecoveryRefusal("PROCESS"); }
   };
   const checkPorts = async () => {
-    try { await ops.ports([...new Set([3100, ...(controlPort === null ? [] : [controlPort])])]); }
+    try { await ops.ports([...new Set([manualHttpPort, ...(controlPort === null ? [] : [controlPort])])]); }
     catch { throw new RecoveryRefusal("PORT"); }
   };
   prove();
@@ -116,7 +111,7 @@ export async function recoverManualQa(verify: (m: LocalManifest, s: ManualSessio
     checkManualFiles();
     const m = readManifest(), s = readManualSession(m);
     // Never adopt legacy pending writes, Playwright ownership or foreign control files.
-    if (existsSync(browserControlPath) || existsSync(resolve(manualDirectory, "session.next.json"))) throw new RecoveryRefusal("METADATA");
+    if (existsSync(manualPaths.browserControlPath) || existsSync(resolve(manualPaths.manualDirectory, "session.next.json"))) throw new RecoveryRefusal("METADATA");
     const readOptional = (path: string) => {
       try { lstatSync(path); }
       catch (error) {
@@ -126,21 +121,21 @@ export async function recoverManualQa(verify: (m: LocalManifest, s: ManualSessio
       return readPrivateFile(path);
     };
     return await recoverSession(s, m, {
-      gate, readSession: () => readManualSession(m), readControl: () => readOptional(manualControlPath), readLease: () => readOptional(lifecycleLockPath),
+      gate, readSession: () => readManualSession(m), readControl: () => readOptional(manualPaths.manualControlPath), readLease: () => readOptional(manualPaths.lifecycleLockPath),
       inspect: inspectProcesses,
       ports: async (ports) => { for (const port of ports) await ensurePortFree(port); },
       verify: () => verify(m, s),
       claim(expected, scope) {
         gate.assertHeld();
-        if (readOptional(lifecycleLockPath) !== expected) throw new RecoveryRefusal("CHANGED");
-        if (expected !== null) { assertPrivatePath(lifecycleLockPath); unlinkSync(lifecycleLockPath); }
+        if (readOptional(manualPaths.lifecycleLockPath) !== expected) throw new RecoveryRefusal("CHANGED");
+        if (expected !== null) { assertPrivatePath(manualPaths.lifecycleLockPath); unlinkSync(manualPaths.lifecycleLockPath); }
         return createLifecycleLease("manual-recover", gate, scope);
       },
       save: (next) => writeManualSession(next, m),
       retireControl(expected) {
         gate.assertHeld();
-        if (readOptional(manualControlPath) !== expected) throw new RecoveryRefusal("CHANGED");
-        assertPrivatePath(manualControlPath); unlinkSync(manualControlPath);
+        if (readOptional(manualPaths.manualControlPath) !== expected) throw new RecoveryRefusal("CHANGED");
+        assertPrivatePath(manualPaths.manualControlPath); unlinkSync(manualPaths.manualControlPath);
       },
     });
   } catch (error) {

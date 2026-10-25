@@ -1032,3 +1032,167 @@ Not executed: real compatibility inspection of existing state, setup, migrations
 Changed files (10): `README.md`, `docs/project-brief.md`; `tools/database/legacy-runtime.ts`, `compatibility.mts`, `runtime-files.ts`, `targets.ts`, `operational-errors.ts`; and `legacy-runtime.test.ts`, `runtime-files.test.ts`, `operational-errors.test.ts` in that directory. No new files. All changes remain unstaged; branch/HEAD and remotes are unchanged, index empty. No stage/commit/push/merge/rebase/reset or PR edit was performed.
 
 Publication recommendation: **READY FOR COMMIT REVIEW** for these scoped source changes only. Suggested commit: `fix(qa): diagnose legacy POSIX permissions and missing manifests`. Keep PR #8 a single **Draft** while the team reviews policy A and arranges approved native verification; split under option B if the team cannot accept the legacy break. **Not merge-ready:** PR8-01 policy/compatibility and PR8-02 operational compatibility remain open, and PR8-03 has no native execution evidence. Next smallest step is review of this exact unstaged diff and the A/B/C scope decision; no publication is authorized by this checkpoint.
+
+
+### Option B: traditional workflow restored, Manual QA isolated - 2026-10-25
+
+**Current owner decision supersedes the earlier recommendation to accept the legacy break.** Preserve the current-main developer/database contract and make the protected Manual QA infrastructure optional and resource independent. This checkpoint changes source/tests/docs only; no publication, runtime migration or native test campaign is authorized. Entry was clean on `feat/omar-manual-qa-tooling` at `06657eb75bca5d44626bbb7645bf69b04426597f`. Fresh Git fetch confirmed main `1e983be1c1571c8abc46b678f9da7fd7b0a344e8` and the same remote feature head; merge-base is `db92e4098193817f7e49aeb63fa8570303617f8c`.
+
+Before editing, verified the previous source backup inventories/bundles and created another verified source-only snapshot of all 304 tracked files plus an all-ref bundle in private temporary storage. Secrets, runtime state, local profiles, databases and dependencies were excluded. Existing developer work and historical QA outcomes are preserved.
+
+Architecture and compatibility acceptance:
+
+| Area | Correction / source evidence | Operational limit |
+| --- | --- | --- |
+| BC-01 | Traditional `local.mts`/`targets.ts` return to main's `.cache/m1b` contract. Compose, synthetic server and browser helpers match current-main source. Ordinary manifests/credentials are never imported into QA. | Existing main ownership/target/cleanup checks remain; this preserves main's filesystem policy, not QA's stricter policy. Real retained resources were not read or operated on. |
+| BC-02 | QA alone imports the gate, lease and CIM infrastructure. Separate `usp-qa-` projects/containers/volumes, `usp_qa_` roles/databases and `edu.usp.qa.owner` labels prevent cross-cleanup. Both validators reject the other namespace even with the same owner value. | Real FileShare/CIM/concurrency behavior still needs the native campaign. QA stale-lease refusal remains deliberate. |
+| BC-03 | Traditional historical 0755 and 0700 directories retain main behavior; no private-QA policy is imposed on them and no chmod/chown is performed. QA directories keep owner/ACL checks and reject group/other POSIX permissions. | Actual POSIX filesystem execution was not performed on this Windows host. |
+| BC-04 | Ordinary imports/Prisma config need no LOCALAPPDATA or QA config. QA path properties resolve lazily; QA missing-environment failure is caught before resource operations. | QA itself still requires the reviewed Windows environment; there is no permissive path fallback. |
+| BC-05 | The twelve-area independent Windows plan is retained and updated for independent resources and HTTP 3200. | Plan not executed; mocked/native-parser success does not validate native OS behavior. |
+| BC-06 | README ordinary commands restored from main; current optional QA workflow, config, retained legacy state, resource matrix and evidence boundaries documented. | Old shared-QA installations remain preserved/refused; no adoption or migration is implemented. |
+
+**Traditional data flow:** the existing scripts still enter `tools/database/local.mts`, read `.cache/m1b/manifest.json`, validate the same manifest/URL/roles/markers/Docker identities, and perform main's existing setup/review/migrate/test/guard-check/cleanup operations. They do not inspect QA settings, private directories, locks or leases. The only deliberate changes to these restored source files are fixed redacted error formatting and missing/malformed manifest classification. There is no extra argument/configuration/port requirement. The established synthetic launcher and Playwright mailbox contract remain at 3100 with their original control path and cookies. Normal Next development remains the shell with protected flows disabled, as on main.
+
+**QA data flow:** `manual:*` lifecycle scripts enter `manual.mts`. Optional ignored `manual-qa.json` contains version/root/postgresPort only, defaults to 55433, and cannot redirect runtime paths or supply credentials. The QA owner is independently generated. QA validates existing protected metadata before creating a gate/lease and refuses orphaned nonempty setup directories or old shared-resource manifests; it never fills retained evidence with new secrets. First `manual:prepare` can provision only its own dedicated QA container/volume/roles/internal database, then review migrations and prepare a registered QA test target. Subsequent operations retain ACL, incarnation, lease, acknowledged-stop, journal, recovery and narrow DROP safeguards. `manual:cleanup` keeps the QA container/volume/internal database/credentials, preserving its narrow session cleanup semantics. Whole-QA-infrastructure disposal is a separate future maintenance operation, not a use of traditional `db:cleanup`.
+
+**Additional interference boundaries:** QA HTTP is 3200; traditional browser HTTP remains 3100. QA setup refuses traditional default PostgreSQL 55432 and any configured binding found through bounded, read-only Docker port metadata inspection, including stopped containers; Windows exclusions and bind/close preflight also remain. No listener/container is stopped to make room. There is no automatically chosen fallback port. Compose uses bridge networking without creating/deleting a project network. QA uses its own explicitly selected Prisma config/check-target entrypoint. `manual:build` writes `.next-manual` and uses `tsconfig.manual.json`; ordinary builds retain `.next`. ESLint ignores only this additional generated output, with existing rules/gates unchanged.
+
+Cookies are host scoped across ports. The QA-only HTTP adapter strips traditional `usp_m2_*` credentials, accepts external `usp_qa_pending`/`usp_qa_session`, maps them to the unchanged app internally, and renames response cookies (including expiry/logout) at emission. Duplicate QA authentication cookies refuse. Stored, appendHeader, direct, raw-array and status-message writeHead cases are tested without opening a socket. Production authentication logic and ordinary browser cookie contracts are unchanged. Historical Postman results/cookie names remain historical evidence, not a claim that the revised transport was exercised in Postman.
+
+**Explicit current-main comparison:** a fresh native worker mocks all operational FS, Docker subprocess and PostgreSQL boundaries. Its optional source map ran the actual fetched main modules and corrected modules against the same fixture. All **16 paired cases** (eight commands ` 0755/0700) matched exit state, operational file accesses, Docker request sequence and successful status output. Mutating commands deliberately stop at their first read-only Docker boundary; these are not full lifecycle/database executions. Unknown public diagnostics are intentionally more redacted. Separate tests verify the lazy Prisma imports, traditional command routing, mutually exclusive target namespaces, QA strict permissions, retained locking/recovery and cookie/port isolation.
+
+**PR #9 composition:** an independent source-only temporary snapshot was composed file-by-file using the actual merge-base/current-main changes, without staging or merging an active branch. The service and database regression files match current main exactly; project-brief composed without textual conflict. Thirty-five relevant native TypeScript source files parsed in that snapshot. Dependencies are absent there and were not installed: combined npm gates and real expiry-lock/rollback/database/browser behavior remain **NOT VERIFIED**. This source result does not claim deployment or integration execution.
+
+Actual feature-checkout verification, Node 24.21.0 / npm 11.19.0:
+
+| Check | Actual result |
+| --- | --- |
+| `npm.cmd test` | PASS: **368 tests / 24 files**. |
+| Same Vitest suite in a child with LOCALAPPDATA, M1B_MIGRATION_URL and USP_MANUAL_BUILD absent | PASS: **368 / 24**; ordinary test execution requires no QA environment. |
+| Focused compatibility/QA suites | PASS: **169 tests / 7 files**; command selects backward-compatibility, manual-session/config/isolation, runtime-files, manual-recovery and recovery-retry suites. |
+| `npm.cmd run lint` | PASS, zero warnings. |
+| `npm.cmd run typecheck` | PASS. |
+| `npm.cmd run check:native-typescript` | PASS: **41 source files**; expected experimental Node API warning, not native OS evidence. |
+| `npm.cmd run build` | PASS: ordinary build, **13/13** generated static pages. |
+| `npm.cmd run manual:build` | PASS: isolated QA build, **13/13** generated static pages; no QA resources provisioned. |
+| `git diff --check` | PASS; new source files receive a separate whitespace check. |
+
+Observed correction-stage failures were fixed, not hidden: namespace rewiring initially exposed an old lease regex and fixture import/mock mismatch; stricter QA port exclusion exposed fixtures still using the traditional port; initial lint saw the new generated build output before its exact ignore was added; the explicit Prisma-import worker needed to exit after its assertions instead of waiting for unrelated library timers; strict typecheck caught a fixture literal type; one stack assertion matched the experimental warning's prose and was corrected to match actual stack-frame syntax. No security rule, permission guard, native warning or required gate was disabled.
+
+No real DB setup/status/migration/cleanup, Docker resource operation, recovery, ACL mutation, clipboard operation, crash experiment or teammate-resource access ran. The native CLI workers use synthetic maps/providers; header tests serialize into an in-memory Duplex. Source/build artifacts only were written. No src/, schema, migration, dependency version or lockfile change. No source backup or original checkout mutation. The complete 30-case Manual QA report is unchanged and remains tester-reported.
+
+The old `qa-isolation.json`/`local-database.json` files, examples and helper modules remain preserved but no longer control ordinary command dispatch. They are not silently rewritten or converted. Protected old shared-QA state requires separate review; a new independent QA checkout can provision a new namespace after separate authorization. No universal statement about uninspected teammate machines is made.
+
+Recommended review grouping: **one atomic implementation commit with its tests/docs**, e.g. `fix(qa): isolate manual resources and restore database workflows`. Do not split traditional lock removal from QA resource separation into an unsafe intermediate revision. Native campaign evidence can follow in a separately authorized checkpoint. Current HEAD/branch remain unchanged; all edits are unstaged and no commit/push/PR edit occurred. The later final report provides the exact changed-file inventory and source-versus-runtime compatibility matrix. This checkpoint is **READY FOR COMMIT REVIEW** at source level; real Windows/DB/browser execution and current-main integrated execution remain release/merge evidence gates.
+
+Exact uncommitted file inventory for this checkpoint (44):
+
+- Modified: `.gitignore`.
+- Modified: `README.md`.
+- Modified: `compose.m1b.yaml`.
+- Modified: `docs/project-brief.md`.
+- Modified: `eslint.config.mjs`.
+- Modified: `next.config.ts`.
+- Modified: `package.json`.
+- Modified: `tests/e2e/identity.spec.ts`.
+- Modified: `tests/e2e/synthetic-mail.ts`.
+- Modified: `tools/database/check-native-typescript.mjs`.
+- Modified: `tools/database/compatibility.mts`.
+- Modified: `tools/database/compose.test.ts`.
+- Modified: `tools/database/compose.ts`.
+- Modified: `tools/database/lifecycle-lock.ts`.
+- Modified: `tools/database/local.mts`.
+- Modified: `tools/database/manual-recovery.test.ts`.
+- Modified: `tools/database/manual-recovery.ts`.
+- Modified: `tools/database/manual-session.test.ts`.
+- Modified: `tools/database/manual-session.ts`.
+- Modified: `tools/database/operational-errors.ts`.
+- Modified: `tools/database/recovery-retry.fixture.mjs`.
+- Modified: `tools/database/runtime-files.test.ts`.
+- Modified: `tools/database/runtime-files.ts`.
+- Modified: `tools/database/targets.ts`.
+- Modified: `tools/identity/local-server.mts`.
+- Added: `compose.manual.yaml`.
+- Added: `manual-qa.example.json`.
+- Added: `prisma.manual.config.ts`.
+- Added: `tools/database/backward-compatibility.fixture.mjs`.
+- Added: `tools/database/backward-compatibility.test.ts`.
+- Added: `tools/database/manual-build.mts`.
+- Added: `tools/database/manual-check-target.mts`.
+- Added: `tools/database/manual-compose.test.ts`.
+- Added: `tools/database/manual-compose.ts`.
+- Added: `tools/database/manual-config.test.ts`.
+- Added: `tools/database/manual-config.ts`.
+- Added: `tools/database/manual-isolation.test.ts`.
+- Added: `tools/database/manual-paths.ts`.
+- Added: `tools/database/manual-resources.ts`.
+- Added: `tools/database/manual-targets.ts`.
+- Added: `tools/database/manual.mts`.
+- Added: `tools/identity/manual-cookies.ts`.
+- Added: `tools/identity/manual-server.mts`.
+- Added: `tsconfig.manual.json`.
+
+### Option B import-timeout investigation - 2026-10-25
+
+Final commit review stopped on an actual unit-test failure: 367 passed and one exceeded Vitest's unchanged 5000ms deadline. This investigation is a separate, source-preserving checkpoint; it does not authorize staging, committing or publication. Entry repository/branch/HEAD and the exact 25-modified/19-added inventory matched the preceding checkpoint. All 44 candidate hashes were recorded. The original checkout's 273 source hashes and Git state, previous backup fingerprints and the additional 304-file Option B backup were verified unchanged.
+
+The exact test is `loads ordinary Prisma config and QA libraries with no LOCALAPPDATA, but refuses QA path use` in `tools/database/backward-compatibility.test.ts`. It calls `spawnSync(process.execPath, ["--input-type=module"])`, not Vitest's in-process importer. The child deletes LOCALAPPDATA, M1B_MIGRATION_URL and USP_MANUAL_BUILD before its first project import, clears inherited NODE_OPTIONS through the child environment, imports the actual traditional and QA Prisma configs, QA paths/recovery and Next config, asserts the ordinary default build directory, and verifies that Windows QA path access still refuses the missing environment. Its fresh module cache prevents Vitest import order or the parent's synthetic LOCALAPPDATA fixture from satisfying the assertion accidentally. Native Node 24.21.0 type stripping is used; no tsx/ts-node/Vitest transform loader runs inside this child. All environment changes are process local.
+
+The traditional config eagerly imports Prisma's actual config package and pg through traditional targets, but reads the manifest or launches target verification only when an explicit migration URL exists. That URL is absent here. QA paths are lazy getters; importing recovery/ACL/process/lease helpers defines functions and scripts without acquiring a lease, inspecting processes, resolving the private runtime path or executing recovery. Loading source/dependency files is expected filesystem work; no operational manifest, credentials, database, Docker or ACL work is required by this import scenario. Prisma's installed config package also eagerly loads dependencies including Effect; this is unchanged dependency code, not a newly introduced QA dependency. There is no explicit sleep or polling in the test. The child flushes its small success marker before exiting; spawnSync waits for and reaps it. Its independent 15000ms subprocess timeout is longer than Vitest's 5000ms test deadline. Installed Vitest code checks the elapsed deadline after a synchronous body returns, explaining why a completed blocking child can still produce a test-timeout report after approximately eleven seconds. No deadline or termination behavior was changed.
+
+Controlled reproduction with the existing runner, no timeout overrides:
+
+| Run | Result / exit | Duration |
+| --- | --- | --- |
+| First isolated `npm.cmd test -- tools/database/backward-compatibility.test.ts -t 'loads ordinary Prisma config' --reporter=verbose` | FAIL / 1: same 5000ms deadline | Test 11272ms; runner 12.75s. |
+| Complete compatibility file, verbose | PASS / 0: 14 tests | Import test 793ms; runner 2.95s. |
+| Second isolated invocation, identical command | PASS / 0 | Test 511ms; runner 0.79s. |
+| Seven-suite compatibility/QA group selected in the preceding checkpoint | PASS / 0: 169 tests | Import test 544ms; runner 2.54s. |
+| Unmodified `npm.cmd test` | PASS / 0: 368 tests / 24 files | Runner 3.58s. |
+| Third isolated invocation after both builds | PASS / 0 | Test 520ms; runner 0.817s. |
+
+Every import child starts with a fresh process/module cache. OS filesystem/antivirus cache state was not controlled: the first reproduction's cold/warm OS state is unknown; later runs reuse recently accessed files. No cache was cleared or security software changed. Reproduction in isolation shows that simultaneous Vitest test files are not necessary for the failure; later passing parallel group/full-suite runs do not establish that contention can never contribute.
+
+Three temporary diagnostic workers outside the source tree measured the same sequential real imports and clean environment: child totals 451/497/462ms; parent spawn-to-exit totals 517/570/535ms, all exit 0. Traditional Prisma config accounted for 426-469ms; each remaining import took at most 23ms. Only the three standard pipe resources remained before explicit exit; no timer/socket/process leak was observed in those runs. These warm measurements do not locate the delay in the earlier slow invocation. A separate real Prisma import with the persistent Node compile cache disabled passed in 507ms. A diagnostic-only load hook appended a synthetic LOCALAPPDATA requirement to that config in memory: the otherwise identical clean child rejected it in 509ms with the expected distinct exit code. No source file or dependency was patched. Two initial diagnostic-hook invocations had string-construction syntax errors; they were corrected in the temporary diagnostic program and are excluded from import timing evidence. This negative control supports detection of an actual missing-environment dependency; it does not resolve the sporadic startup delay.
+
+**Classification: E, intermittent failure; underlying cause remains unconfirmed.** The slow result was reproduced once, then not reproduced by the bounded repetitions. Environment-specific startup/file loading is plausible; a specific Windows, disk, antivirus, CPU or scheduler cause has not been measured. There is no demonstrated deterministic application/config regression or unnecessary initialization operation to fix. No speculative test/runtime change, timeout increase, new dependency, skipped test or weakened assertion was applied. The only repository edit in this investigation is this evidence entry; the other 43 candidate files retain their entry hashes.
+
+Final safe gates: lint PASS with zero warnings; typecheck PASS, including another ordinary typecheck after the isolated QA build regenerated its own ignored type references; native TypeScript PASS (41 files, expected experimental API warning); standard build PASS (13/13 static pages in .next); manual:build PASS (13/13 in .next-manual); git diff --check PASS. All 19 untracked source/example files also passed a separate trailing-whitespace/merge-marker and credential/private-runtime-path pattern inspection. The real import assertions and ownership/namespace/lease regression tests remain intact. Traditional config is unchanged, and the traditional entrypoint/targets still differ from fetched main only by the already reviewed redacted diagnostics. There are no new application authentication, schema, migration, lockfile or dependency changes. PR #9 remains on main; its source composition evidence and the pending integrated-execution limit from the preceding checkpoint are unchanged, with no merge/rebase performed.
+
+Decision: **TRANSIENT FAILURE - REQUIRES CONFIRMATION**. A subsequent successful run is evidence of intermittency, not proof of a fix or permission to resume the commit. Next smallest step: another separately authorized final review beginning with the unchanged test in a fresh session before other gates; if the long run recurs, capture per-import/spawn/exit timings during that failing run before selecting a correction. The 44-path set remains intact and unstaged, index empty, HEAD unchanged at 06657eb75bca5d44626bbb7645bf69b04426597f. No original checkout, backups, remote branch or PR was modified. No real database, Docker, migration, cleanup, recovery, ACL or native lifecycle operation was executed. Native Windows/PostgreSQL/browser verification remains pending.
+
+### Option B native import probe reliability correction - 2026-10-25
+
+This subsequent owner-authorized investigation supersedes the preceding transient-only recommendation for the test harness. Entry safety checks again matched the exact 44-path inventory, branch feat/omar-manual-qa-tooling and HEAD 06657eb75bca5d44626bbb7645bf69b04426597f, with no staged files. Candidate hashes were recorded and the original checkout and all existing source backups verified unchanged. The pre-change target test passed in 510ms (fresh runner 0.781s); there was no new natural timeout in this investigation.
+
+**Confirmed harness defect, unresolved original latency:** the old child allowance was 15000ms inside a 5000ms synchronous Vitest test. Installed Vitest checks the elapsed deadline after a synchronous body returns, while spawnSync blocks the worker event loop. The earlier sole timeout report, with no status/marker assertion error, is consistent with a successfully completed child being rejected afterward; it did not independently record child creation/import/exit timings. The historical 11.27-second interval therefore cannot be assigned to a particular stage or Windows service. Switching to async does not itself accelerate imports or explain that delay. It corrects independently established timeout/cancellation/reporting semantics rather than claiming to fix an unmeasured OS cause.
+
+Only tools/database/backward-compatibility.test.ts and this evidence entry were changed in this checkpoint. The target test now awaits a direct asynchronous Node spawn with no shell, hidden Windows window, bounded completion and Vitest cancellation propagation. The existing child deadline remains 15000ms, followed by at most 1000ms to confirm termination. Only this test's outer timeout becomes 18000ms, leaving another 2000ms for scheduling/assertion reporting. No global timeout, retry, ordinary script or other fixture timeout was changed. Evidence for permitting the existing child allowance is the previously observed approximately 11-second completed invocation, plus this test's functional import contract: it has no approved 5-second performance SLA. This adjustment explicitly accepts a successful bounded import between 5 and 15 seconds; it must not be represented as evidence that startup performance improved. All real imports and positive/negative assertions still execute, and a hang beyond the unchanged child limit still fails.
+
+The helper resolves successful execution only after the process and stdio close. Spawn/input failures, nonzero status, termination signals, output overflow, child deadline and test cancellation are classified with fixed codes. Failure paths terminate only the direct owned test Node child and wait for closure; inability to confirm termination within the grace period is an explicit failure, never success. No shell or descendant process is used by these import/fault programs. Stdout and stderr share a 16384-byte limit; stderr is consumed without retention or logging. Public diagnostics allow only fixed phase names, numeric durations, status and closure flags, omitting raw provider output, environment values and private paths. Timers and the cancellation listener are removed on completion. Six added regressions cover spawn failure, nonzero exit even after a success marker, both output streams overflowing, a hung child, and cancellation; each expected failure confirmed actual close. Initial test development exposed two incorrect Vitest it.each context callbacks; those tests were corrected, not skipped. The original import assertion passed during that run; there were no new natural timeout failures to hide with retries.
+
+The child still deletes LOCALAPPDATA, M1B_MIGRATION_URL and USP_MANUAL_BUILD before its first project import, now explicitly asserts the missing environment and a PID different from its parent, then imports the actual ordinary/QA Prisma configs, recovery and Next config. A fresh process/module cache is used every time. The ordinary distDir assertion, Windows protected-path refusal and separate zero-resource-operation QA CLI test remain intact. Parent environment mutation is limited to the existing restored Vitest fixture. Traditional commands, manifest paths, resource/ownership checks, QA leases, production authentication and PR #9 composition evidence are unaffected; no application, schema, migration, dependency, lockfile or Prisma configuration edit occurred.
+
+Actual timing sample on the final test implementation: spawn event at 7ms, first output at 66ms, traditional Prisma import 446ms, QA Prisma another 17ms, QA paths/recovery another 12ms, Next another 1ms, assertions another 1ms; final output at 542ms and complete process/stdio closure at 557ms. These observations separate process startup/output delivery, imports and the final approximately 15ms flush/close tail. They are a successful sample, not a reconstruction of the old slow run. The same fixed-stage numeric protocol is retained for future failures and slow successes (visible with the verbose reporter).
+
+Safe temporary controls exercised the actual helper extracted from the test, without editing imported sources on disk. One deliberately delayed clean-process probe waited 6000ms before the original import/assertion program: it completed successfully and closed in 6591ms, while the parent processed 109 heartbeat callbacks. This demonstrates responsive async waiting beyond the former outer budget, not a naturally slow import. A synthetic unsafe QA path getter made the original negative assertion fail (exit 1, closed in 490ms, no success marker). A load hook adding a synthetic LOCALAPPDATA dependency to the actual traditional Prisma config in memory also failed (exit 1, closed in 498ms, no success marker). These controls preserve evidence that neither successful imports nor assertions can be skipped to obtain a pass. No runtime security implementation was relaxed.
+
+Bounded regression results, Node 24.21.0 / npm 11.19.0, all final runs exit 0:
+
+| Check | Actual result / duration |
+| --- | --- |
+| Three independent focused runner invocations of the target after correction | 3 PASS, 0 FAIL/timeouts; runner totals 0.789 / 0.851 / 0.860s. Each runner spawned a new native import child. |
+| Final complete backward-compatibility file, verbose | 20/20 PASS; 2.82s, import probe 558ms. |
+| Seven focused compatibility/QA suites | 175/175 PASS; 3.02s, import probe 545ms. |
+| First independent npm.cmd test | 374/374 PASS, 24 files; 4.26s. |
+| Second independent npm.cmd test | 374/374 PASS, 24 files; 3.98s. |
+| Lint | PASS, zero warnings. |
+| Typecheck | PASS, including ordinary type regeneration/typecheck after the QA build. |
+| Native TypeScript | PASS, 41 files; expected experimental API warning. |
+| Normal build | PASS, 13/13 pages in .next; compile 341ms, TypeScript 2.4s, page generation 756ms. |
+| Manual QA build | PASS, 13/13 pages in .next-manual; compile 361ms, TypeScript 2.5s, page generation 948ms. |
+| Git whitespace and separate 19-untracked-file inspection | PASS; no conflict markers, credential/private-runtime-path pattern findings or trailing-whitespace defects. |
+
+Cold here means a fresh Node process/module cache. OS cache state was not cleared or controlled; these samples do not prove cold-disk, native lifecycle or absolute stability. Natural latency beyond 15 seconds will still fail with stage evidence. Existing unrelated synchronous native fixtures were deliberately left in scope-preserving form. No real DB, Docker, migrations, cleanup, recovery, runtime ACL or QA lifecycle operation was executed. Only dedicated disposable test Node children were started/terminated for helper fault checks. No stage/commit/push/merge/rebase/reset/remote/PR change occurred; original checkout and backups remain preserved. The exact 25-modified/19-untracked set remains intact, index empty; the other 42 candidate file hashes remain unchanged from entry.
+
+Decision: **READY FOR FINAL COMMIT REVIEW**, limited to resuming the complete atomic 44-file compatibility/security review. The timeout-budget defect is corrected and the limited observed regression sample passes; the underlying historical Windows startup delay remains unknown and native Windows/PostgreSQL/browser plus current-main integrated execution remain pending. This decision authorizes no commit, push or merge in this checkpoint.
