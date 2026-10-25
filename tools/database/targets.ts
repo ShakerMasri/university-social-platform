@@ -1,3 +1,4 @@
+import { OperationalError, parseOperationalJson } from "./operational-errors.ts";
 import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
 import { Client } from "pg";
@@ -38,7 +39,14 @@ export function validateManifest(value: unknown): LocalManifest {
 }
 
 export function readManifest(): LocalManifest {
-  return validateManifest(JSON.parse(readFileSync(manifestPath, "utf8")));
+  let text: string;
+  try { text = readFileSync(manifestPath, "utf8"); }
+  catch (error) {
+    const code = error && typeof error === "object" && "code" in error ? error.code : undefined;
+    if (code === "ENOENT" || code === "ENOTDIR") throw new OperationalError("MANIFEST_MISSING");
+    throw new OperationalError("DATABASE");
+  }
+  return validateManifest(parseOperationalJson(text, "MANIFEST_JSON"));
 }
 
 export function databaseUrl(m: LocalManifest, name: string, role: "runtime" | "migration") {

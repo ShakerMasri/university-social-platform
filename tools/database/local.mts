@@ -1,3 +1,4 @@
+import { formatOperationalError } from "./operational-errors.ts";
 import { spawnSync } from "node:child_process";
 import { randomBytes } from "node:crypto";
 import { existsSync, mkdirSync, readFileSync, writeFileSync, unlinkSync, rmdirSync } from "node:fs";
@@ -425,6 +426,6 @@ try {
   }
 } catch (error) {
   // Only this module's safe errors are reported; provider errors are hidden at boundaries.
-  console.error(error instanceof Error && !/postgres(?:ql)?:\/\/|password=/i.test(error.message) ? error.message : "Local database operation failed");
+  console.error(formatOperationalError(error));
   process.exitCode = 1;
 }

@@ -17,3 +17,11 @@ Thumbs.db
 *.pem
 *.key
 .aws/
+
+# Machine-local isolation identity; share only the example.
+/qa-isolation.json
+/local-database.json
+
+/manual-qa.json
+
+.next-manual/

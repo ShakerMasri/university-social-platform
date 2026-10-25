@@ -1,0 +1,32 @@
+# Managed only through tools/database/manual.mts; no ambient DATABASE_URL is used.
+services:
+  postgres:
+    image: postgres:18.6-bookworm@sha256:afc7e2d441324c0388fa80c3d24f733b4194a4eb7f47dd8ee2b08eb1a24a647c
+    container_name: ${M1B_CONTAINER:?}
+    network_mode: bridge
+    ports:
+      - "127.0.0.1:${M1B_PORT:?}:5432"
+    environment:
+      POSTGRES_USER: usp_qa_bootstrap
+      POSTGRES_DB: postgres
+      POSTGRES_PASSWORD_FILE: /run/secrets/bootstrap_password
+      POSTGRES_INITDB_ARGS: --auth-host=scram-sha-256
+    secrets:
+      - bootstrap_password
+    volumes:
+      - data:/var/lib/postgresql
+    labels:
+      edu.usp.qa.owner: ${M1B_OWNER:?}
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U usp_qa_bootstrap -d postgres"]
+      interval: 2s
+      timeout: 3s
+      retries: 30
+secrets:
+  bootstrap_password:
+    file: ${M1B_BOOTSTRAP_FILE:?}
+volumes:
+  data:
+    name: ${M1B_VOLUME:?}
+    labels:
+      edu.usp.qa.owner: ${M1B_OWNER:?}

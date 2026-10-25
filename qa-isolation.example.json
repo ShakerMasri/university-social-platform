@@ -1,0 +1,9 @@
+{
+  "version": 1,
+  "root": "<absolute path to your checkout-qa-isolated>",
+  "sourceRoot": "<absolute path to your source checkout>",
+  "sourceOwner": "<source 12 lowercase hex owner>",
+  "sourcePort": 15432,
+  "owner": "<new independent 12 lowercase hex owner>",
+  "postgresPort": 15433
+}

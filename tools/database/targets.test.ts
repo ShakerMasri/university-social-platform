@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { resolve } from "node:path";
+import { postgresHostPort } from "./ports";
 import { assertDistinctTargets, databaseUrl, image, validateManifest, validateTarget, type LocalManifest } from "./targets";
 
 function fixture(): LocalManifest {
@@ -8,7 +9,7 @@ function fixture(): LocalManifest {
   return {
     version: 1, root: resolve("."), owner, project: `usp-m1b-${owner}`, container: `usp-m1b-${owner}-postgres`,
     dockerContext: "desktop-linux", dockerEndpoint: "npipe:////./pipe/dockerDesktopLinuxEngine",
-    containerId: "a".repeat(64), volume: `usp-m1b-${owner}-data`, image, port: 55432,
+    containerId: "a".repeat(64), volume: `usp-m1b-${owner}-data`, image, port: postgresHostPort,
     migrationRole: `${prefix}_migrate`, migrationPassword: "b".repeat(64),
     runtimeRole: `${prefix}_runtime`, runtimePassword: "c".repeat(64),
     databases: [{ name: `${prefix}_dev`, kind: "development", ready: true },
@@ -17,6 +18,13 @@ function fixture(): LocalManifest {
 }
 
 describe("local targets rejected before network access", () => {
+  it("keeps an existing manifest's registered port authoritative", () => {
+    const m = { ...fixture(), port: 25432 };
+    const url = databaseUrl(m, m.databases[0].name, "runtime");
+    expect(validateTarget(url, m, "runtime")).toBe(m.databases[0].name);
+    expect(() => validateTarget(url.replace(":25432", `:${postgresHostPort}`), m, "runtime")).toThrow();
+  });
+
   it("accepts only the exact owned endpoint and selected role", () => {
     const m = fixture();
     const url = databaseUrl(m, m.databases[0].name, "runtime");
@@ -28,7 +36,7 @@ describe("local targets rejected before network access", () => {
     const m = fixture();
     const url = databaseUrl(m, m.databases[0].name, "runtime");
     for (const target of [undefined, "", "not a URL", url.replace("127.0.0.1", "example.test"),
-      url.replace("127.0.0.1", "localhost"), url.replace(":55432", ":5432"),
+      url.replace("127.0.0.1", "localhost"), url.replace(`:${m.port}`, ":5432"),
       url.replace(m.databases[0].name, "shared"), `${url}?host=example.test`, `${url}#fragment`,
       url.replace("postgresql:", "postgres:"), url.replace(m.runtimePassword, "d".repeat(64))]) {
       expect(() => validateTarget(target, m, "runtime")).toThrow();
