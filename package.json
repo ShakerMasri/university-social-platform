@@ -29,16 +29,16 @@
     "db:cleanup": "node tools/database/local.mts cleanup"
   },
   "dependencies": {
-    "@prisma/adapter-pg": "7.10.0",
-    "@prisma/client": "7.10.0",
-    "next": "16.4.0",
+    "@prisma/adapter-pg": "7.10.1",
+    "@prisma/client": "7.10.1",
+    "next": "16.4.3",
     "pg": "8.23.1",
     "react": "19.3.0",
     "react-dom": "19.3.0"
   },
   "devDependencies": {
     "@eslint/js": "10.0.1",
-    "@next/eslint-plugin-next": "16.4.0",
+    "@next/eslint-plugin-next": "16.4.3",
     "@playwright/test": "1.64.0",
     "@types/node": "24.19.1",
     "@types/pg": "8.23.1",
@@ -46,13 +46,13 @@
     "@types/react-dom": "19.3.0",
     "eslint": "10.12.0",
     "eslint-plugin-react-hooks": "7.1.1",
-    "prisma": "7.10.0",
+    "prisma": "7.10.1",
     "typescript": "6.0.3",
     "typescript-eslint": "8.71.1",
     "vitest": "5.0.3"
   },
   "allowScripts": {
-    "prisma@7.10.0": true,
-    "@prisma/engines@7.10.0": true
+    "prisma@7.10.1": true,
+    "@prisma/engines@7.10.1": true
   }
 }

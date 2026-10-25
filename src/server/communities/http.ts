@@ -1,4 +1,5 @@
 import "server-only";
+import { reportOperationalFailure } from "../diagnostics.ts";
 import { NextRequest, NextResponse } from "next/server";
 import type { PrismaClient } from "../../generated/prisma/client.ts";
 import { identityDatabase, requireLocalIdentity } from "../identity/local.ts";
@@ -11,11 +12,14 @@ export const communityReply = (body: object, status = 200) => NextResponse.json(
 } });
 export class InputError extends Error {}
 export async function communityHTTP(request: NextRequest, handle: (db: PrismaClient, token: unknown) => Promise<NextResponse>) {
+  let enabled = false;
   try {
     const { context } = requireLocalIdentity(request.headers);
+    enabled = true;
     if (request.method !== "GET" && request.headers.get("origin") !== context.origin) return communityReply({ ok: false }, 403);
     return await handle(identityDatabase(context), request.cookies.get(sessionCookie)?.value);
   } catch (error) {
+    if (enabled && !(error instanceof CommunityError) && !(error instanceof InputError)) reportOperationalFailure("communities.http.failed");
     return communityReply({ ok: false }, error instanceof CommunityError ? error.status : error instanceof InputError ? 400 : 503);
   }
 }

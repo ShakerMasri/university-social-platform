@@ -44,6 +44,16 @@ Resolve decisions when they affect the current checkpoint: community/channel dif
 
 Do not add SaaS, grading, attendance, payments, calls, LMS integrations, or other unrelated systems without an explicit scope decision. Never imply university endorsement.
 
+## Mandatory code quality constraints
+
+When generating or changing code, strictly apply these requirements beyond basic functionality. They supplement the more specific security, architecture and verification rules below:
+
+1. **SECURITY:** Prevent known vulnerability patterns. Validate untrusted inputs at system boundaries, enforce authorization on the server, and apply context-appropriate output encoding or sanitization where needed. Follow the dependency and secret-handling practices below; never treat a clean scanner result as proof of security.
+2. **MAINTAINABILITY:** Follow DRY and Separation of Concerns. Use highly descriptive, semantic names and focused modules. Avoid duplicated business rules and hardcoded secrets or deployment-specific values; read operational configuration from validated environment variables. Keep genuine domain invariants in clearly named constants rather than making every constant externally configurable.
+3. **SCALABILITY AND PERFORMANCE:** Consider time and space complexity, bound work and payloads, paginate growing collections, and avoid unnecessary database queries. Keep application workers stateless where applicable, with durable state and cross-worker coordination in appropriate shared storage. Measure consequential performance choices; do not introduce speculative distributed architecture or premature optimization.
+4. **RELIABILITY:** Handle failures explicitly at appropriate boundaries using try/catch where recovery, safe translation or cleanup is needed. Preserve transaction rollback and propagate unexpected failures to the responsible handler; never swallow errors or report failed writes as success. Provide meaningful, access-controlled, sanitized operational logging and actionable failure signals without exposing credentials, tokens, private content or unnecessary personal data. Do not let failures or application crashes go unnoticed.
+5. **TESTABILITY:** Write modular, loosely coupled code. Keep core logic deterministic and free of avoidable side effects; isolate database, network, clock and randomness effects behind explicit boundaries when useful. Test observable behavior and meaningful failure/security cases with the repository's established tools, including integration tests where mocks cannot establish correctness. Record what was actually tested and what remains unverified.
+
 ## Stack and architecture
 
 - The abstract specifies Next.js and TypeScript for frontend and backend, PostgreSQL for storage, and Prisma for data access. Use React and the Next.js App Router as the project's preferred application approach. Reconcile any existing repository before changing it.

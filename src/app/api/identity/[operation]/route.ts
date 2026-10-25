@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { reportOperationalFailure } from "@/server/diagnostics";
 import { isLocale } from "@/i18n/locales";
 import { identityDatabase, requireLocalIdentity } from "@/server/identity/local";
 import { cookieOptions, newToken, pendingCookie, sessionCookie, syntheticDomain, tokenValid } from "@/server/identity/policy";
@@ -33,17 +34,24 @@ async function input(request: NextRequest) {
 }
 
 export async function GET(request: NextRequest, { params }: Params) {
+  let enabled = false;
   try {
     const { context } = requireLocalIdentity(request.headers);
+    enabled = true;
     if ((await params).operation !== "profile" || request.nextUrl.search) return reply({ ok: false }, 404);
     const profile = await ownProfile(await identityDatabase(context), request.cookies.get(sessionCookie)?.value);
     return profile ? reply({ ok: true, ...profile }) : reply({ ok: false }, 401);
-  } catch { return reply({ ok: false }, 503); }
+  } catch {
+    if (enabled) reportOperationalFailure("identity.http.get_failed");
+    return reply({ ok: false }, 503);
+  }
 }
 
 export async function POST(request: NextRequest, { params }: Params) {
+  let enabled = false;
   try {
     const { context, ip } = requireLocalIdentity(request.headers);
+    enabled = true;
     // Cookie auth and login/pending state both need CSRF protection. No CORS or
     // permissive forwarded-host/proxy exception is configured in this local flow.
     if (request.headers.get("origin") !== context.origin || request.nextUrl.search) return reply({ ok: false }, 403);
@@ -102,5 +110,8 @@ export async function POST(request: NextRequest, { params }: Params) {
     response.cookies.set(sessionCookie, "", { ...cookieOptions(), maxAge: 0 });
     response.cookies.set(pendingCookie, "", { ...cookieOptions(), maxAge: 0 });
     return response;
-  } catch { return reply({ ok: false }, 503); }
+  } catch {
+    if (enabled) reportOperationalFailure("identity.http.post_failed");
+    return reply({ ok: false }, 503);
+  }
 }

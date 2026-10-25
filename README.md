@@ -56,7 +56,7 @@ For a local production preview, run `npm.cmd start` after building. This also le
 
 ## Test M2–M3 with a local database
 
-You need Docker with a running Linux engine. The scripts use pinned PostgreSQL 18.6 and Prisma 7.10.0; they do not install or start Docker Desktop.
+You need Docker with a running Linux engine. The scripts use pinned PostgreSQL 18.6 and Prisma 7.10.1; they do not install or start Docker Desktop.
 
 1. If `.cache/m1b/manifest.json` exists, run `npm.cmd run db:status` and inspect any failure. Otherwise, create a fresh isolated setup with `npm.cmd run db:setup`.
 2. Complete the build and Chromium installation above. Review the SQL in [prisma/migrations](prisma/migrations), then run:
@@ -75,7 +75,7 @@ You need Docker with a running Linux engine. The scripts use pinned PostgreSQL 1
 
 `db:review` replays migration history in a disposable database and compares it with the schema. `db:migrate` applies reviewed history to this setup's development database. Database tests and the M2–M3 browser runner create and remove their own test databases.
 
-The browser runner uses `http://127.0.0.1:3100`, synthetic `@university.test` addresses and an in-memory test mailbox. It covers sign-in, profile, logout and communities, then stops its servers. Ordinary development mode does not offer a working sign-in flow.
+The browser runner uses `http://127.0.0.1:3100`, synthetic `@university.test` addresses and an in-memory test mailbox. It covers sign-in, profile, logout and communities, including adversarial access, forged sessions/authority and stored-script checks, then stops its servers. Ordinary development mode does not offer a working sign-in flow.
 
 Use the guarded scripts rather than direct Compose commands or database resets. They refuse mismatched ownership. Keep `.cache/m1b/` and `.cache/m2-browser.json` private: they contain local operational credentials. If cleanup refuses a target, inspect it before retrying.
 
@@ -100,7 +100,7 @@ Protected flows require the synthetic runner. Check both languages, Arabic RTL, 
 - Profile access is owner-only. Community APIs recheck sessions, membership and creator permissions on the server.
 - Verified users can discover private community names/descriptions; private spaces require current membership. A saved profile is required to create a community. Teachers receive no automatic privileges.
 - Test sign-in links expire after ten minutes, are single-use and are bound to the requesting browser. Sessions last seven days; logout revokes them. HTTP cookies are a loopback test exception, not deployed HTTPS security.
-- Known dependency advisories remain under recorded exceptions, with review due **2026-11-09**. Prisma is release-gated; braces is mitigated, not fixed. See the [security review](docs/project-brief.md#security-audit-and-complete-advisory-exceptions).
+- The 2026-10-25 full and production-filtered audits report no affected package entries after supported updates. This does not establish zero vulnerabilities or clear native/bundled licensing and release requirements. The historical braces advisory was withdrawn. Reassess by **2026-11-09** or on exposure changes; see the [current security checkpoint](docs/project-brief.md#dependency-security-and-regression-checkpoint--2026-10-25).
 - Tests currently cover Chromium. Live email delivery, real-user usability, screen readers and deployment remain unverified.
 
 Before real-user use, resolve provider, privacy, account lifecycle, teacher/moderation and hosting decisions, and complete the [release checklist](docs/project-brief.md#before-public-release). Third-party notices are an incomplete inventory; shipped artifacts still need license and attribution review.

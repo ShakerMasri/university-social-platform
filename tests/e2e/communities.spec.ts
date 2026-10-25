@@ -5,6 +5,7 @@ import { communityText } from "../../src/i18n/communities";
 import { identityText } from "../../src/i18n/identity";
 import { assertDatabaseIdentity, databaseUrl, readManifest } from "../../tools/database/targets";
 import { syntheticTokenFor } from "./synthetic-mail";
+import { newToken, sessionCookie } from "../../src/server/identity/policy";
 test.use({ trace: "off", screenshot: "off", video: "off" });
 const origin = "http://127.0.0.1:3100";
 const post = (request: APIRequestContext, path: string, data: object, headers: Record<string, string> = {}) => request.post(path, { data, headers: { Origin: origin, ...headers } });
@@ -300,3 +301,162 @@ for (const locale of ["en", "ar"] as const) {
     await expect(page.locator("html")).toHaveAttribute("data-onboarding-document", "same-document");
   });
 }
+
+// Adversarial probes use only real HTTP/browser boundaries. Fixture privileges
+// above provision synthetic actors; they do not authorize any attack request.
+// Keep assertion output boolean/status-only when responses may contain identities.
+test("adversarial: owning another community never grants victim-community authority across membership states", async ({ context, browser }) => {
+  const victimOwnerId = await signIn(context, `Owner ${randomUUID()}`);
+  const attacker = await browser.newContext({ baseURL: origin });
+  const pending = await browser.newContext({ baseURL: origin });
+  try {
+    const attackerId = await signIn(attacker, `Attacker ${randomUUID()}`);
+    const pendingName = `Pending ${randomUUID()}`;
+    const pendingId = await signIn(pending, pendingName);
+    const victim = await post(context.request, "/api/communities", { name: "Victim private", description: "Discoverable metadata", visibility: "PRIVATE" });
+    expect(victim.status()).toBe(201);
+    const { id } = await victim.json() as { id: string };
+    const membershipPath = `/api/communities/${id}/memberships`;
+    const decoy = await post(attacker.request, "/api/communities", { name: "Attacker owned", description: "", visibility: "PRIVATE" });
+    expect(decoy.status()).toBe(201);
+    const decoyId = (await decoy.json() as { id: string }).id;
+    expect((await attacker.request.get(`/api/communities/${decoyId}/memberships`)).status()).toBe(200);
+    expect((await post(pending.request, membershipPath, { action: "join" })).status()).toBe(200);
+    const memberPage = await attacker.newPage();
+    for (const state of ["outsider", "pending", "member", "removed"] as const) {
+      await test.step(state, async () => {
+        if (state === "pending") expect((await post(attacker.request, membershipPath, { action: "join" })).status()).toBe(200);
+        if (state === "member") expect((await post(context.request, membershipPath, { action: "approve", userId: attackerId })).status()).toBe(200);
+        if (state === "removed") expect((await post(context.request, membershipPath, { action: "remove", userId: attackerId })).status()).toBe(200);
+        const before = await (await context.request.get(membershipPath)).text();
+        expect((await post(attacker.request, membershipPath, { action: "join", status: "MEMBER", ownerId: victimOwnerId })).status()).toBe(400);
+        const read = await attacker.request.get(`/api/communities/${id}`);
+        expect(read.status()).toBe(state === "member" ? 200 : 404);
+        if (state !== "member") expect((await read.text()) === '{"ok":false}').toBe(true);
+        else expect((await read.json() as { isOwner: boolean }).isOwner).toBe(false);
+        for (const path of [membershipPath, `${membershipPath}?after=${pendingId}`]) {
+          const denied = await attacker.request.get(path);
+          expect(denied.status()).toBe(403);
+          expect((await denied.text()) === '{"ok":false}').toBe(true);
+        }
+        for (const action of ["approve", "remove"]) {
+          const denied = await post(attacker.request, membershipPath, { action, userId: pendingId }, {
+            "X-User-Id": victimOwnerId, "X-Role": "admin", "X-Community-Owner": victimOwnerId,
+          });
+          expect(denied.status()).toBe(403);
+          expect((await denied.text()) === '{"ok":false}').toBe(true);
+        }
+        expect((await (await context.request.get(membershipPath)).text()) === before).toBe(true);
+        for (const locale of ["en", "ar"] as const) {
+          const response = await memberPage.goto(`/${locale}/communities/${id}?after=${pendingId}`);
+          expect(response !== null).toBe(true);
+          const html = await response!.text();
+          // The cursor UUID was supplied by the attacker and may be echoed in
+          // framework route data. The confidential display name was not supplied.
+          expect(html.includes(victimOwnerId) || html.includes(pendingName)).toBe(false);
+          const heading = memberPage.getByRole("heading", { name: "Victim private", exact: true });
+          if (state === "member") await expect(heading).toBeVisible();
+          else {
+            await expect(memberPage.getByRole("main").getByRole("alert")).toHaveText(communityText[locale].unavailable);
+            await expect(heading).toHaveCount(0);
+          }
+        }
+      });
+    }
+    const listing = await attacker.request.get("/api/communities");
+    expect(listing.status()).toBe(200);
+    const data = await listing.json() as { items: Record<string, unknown>[] };
+    // Discovery deliberately reveals names/descriptions to verified users; never
+    // other users' identities, member lists/counts or community owner IDs.
+    const allowed = ["description", "id", "isOwner", "membership", "name", "visibility"].sort();
+    expect(data.items.length > 0).toBe(true);
+    expect(data.items.every(item => JSON.stringify(Object.keys(item).sort()) === JSON.stringify(allowed))).toBe(true);
+  } finally { await pending.close(); await attacker.close(); }
+});
+
+test("adversarial: forged actor headers and mass assignment cannot read or edit another profile", async ({ context, browser }) => {
+  const ownerName = `Profile owner ${randomUUID()}`;
+  const ownerId = await signIn(context, ownerName);
+  const attacker = await browser.newContext({ baseURL: origin });
+  try {
+    await signIn(attacker, "Attacker profile");
+    const forged = { "X-User-Id": ownerId, "X-Role": "admin", "X-Owner-Id": ownerId };
+    const own = await attacker.request.get("/api/identity/profile", { headers: forged });
+    expect(own.status()).toBe(200);
+    expect((await own.json() as { displayName: string }).displayName === "Attacker profile").toBe(true);
+    expect((await attacker.request.get(`/api/identity/profile?userId=${ownerId}`)).status()).toBe(404);
+    const selector = await post(attacker.request, "/api/identity/profile", { displayName: "Hijack", userId: ownerId, role: "admin" }, forged);
+    expect(selector.status()).toBe(400);
+    const ownWrite = await post(attacker.request, "/api/identity/profile", { displayName: "Own profile changed" }, forged);
+    expect(ownWrite.status()).toBe(200);
+    const owner = await context.request.get("/api/identity/profile");
+    expect(owner.status()).toBe(200);
+    expect((await owner.json() as { displayName: string }).displayName === ownerName).toBe(true);
+    const attackerProfile = await attacker.request.get("/api/identity/profile");
+    expect((await attackerProfile.json() as { displayName: string }).displayName === "Own profile changed").toBe(true);
+    const page = await attacker.newPage();
+    for (const locale of ["en", "ar"] as const) {
+      const response = await page.goto(`/${locale}/profile?userId=${ownerId}`);
+      expect(response !== null).toBe(true);
+      expect((await response!.text()).includes(ownerName)).toBe(false);
+      expect(await page.getByLabel(identityText[locale].name).inputValue() === "Own profile changed").toBe(true);
+    }
+  } finally { await attacker.close(); }
+});
+
+test("adversarial: fabricated, altered and logged-out bearer cookies cannot reopen protected APIs or pages", async ({ context, browser }) => {
+  const name = `Session owner ${randomUUID()}`;
+  await signIn(context, name);
+  const created = await post(context.request, "/api/communities", { name: "Session private", description: "", visibility: "PRIVATE" });
+  expect(created.status()).toBe(201);
+  const { id } = await created.json() as { id: string };
+  const valid = (await context.cookies()).find(cookie => cookie.name === sessionCookie);
+  if (!valid) throw new Error("Synthetic session fixture unavailable; credentials omitted");
+  const altered = (valid.value[0] === "a" ? "b" : "a") + valid.value.slice(1);
+  const anonymous = await browser.newContext({ baseURL: origin });
+  try {
+    expect((await post(context.request, "/api/identity/logout", {})).status()).toBe(200);
+    for (const candidate of [newToken(), altered, valid.value]) {
+      const headers = { Cookie: `${sessionCookie}=${candidate}`, "X-Role": "admin", "X-USP-Peer": "127.0.0.1", "X-USP-Peer-Signature": "a".repeat(64) };
+      for (const path of ["/api/identity/profile", "/api/communities", `/api/communities/${id}`, `/api/communities/${id}/memberships`]) {
+        const denied = await anonymous.request.get(path, { headers });
+        expect(denied.status()).toBe(401);
+        expect((await denied.text()) === '{"ok":false}').toBe(true);
+      }
+      expect((await post(anonymous.request, `/api/communities/${id}/memberships`, { action: "join" }, headers)).status()).toBe(401);
+      expect((await post(anonymous.request, "/api/identity/profile", { displayName: "Hijack" }, headers)).status()).toBe(401);
+    }
+    await anonymous.addCookies([{ name: sessionCookie, value: valid.value, url: origin }]);
+    const page = await anonymous.newPage();
+    for (const locale of ["en", "ar"] as const) {
+      for (const path of ["profile", `communities/${id}`]) {
+        await page.goto(`/${locale}/${path}`);
+        await expect.poll(() => new URL(page.url()).pathname === `/${locale}/signin`).toBe(true);
+        await expect(page.getByLabel(identityText[locale].email, { exact: true })).toBeVisible();
+        expect((await page.content()).includes(name)).toBe(false);
+      }
+    }
+  } finally { await anonymous.close(); }
+});
+
+test("adversarial: stored HTML and script payloads remain inert when another user opens a community", async ({ context, browser }) => {
+  await signIn(context, "Payload author");
+  const name = '<img src=x onerror="alert(1)">';
+  const description = '<script>alert(1)</script><svg onload="alert(1)"></svg>';
+  const created = await post(context.request, "/api/communities", { name, description, visibility: "PUBLIC" });
+  expect(created.status()).toBe(201);
+  const { id } = await created.json() as { id: string };
+  const reader = await browser.newContext({ baseURL: origin });
+  try {
+    await signIn(reader, "Payload reader");
+    const page = await reader.newPage(); let executed = false;
+    page.on("dialog", async dialog => { executed = true; await dialog.dismiss(); });
+    for (const locale of ["en", "ar"] as const) {
+      await page.goto(`/${locale}/communities/${id}`);
+      await expect(page.getByRole("heading", { name, exact: true })).toBeVisible();
+      expect(await page.locator("main img, main svg, main script").count()).toBe(0);
+      expect((await page.locator("main").innerText()).includes(description)).toBe(true);
+      expect(executed).toBe(false);
+    }
+  } finally { await reader.close(); }
+});

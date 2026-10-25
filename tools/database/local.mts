@@ -317,6 +317,9 @@ async function identityBrowser(m: LocalManifest) {
     await migrate(m, record.name);
     const result = spawnSync(process.execPath, ["node_modules/@playwright/test/cli.js", "test"], {
       env: { ...process.env, M2_IDENTITY_E2E: "1", M2_BROWSER_DATABASE: record.name },
+      // The opt-in manual helper prints instructions before each Inspector pause.
+      // Buffered output would hide them until the session had already ended.
+      ...(process.env.USP_MANUAL_REVIEW === "1" && !process.env.CI ? { stdio: "inherit" as const } : {}),
       encoding: "utf8", windowsHide: true,
     });
     process.stdout.write(result.stdout ?? ""); process.stderr.write(result.stderr ?? "");
