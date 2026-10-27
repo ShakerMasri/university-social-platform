@@ -4,7 +4,8 @@ type OperationalEvent =
   | "identity.http.get_failed"
   | "identity.http.post_failed"
   | "identity.delivery_failed"
-  | "communities.http.failed";
+  | "communities.http.failed"
+  | "comments.page.failed";
 
 // Fixed event names identify the failing boundary. Never accept an Error,
 // request, URL, headers, query, user identifier or provider-supplied message.

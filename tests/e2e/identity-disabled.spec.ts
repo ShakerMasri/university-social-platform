@@ -17,6 +17,8 @@ test("ordinary startup leaves synthetic identity disabled", async ({ request, pa
   const id = "11111111-2222-3333-4444-555555555555";
   expect((await request.get(`/api/communities/${id}/posts`)).status()).toBe(503);
   expect((await request.get(`/api/communities/${id}/posts/${id}`)).status()).toBe(503);
+  expect((await request.get(`/api/communities/${id}/posts/${id}/comments`)).status()).toBe(503);
+  expect((await request.post(`/api/communities/${id}/posts/${id}/comments`, { data: {}, headers: { Origin: "http://127.0.0.1:3100" } })).status()).toBe(503);
   expect((await request.post(`/api/communities/${id}/posts`, { data: {}, headers: { Origin: "http://127.0.0.1:3100" } })).status()).toBe(503);
   await page.goto("/ar/communities");
   await expect(page.getByRole("main").getByRole("alert")).toBeVisible();
