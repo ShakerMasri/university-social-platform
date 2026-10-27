@@ -4719,5 +4719,198 @@
       "installedSha256": "bde046ddd9f20be35b0bd56cc79eb752b967fb6661a3fe76cb067bb09f871d76",
       "status": "embedded copyright/license corroborated previously; no font source/release equivalence claimed"
     }
-  ]
+  ],
+  "securityCheckpoint20261025": {
+    "scope": "Changed installed-package license texts; unchanged historical entries retained. Native/bundled/source closure and noninstalled platform packages are not certified.",
+    "files": [
+      {
+        "file": "prisma--adapter-pg-7.10.1-LICENSE",
+        "sha256": "c71d239df91726fc519c6eb72d318ec65820627232b2f796219e87dcf35d0ab4",
+        "bytes": 11357,
+        "component": "@prisma/adapter-pg",
+        "version": "7.10.1",
+        "license": "Apache-2.0",
+        "kind": "authentic installed package license; security checkpoint 2026-10-25",
+        "source": "https://registry.npmjs.org/@prisma/adapter-pg/-/adapter-pg-7.10.1.tgz#package/LICENSE"
+      },
+      {
+        "file": "prisma--client-7.10.1-LICENSE",
+        "sha256": "c71d239df91726fc519c6eb72d318ec65820627232b2f796219e87dcf35d0ab4",
+        "bytes": 11357,
+        "component": "@prisma/client",
+        "version": "7.10.1",
+        "license": "Apache-2.0",
+        "kind": "authentic installed package license; security checkpoint 2026-10-25",
+        "source": "https://registry.npmjs.org/@prisma/client/-/client-7.10.1.tgz#package/LICENSE"
+      },
+      {
+        "file": "prisma--client-runtime-utils-7.10.1-LICENSE",
+        "sha256": "c71d239df91726fc519c6eb72d318ec65820627232b2f796219e87dcf35d0ab4",
+        "bytes": 11357,
+        "component": "@prisma/client-runtime-utils",
+        "version": "7.10.1",
+        "license": "Apache-2.0",
+        "kind": "authentic installed package license; security checkpoint 2026-10-25",
+        "source": "https://registry.npmjs.org/@prisma/client-runtime-utils/-/client-runtime-utils-7.10.1.tgz#package/LICENSE"
+      },
+      {
+        "file": "prisma--config-7.10.1-LICENSE",
+        "sha256": "c71d239df91726fc519c6eb72d318ec65820627232b2f796219e87dcf35d0ab4",
+        "bytes": 11357,
+        "component": "@prisma/config",
+        "version": "7.10.1",
+        "license": "Apache-2.0",
+        "kind": "authentic installed package license; security checkpoint 2026-10-25",
+        "source": "https://registry.npmjs.org/@prisma/config/-/config-7.10.1.tgz#package/LICENSE"
+      },
+      {
+        "file": "prisma--debug-7.10.1-LICENSE",
+        "sha256": "c71d239df91726fc519c6eb72d318ec65820627232b2f796219e87dcf35d0ab4",
+        "bytes": 11357,
+        "component": "@prisma/debug",
+        "version": "7.10.1",
+        "license": "Apache-2.0",
+        "kind": "authentic installed package license; security checkpoint 2026-10-25",
+        "source": "https://registry.npmjs.org/@prisma/debug/-/debug-7.10.1.tgz#package/LICENSE"
+      },
+      {
+        "file": "prisma--driver-adapter-utils-7.10.1-LICENSE",
+        "sha256": "c71d239df91726fc519c6eb72d318ec65820627232b2f796219e87dcf35d0ab4",
+        "bytes": 11357,
+        "component": "@prisma/driver-adapter-utils",
+        "version": "7.10.1",
+        "license": "Apache-2.0",
+        "kind": "authentic installed package license; security checkpoint 2026-10-25",
+        "source": "https://registry.npmjs.org/@prisma/driver-adapter-utils/-/driver-adapter-utils-7.10.1.tgz#package/LICENSE"
+      },
+      {
+        "file": "prisma--engines-7.10.1-LICENSE",
+        "sha256": "c71d239df91726fc519c6eb72d318ec65820627232b2f796219e87dcf35d0ab4",
+        "bytes": 11357,
+        "component": "@prisma/engines",
+        "version": "7.10.1",
+        "license": "Apache-2.0",
+        "kind": "authentic installed package license; security checkpoint 2026-10-25",
+        "source": "https://registry.npmjs.org/@prisma/engines/-/engines-7.10.1.tgz#package/LICENSE"
+      },
+      {
+        "file": "prisma--engines-version-8.1.0-1.d1b3f377ca835d73fd50954a5e22128b9ebdd6b8-LICENSE",
+        "sha256": "c71d239df91726fc519c6eb72d318ec65820627232b2f796219e87dcf35d0ab4",
+        "bytes": 11357,
+        "component": "@prisma/engines-version",
+        "version": "8.1.0-1.d1b3f377ca835d73fd50954a5e22128b9ebdd6b8",
+        "license": "Apache-2.0",
+        "kind": "authentic installed package license; security checkpoint 2026-10-25",
+        "source": "https://registry.npmjs.org/@prisma/engines-version/-/engines-version-8.1.0-1.d1b3f377ca835d73fd50954a5e22128b9ebdd6b8.tgz#package/LICENSE"
+      },
+      {
+        "file": "prisma--get-platform-7.10.1-LICENSE",
+        "sha256": "c71d239df91726fc519c6eb72d318ec65820627232b2f796219e87dcf35d0ab4",
+        "bytes": 11357,
+        "component": "@prisma/get-platform",
+        "version": "7.10.1",
+        "license": "Apache-2.0",
+        "kind": "authentic installed package license; security checkpoint 2026-10-25",
+        "source": "https://registry.npmjs.org/@prisma/get-platform/-/get-platform-7.10.1.tgz#package/LICENSE"
+      },
+      {
+        "file": "prisma--fetch-engine-7.10.1-LICENSE",
+        "sha256": "c71d239df91726fc519c6eb72d318ec65820627232b2f796219e87dcf35d0ab4",
+        "bytes": 11357,
+        "component": "@prisma/fetch-engine",
+        "version": "7.10.1",
+        "license": "Apache-2.0",
+        "kind": "authentic installed package license; security checkpoint 2026-10-25",
+        "source": "https://registry.npmjs.org/@prisma/fetch-engine/-/fetch-engine-7.10.1.tgz#package/LICENSE"
+      },
+      {
+        "file": "deepmerge-ts-8.0.2-LICENSE",
+        "sha256": "734d8fd2baff4a5b7450a5b8242d4a960bc4ade3b0ade5e6cad642965d1d496d",
+        "bytes": 1523,
+        "component": "deepmerge-ts",
+        "version": "8.0.2",
+        "license": "BSD-3-Clause",
+        "kind": "authentic installed package license; security checkpoint 2026-10-25",
+        "source": "https://registry.npmjs.org/deepmerge-ts/-/deepmerge-ts-8.0.2.tgz#package/LICENSE"
+      },
+      {
+        "file": "fast-uri-3.1.9-LICENSE",
+        "sha256": "b010b0dfdfdb23d7396e03b82cd4621fc9bb8f95d6b0aea70b9c24e12074c786",
+        "bytes": 1813,
+        "component": "fast-uri",
+        "version": "3.1.9",
+        "license": "BSD-3-Clause",
+        "kind": "authentic installed package license; security checkpoint 2026-10-25",
+        "source": "https://registry.npmjs.org/fast-uri/-/fast-uri-3.1.9.tgz#package/LICENSE"
+      },
+      {
+        "file": "mysql2-3.24.4-License",
+        "sha256": "f17f1be30bce27fe6324513a35fa61f6e6766d3028e42e45bdf668a0db7c8d4f",
+        "bytes": 1112,
+        "component": "mysql2",
+        "version": "3.24.4",
+        "license": "MIT",
+        "kind": "authentic installed package license; security checkpoint 2026-10-25",
+        "source": "https://registry.npmjs.org/mysql2/-/mysql2-3.24.4.tgz#package/License"
+      },
+      {
+        "file": "next-16.4.3-license.md",
+        "sha256": "ee765244e2d59f5234d474f62e0766fa0c8b99af967fdd4c0cb8dcb0c76ea224",
+        "bytes": 1079,
+        "component": "next",
+        "version": "16.4.3",
+        "license": "MIT",
+        "kind": "authentic installed package license; security checkpoint 2026-10-25",
+        "source": "https://registry.npmjs.org/next/-/next-16.4.3.tgz#package/license.md"
+      },
+      {
+        "file": "pkg-types-2.4.0-LICENSE",
+        "sha256": "cb00dc7c358014d300dba2462e57d3f477299c169c7ab14d8fe5e347eca44f48",
+        "bytes": 2267,
+        "component": "pkg-types",
+        "version": "2.4.0",
+        "license": "MIT",
+        "kind": "authentic installed package license; security checkpoint 2026-10-25",
+        "source": "https://registry.npmjs.org/pkg-types/-/pkg-types-2.4.0.tgz#package/LICENSE"
+      },
+      {
+        "file": "prisma-7.10.1-LICENSE",
+        "sha256": "c71d239df91726fc519c6eb72d318ec65820627232b2f796219e87dcf35d0ab4",
+        "bytes": 11357,
+        "component": "prisma",
+        "version": "7.10.1",
+        "license": "Apache-2.0",
+        "kind": "authentic installed package license; security checkpoint 2026-10-25",
+        "source": "https://registry.npmjs.org/prisma/-/prisma-7.10.1.tgz#package/LICENSE"
+      },
+      {
+        "file": "zod-4.6.7-LICENSE",
+        "sha256": "3f1189b28e3866e0d979968d466b78f813f76827cfdca1fbb124cc0a5c8841f8",
+        "bytes": 1072,
+        "component": "zod",
+        "version": "4.6.7",
+        "license": "MIT",
+        "kind": "authentic installed package license; security checkpoint 2026-10-25",
+        "source": "https://registry.npmjs.org/zod/-/zod-4.6.7.tgz#package/LICENSE"
+      },
+      {
+        "file": "sql-escaper-1.5.2-LICENSE",
+        "sha256": "93277a18ec90d5b72d3bfaaaccc73cec7e735a8a1b154b74e9fec3e529603cbf",
+        "bytes": 1123,
+        "component": "sql-escaper",
+        "version": "1.5.2",
+        "license": "MIT",
+        "kind": "authentic installed package license; security checkpoint 2026-10-25",
+        "source": "https://registry.npmjs.org/sql-escaper/-/sql-escaper-1.5.2.tgz#package/LICENSE"
+      }
+    ],
+    "sourceChecks": [
+      {
+        "source": "https://raw.githubusercontent.com/vercel/next.js/v16.4.3/license.md",
+        "sha256": "ee765244e2d59f5234d474f62e0766fa0c8b99af967fdd4c0cb8dcb0c76ea224",
+        "bytes": 1079,
+        "comparison": "Exact byte match with installed Next 16.4.3 license; MIT corroboration for same-release env/eslint/SWC declarations, not bundled native component clearance."
+      }
+    ]
+  }
 }

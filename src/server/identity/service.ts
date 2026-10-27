@@ -1,4 +1,5 @@
 import "server-only";
+import { reportOperationalFailure } from "../diagnostics.ts";
 import type { Prisma, PrismaClient } from "../../generated/prisma/client.ts";
 import { validateDisplayName } from "../database/validation.ts";
 import { challengeLifetime, sessionLifetime, digest, eligibleEmail, ipLimit, ipWindow, keyedDigest, newToken, tokenValid } from "./policy.ts";
@@ -75,6 +76,7 @@ export async function requestSignIn(db: PrismaClient, options: IdentityOptions, 
         new Promise<never>((_, reject) => { timeout = setTimeout(() => reject(new Error("Delivery timeout")), 2000); })]);
     } finally { clearTimeout(timeout); }
   } catch {
+    reportOperationalFailure("identity.delivery_failed");
     await db.$transaction(async (tx) => {
       const now = await time(tx);
       await tx.emailOwnershipChallenge.updateMany({

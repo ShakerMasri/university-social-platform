@@ -110,3 +110,30 @@ The original notice-collection checkpoint introduced no application assets, depe
 ## M1b shared email case-mapping data — 2026-10-09
 
 The server data and forward SQL migration derive from the official [Unicode 17.0.0 Character Database](https://www.unicode.org/Public/17.0.0/ucd/): UnicodeData, SpecialCasing and DerivedCoreProperties. Exact source SHA-256 values and generated artifact paths are in the [manifest](docs/third-party-licenses/manifest.json). The unmodified [Unicode License V3](docs/third-party-licenses/Unicode-17.0.0-LICENSE.txt) permits free use, modification and redistribution, including commercial use, with its copyright/permission notice in copies or associated documentation. Preserve that text with conveyed derived data/SQL and do not imply Unicode endorsement. This is a focused new-data review; it changes no npm dependency or project license and does not clear outstanding release obligations.
+
+## Security checkpoint license refresh — 2026-10-25
+
+The dated sections above are historical package evidence. Current direct Next/plugin versions are 16.4.3; Prisma CLI/client/adapter are 7.10.1. Changed-package grants were read against lockfile/registry declarations. The following authentic installed texts and their exact hashes/sources are recorded under securityCheckpoint20261025 in the existing manifest; unchanged evidence is retained. Same-release @next/env, ESLint plugin and SWC packages omit license files: their MIT declarations were corroborated against the exact official Next v16.4.3 license, which matches the installed Next license bytes. This does not clear bundled/native dependencies.
+
+| Package/version | Preserved actual grant |
+| --- | --- |
+| @prisma/adapter-pg 7.10.1 | [Apache-2.0](docs/third-party-licenses/prisma--adapter-pg-7.10.1-LICENSE) |
+| @prisma/client 7.10.1 | [Apache-2.0](docs/third-party-licenses/prisma--client-7.10.1-LICENSE) |
+| @prisma/client-runtime-utils 7.10.1 | [Apache-2.0](docs/third-party-licenses/prisma--client-runtime-utils-7.10.1-LICENSE) |
+| @prisma/config 7.10.1 | [Apache-2.0](docs/third-party-licenses/prisma--config-7.10.1-LICENSE) |
+| @prisma/debug 7.10.1 | [Apache-2.0](docs/third-party-licenses/prisma--debug-7.10.1-LICENSE) |
+| @prisma/driver-adapter-utils 7.10.1 | [Apache-2.0](docs/third-party-licenses/prisma--driver-adapter-utils-7.10.1-LICENSE) |
+| @prisma/engines 7.10.1 | [Apache-2.0](docs/third-party-licenses/prisma--engines-7.10.1-LICENSE) |
+| @prisma/engines-version 8.1.0-1.d1b3f377ca835d73fd50954a5e22128b9ebdd6b8 | [Apache-2.0](docs/third-party-licenses/prisma--engines-version-8.1.0-1.d1b3f377ca835d73fd50954a5e22128b9ebdd6b8-LICENSE) |
+| @prisma/get-platform 7.10.1 | [Apache-2.0](docs/third-party-licenses/prisma--get-platform-7.10.1-LICENSE) |
+| @prisma/fetch-engine 7.10.1 | [Apache-2.0](docs/third-party-licenses/prisma--fetch-engine-7.10.1-LICENSE) |
+| deepmerge-ts 8.0.2 | [BSD-3-Clause](docs/third-party-licenses/deepmerge-ts-8.0.2-LICENSE) |
+| fast-uri 3.1.9 | [BSD-3-Clause](docs/third-party-licenses/fast-uri-3.1.9-LICENSE) |
+| mysql2 3.24.4 | [MIT](docs/third-party-licenses/mysql2-3.24.4-License) |
+| next 16.4.3 | [MIT](docs/third-party-licenses/next-16.4.3-license.md) |
+| pkg-types 2.4.0 | [MIT](docs/third-party-licenses/pkg-types-2.4.0-LICENSE) |
+| prisma 7.10.1 | [Apache-2.0](docs/third-party-licenses/prisma-7.10.1-LICENSE) |
+| zod 4.6.7 | [MIT](docs/third-party-licenses/zod-4.6.7-LICENSE) |
+| sql-escaper 1.5.2 | [MIT](docs/third-party-licenses/sql-escaper-1.5.2-LICENSE) |
+
+No new nonpermissive terms were introduced by the changed packages inspected. Full/production metadata still contains the existing scoped exceptions described in the brief; source/notice gaps and final hosting/native/bundle artifact verification remain open. Metadata and this limited text collection do not certify the full tree. The SQL escaper is a transitive mysql2 tooling dependency; no MySQL feature/provider or direct dependency was added.

@@ -44,7 +44,11 @@ const server = httpServer({ requestTimeout: 10000, headersTimeout: 10000 }, asyn
       response.setHeader("Referrer-Policy", "no-referrer");
     }
     await handle(request, response);
-  } catch { if (!response.headersSent) response.writeHead(503); response.end(); }
+  } catch {
+    console.error(JSON.stringify({ level: "error", event: "synthetic.http.failed" }));
+    if (!response.headersSent) response.writeHead(503);
+    response.end();
+  }
 });
 await new Promise<void>((accept, reject) => { server.once("error", reject); server.listen(3100, "127.0.0.1", accept); });
 
