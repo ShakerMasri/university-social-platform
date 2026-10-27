@@ -16,6 +16,12 @@ export default defineConfig({
     command: process.env.M2_IDENTITY_E2E === "1" ? "node tools/identity/local-server.mts" : "node node_modules/next/dist/bin/next start --hostname 127.0.0.1 --port 3100",
     url: "http://127.0.0.1:3100/en",
     reuseExistingServer: false,
+    // Accidental local-tool flags cannot install the in-memory identity context
+    // in normal production startup. Keep this regression in the ordinary suite.
+    env: process.env.M2_IDENTITY_E2E === "1" ? {} : {
+      USP_LOCAL_DEVELOPMENT_CHECK: "1", USP_LOCAL_PREVIEW_PORT: "3100",
+      M2_IDENTITY_E2E: "1", NODE_ENV: "production",
+    },
     timeout: 60_000,
   },
 });

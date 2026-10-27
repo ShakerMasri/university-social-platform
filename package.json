@@ -10,7 +10,9 @@
   },
   "scripts": {
     "postinstall": "prisma generate",
-    "dev": "next dev",
+    "dev": "node tools/database/local.mts dev",
+    "dev:stop": "node tools/database/local.mts preview-stop",
+    "test:dev:local": "node tools/database/local.mts development-check",
     "build": "next build",
     "start": "next start",
     "lint": "eslint . --max-warnings=0",

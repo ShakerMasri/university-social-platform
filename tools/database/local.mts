@@ -355,8 +355,8 @@ async function previewPreflight(m?: LocalManifest) {
   if ([".cache/m2-preview-check.json", ".cache/m2-browser.json"].some(path => existsSync(resolve(path)))) throw new Error("An automated browser runner is active or needs inspection; stop it before restarting/building");
   if (existsSync(resolve(".cache/m2-preview.json"))) {
     const record = m?.databases.find(entry => entry.kind === "development" && entry.ready);
-    if (!m || !record || !await recoverStalePreview(m, record)) throw new Error("A local preview is active or needs inspection; open its existing URL or run npm run preview:stop before restarting/building");
-    console.log("Removed verified stale preview control file; development data retained");
+    if (!m || !record || !await recoverStalePreview(m, record)) throw new Error("A local interactive server (dev/preview) is active or needs inspection; open its existing URL or run npm run dev:stop before restarting/building");
+    console.log("Removed verified stale interactive control file; development data retained");
   }
 }
 async function resumePreviewDatabase(m: LocalManifest) {
@@ -373,32 +373,40 @@ async function resumePreviewDatabase(m: LocalManifest) {
   }
   throw new Error("Owned PostgreSQL did not become ready; development data retained");
 }
-async function preview(m: LocalManifest) {
+async function preview(m: LocalManifest, development = false) {
   verifyResources(m); await previewPreflight(m);
-  const port = localPreviewPort(process.env.USP_LOCAL_PREVIEW_PORT); await ensurePortFree(port, "Local preview");
+  const port = localPreviewPort(development ? "3000" : process.env.USP_LOCAL_PREVIEW_PORT); await ensurePortFree(port, "Local interactive server");
   const record = m.databases.find(record => record.kind === "development" && record.ready);
   if (!record) throw new Error("Ready owned development database required");
   await resumePreviewDatabase(m);
   await assertDatabaseIdentity(databaseUrl(m, record.name, "runtime"), m, "runtime");
   await reviewMigration(m); await migrate(m, record.name);
-  const build = spawnSync(process.execPath, ["node_modules/next/dist/bin/next", "build"], { stdio: "inherit", windowsHide: true, env: { ...process.env, NEXT_TELEMETRY_DISABLED: "1" } });
-  if (build.error || build.status !== 0) throw new Error("Preview build failed; run npm run build for diagnostics");
+  if (!development) {
+    const build = spawnSync(process.execPath, ["node_modules/next/dist/bin/next", "build"], { stdio: "inherit", windowsHide: true, env: { ...process.env, NEXT_TELEMETRY_DISABLED: "1" } });
+    if (build.error || build.status !== 0) throw new Error("Preview build failed; run npm run build for diagnostics");
+  }
   const path = resolve(".cache/m2-preview.json");
   let pid: number | undefined;
   try {
-    const result = spawnSync(process.execPath, ["tools/identity/preview-server.mts"], { stdio: "inherit", windowsHide: true });
+    const result = spawnSync(process.execPath, ["tools/identity/preview-server.mts", ...(development ? ["dev"] : [])], {
+      stdio: "inherit", windowsHide: true,
+      env: { ...process.env, NODE_ENV: development ? "development" : "production", NEXT_TELEMETRY_DISABLED: "1" },
+    });
     pid = result.pid;
-    if (result.error || result.status !== 0) throw new Error("Local preview stopped unexpectedly; development data was retained");
+    if (result.error || result.status !== 0) throw new Error("Local interactive server stopped unexpectedly; development data was retained");
   } finally { if (existsSync(path)) removePreviewControl(path, record.name, pid); }
 }
-async function previewCheck(m: LocalManifest) {
+async function previewCheck(m: LocalManifest, development = false) {
   verifyResources(m); await previewPreflight();
   const port = localPreviewPort(process.env.USP_LOCAL_PREVIEW_PORT ?? "3201"); await ensurePortFree(port, "Preview check");
   const record: DatabaseRecord = { name: `usp_m1b_${m.owner}_test_${randomBytes(6).toString("hex")}`, kind: "test", ready: false };
   m.databases.push(record); save(m); const path = resolve(".cache/m2-preview-check.json");
   try {
     await createDatabase(m, record); await migrate(m, record.name);
-    const result = spawnSync(process.execPath, ["tools/testing/run-playwright.mts", "test", "--config", "playwright.preview.config.ts"], { encoding: "utf8", windowsHide: true, env: { ...process.env, USP_PREVIEW_TEST_DATABASE: record.name, USP_LOCAL_PREVIEW_PORT: String(port) } });
+    const result = spawnSync(process.execPath, ["tools/testing/run-playwright.mts", "test", "--config", "playwright.preview.config.ts"], { encoding: "utf8", windowsHide: true, env: {
+      ...process.env, USP_PREVIEW_TEST_DATABASE: record.name, USP_LOCAL_PREVIEW_PORT: String(port),
+      USP_LOCAL_DEVELOPMENT_CHECK: development ? "1" : "0", NODE_ENV: development ? "development" : "production",
+    } });
     process.stdout.write(result.stdout ?? ""); process.stderr.write(result.stderr ?? "");
     if (result.error || result.status !== 0) throw new Error("Local preview browser checks failed");
   } finally {
@@ -475,13 +483,14 @@ try {
   if (pkg.name !== "university-social-platform" || !existsSync(composeFile)) throw new Error("Run from this project root");
   const command = process.argv[2];
   if (process.argv.length !== 3) throw new Error("Use exactly one local database command");
-  if (command === "preview") {
-    localPreviewPort(process.env.USP_LOCAL_PREVIEW_PORT);
+  if (command === "preview" || command === "dev") {
+    if (command === "dev" && process.env.NODE_ENV === "production") throw new Error("npm run dev requires a development shell; unset NODE_ENV=production. Use npm start for production.");
+    localPreviewPort(command === "dev" ? "3000" : process.env.USP_LOCAL_PREVIEW_PORT);
     if (!existsSync(manifestPath)) { await previewPreflight(); await setup(); }
-    await preview(readManifest());
+    await preview(readManifest(), command === "dev");
   }
   else if (command === "preview-stop" && !existsSync(resolve(".cache/m2-preview.json"))) {
-    console.log("No registered local preview found; no process was stopped. Development data retained.");
+    console.log("No registered local interactive server (dev/preview) found; no process was stopped. Development data retained.");
   }
   else if (command === "setup") await setup();
   else {
@@ -494,9 +503,9 @@ try {
       verifyResources(m); const record = m.databases.find(record => record.kind === "development" && record.ready);
       if (!record) throw new Error("Owned development preview required");
       await stopPreview(m, record);
-      console.log("Owned local preview stopped; development data retained");
+      console.log("Owned local interactive server stopped; development data retained");
     }
-    else if (command === "preview-check") { await reviewMigration(m); await previewCheck(m); }
+    else if (command === "preview-check" || command === "development-check") { await reviewMigration(m); await previewCheck(m, command === "development-check"); }
     else if (command === "review") await reviewMigration(m);
     else if (command === "test") {
       await reviewMigration(m);

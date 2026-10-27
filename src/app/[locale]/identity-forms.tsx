@@ -5,6 +5,7 @@ import { useEffect, useState, type FormEvent } from "react";
 import type { Locale } from "@/i18n/locales";
 import { identityText } from "@/i18n/identity";
 import { capturePendingConfirmation, clearPendingConfirmation, pendingConfirmationToken } from "./pending-confirmation";
+import { useHydrated } from "@/app/use-hydrated";
 
 async function post(operation: string, data: object) {
   try {
@@ -20,6 +21,7 @@ function useFeedback() {
 }
 
 export function SignInForm({ locale, preview = false }: { locale: Locale; preview?: boolean }) {
+  const hydrated = useHydrated();
   const text = identityText[locale];
   const [email, setEmail] = useState("");
   const [requested, setRequested] = useState(false);
@@ -44,16 +46,17 @@ export function SignInForm({ locale, preview = false }: { locale: Locale; previe
     <h1>{text.signIn}</h1><p id="email-hint">{text.hint}</p>
     <form onSubmit={submit} aria-busy={busy}>
       <label htmlFor="email">{text.email}</label>
-      <input id="email" name="email" type="text" inputMode="email" autoComplete="email" dir="ltr" value={email} onChange={(event) => { setEmail(event.target.value); setRequested(false); }} required aria-describedby="email-hint" />
-      <button disabled={busy} type="submit">{busy ? text.busy : text.request}</button>
+      <input disabled={!hydrated} id="email" name="email" type="text" inputMode="email" autoComplete="email" dir="ltr" value={email} onChange={(event) => { setEmail(event.target.value); setRequested(false); }} required aria-describedby="email-hint" />
+      <button disabled={busy || !hydrated} type="submit">{busy ? text.busy : text.request}</button>
     </form>
     <p id="identity-feedback" role="status" tabIndex={-1}>{feedback.message}</p>
     {preview && <p>{text.previewHint}</p>}
-    {preview && requested && <button type="button" disabled={busy} onClick={() => void openPreviewConfirmation()}>{text.previewOpen}</button>}
+    {preview && requested && <button type="button" disabled={busy || !hydrated} onClick={() => void openPreviewConfirmation()}>{text.previewOpen}</button>}
   </>;
 }
 
 export function ConfirmationForm({ locale }: { locale: Locale }) {
+  const hydrated = useHydrated();
   const text = identityText[locale];
   const [busy, setBusy] = useState(false);
   const feedback = useFeedback();
@@ -83,13 +86,14 @@ export function ConfirmationForm({ locale }: { locale: Locale }) {
   }
   return <>
     <h1>{text.confirm}</h1><p>{text.confirmHint}</p>
-    <form onSubmit={submit} aria-busy={busy}><button disabled={busy} type="submit">{busy ? text.busy : text.confirm}</button></form>
+    <form onSubmit={submit} aria-busy={busy}><button disabled={busy || !hydrated} type="submit">{busy ? text.busy : text.confirm}</button></form>
     <p id="identity-feedback" role="status" tabIndex={-1}>{feedback.message}</p>
     <p><Link href={`/${locale}/signin`} onClick={clearPendingConfirmation}>{text.request}</Link></p>
   </>;
 }
 
 export function ProfileForm({ locale, profile }: { locale: Locale; profile: { email: string; displayName: string | null } }) {
+  const hydrated = useHydrated();
   const text = identityText[locale];
   const [name, setName] = useState(profile.displayName ?? "");
   const [busy, setBusy] = useState(false);
@@ -111,11 +115,11 @@ export function ProfileForm({ locale, profile }: { locale: Locale; profile: { em
     <h1>{text.profile}</h1><p>{text.email}: <bdi dir="ltr">{profile.email}</bdi></p><p>{text.private}</p>
     <form onSubmit={submit} aria-busy={busy}>
       <label htmlFor="display-name">{text.name}</label>
-      <input id="display-name" name="displayName" dir="auto" autoComplete="nickname" value={name} onChange={(event) => setName(event.target.value)} required aria-describedby="name-hint" />
+      <input disabled={!hydrated} id="display-name" name="displayName" dir="auto" autoComplete="nickname" value={name} onChange={(event) => setName(event.target.value)} required aria-describedby="name-hint" />
       <p id="name-hint">{text.nameHint}</p>
-      <button disabled={busy} type="submit">{busy ? text.busy : text.save}</button>
+      <button disabled={busy || !hydrated} type="submit">{busy ? text.busy : text.save}</button>
     </form>
     <p id="identity-feedback" role="status" tabIndex={-1}>{feedback.message}</p>
-    <button disabled={busy} type="button" onClick={endSession}>{text.logout}</button>
+    <button disabled={busy || !hydrated} type="button" onClick={endSession}>{text.logout}</button>
   </>;
 }
