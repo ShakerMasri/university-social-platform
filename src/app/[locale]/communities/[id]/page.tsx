@@ -11,8 +11,7 @@ import { IdentityShell } from "../../identity-shell";
 import { MembershipControls } from "../forms";
 import { listPosts } from "@/server/posts/service";
 import { postText } from "@/i18n/posts";
-import { CreatePostForm } from "./post-form";
-import { PostCard } from "./post-card";
+import { PostsList } from "./posts-list";
 export const dynamic = "force-dynamic";
 export default async function CommunityPage({ params, searchParams }: { params: Promise<{ locale: string; id: string }>; searchParams: Promise<{ after?: string; postAfter?: string }> }) {
   const { locale, id } = await params;
@@ -37,9 +36,8 @@ export default async function CommunityPage({ params, searchParams }: { params: 
       <p>{community.visibility === "PUBLIC" ? text.public : text.private} · {community.isOwner ? text.owner : community.membership === "MEMBER" ? text.joined : ""}</p>
       <p>{text.space}</p>
       {posts && <section aria-labelledby="posts-heading"><h2 id="posts-heading">{postText[locale].title}</h2>
-        {posts.canPost ? <CreatePostForm locale={locale} communityId={id} canAnnounce={posts.canAnnounce} /> : <p>{postText[locale].joinHint}</p>}
-        {posts.items.length ? <div className="community-list">{posts.items.map(post => <PostCard key={post.id} locale={locale} post={post} />)}</div> : <p>{postText[locale].empty}</p>}
-        {posts.next && <p><Link prefetch={false} href={`/${locale}/communities/${id}?postAfter=${posts.next}`}>{postText[locale].next}</Link></p>}
+        <PostsList key={`${id}:${postAfter ?? ""}`} locale={locale} communityId={id} initial={posts} />
+        <noscript>{posts.next && <p><Link prefetch={false} href={`/${locale}/communities/${id}?postAfter=${posts.next}`}>{postText[locale].next}</Link></p>}</noscript>
       </section>}
       {!community.isOwner && <MembershipControls locale={locale} id={id} visibility={community.visibility} membership={community.membership} actions={community.membership ? ["leave"] : ["join"]} />}
       {members && <section aria-labelledby="members-heading"><h2 id="members-heading">{text.members}</h2>

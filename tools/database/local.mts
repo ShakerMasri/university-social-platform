@@ -179,6 +179,8 @@ async function migrate(m: LocalManifest, name: string) {
     GRANT INSERT ("communityId", "userId", status, "createdAt") ON "CommunityMembership" TO ${identifier(m.runtimeRole)};
     GRANT UPDATE (status) ON "CommunityMembership" TO ${identifier(m.runtimeRole)};
     GRANT DELETE ON "CommunityMembership" TO ${identifier(m.runtimeRole)};
+    GRANT SELECT ON "Comment" TO ${identifier(m.runtimeRole)};
+    GRANT INSERT (id, "postId", "authorId", "submissionKey", body, "createdAt") ON "Comment" TO ${identifier(m.runtimeRole)};
     GRANT SELECT ON "Post" TO ${identifier(m.runtimeRole)};
     GRANT INSERT (id, "communityId", "authorId", "submissionKey", type, title, body, "resourceUrl", "createdAt") ON "Post" TO ${identifier(m.runtimeRole)};`);
   console.log(`Reviewed migration history applied: ${name}`);
@@ -265,7 +267,7 @@ async function setup() {
 async function test(m: LocalManifest) {
   verifyResources(m);
   // Two complete-history databases and populated Unicode/M2/community/posts upgrade fixtures.
-  const records: DatabaseRecord[] = [0, 1, 2, 3, 4, 5].map(() => ({
+  const records: DatabaseRecord[] = [0, 1, 2, 3, 4, 5, 6].map(() => ({
     name: `usp_m1b_${m.owner}_test_${randomBytes(6).toString("hex")}`, kind: "test", ready: false,
   }));
   m.databases.push(...records);
@@ -277,7 +279,7 @@ async function test(m: LocalManifest) {
     }
     const result = spawnSync(process.execPath, ["node_modules/vitest/vitest.mjs", "run", "--config", "vitest.database.config.mjs"], {
       env: { ...process.env, M1B_TEST_DATABASE: records[0].name, M1B_REPLAY_DATABASE: records[1].name,
-        M1B_UPGRADE_DATABASE: records[2].name, M2_UPGRADE_DATABASE: records[3].name, M3_UPGRADE_DATABASE: records[4].name, M3_POSTS_UPGRADE_DATABASE: records[5].name },
+        M1B_UPGRADE_DATABASE: records[2].name, M2_UPGRADE_DATABASE: records[3].name, M3_UPGRADE_DATABASE: records[4].name, M3_POSTS_UPGRADE_DATABASE: records[5].name, M3_COMMENTS_UPGRADE_DATABASE: records[6].name },
       encoding: "utf8", windowsHide: true,
     });
     process.stdout.write(result.stdout ?? "");
@@ -292,18 +294,20 @@ async function test(m: LocalManifest) {
       const before = await client.query('SELECT id, email, "emailKey" FROM "User" ORDER BY id');
       const communityBefore = await client.query('SELECT * FROM "Community" ORDER BY id');
       const postBefore = await client.query('SELECT * FROM "Post" ORDER BY id');
+      const commentBefore = await client.query('SELECT * FROM "Comment" ORDER BY id');
       const membershipBefore = await client.query('SELECT * FROM "CommunityMembership" ORDER BY "communityId", "userId"');
       await migrate(m, records[0].name);
       const after = await client.query('SELECT id, email, "emailKey" FROM "User" ORDER BY id');
       const communityAfter = await client.query('SELECT * FROM "Community" ORDER BY id');
       const postAfter = await client.query('SELECT * FROM "Post" ORDER BY id');
+      const commentAfter = await client.query('SELECT * FROM "Comment" ORDER BY id');
       const membershipAfter = await client.query('SELECT * FROM "CommunityMembership" ORDER BY "communityId", "userId"');
       if (!before.rows.length || !communityBefore.rows.length || !membershipBefore.rows.length || !postBefore.rows.length ||
-          JSON.stringify([before.rows, communityBefore.rows, membershipBefore.rows, postBefore.rows]) !==
-          JSON.stringify([after.rows, communityAfter.rows, membershipAfter.rows, postAfter.rows])) {
+          !commentBefore.rows.length || JSON.stringify([before.rows, communityBefore.rows, membershipBefore.rows, postBefore.rows, commentBefore.rows]) !==
+          JSON.stringify([after.rows, communityAfter.rows, membershipAfter.rows, postAfter.rows, commentAfter.rows])) {
         throw new Error("Migration reapplication changed synthetic data");
       }
-      console.log("Migration reapplication preserved populated user, community, membership and post records");
+      console.log("Migration reapplication preserved populated user, community, membership, post and comment records");
     } finally { await client.end(); }
   } finally {
     for (const record of records) {

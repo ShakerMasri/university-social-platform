@@ -6,6 +6,7 @@ import { readManifest, databaseUrl, assertDatabaseIdentity } from "../../tools/d
 import { digest } from "../../src/server/identity/policy";
 import { postText } from "../../src/i18n/posts";
 import { postTypes } from "../../src/server/posts/policy";
+import { paginationText } from "../../src/i18n/pagination";
 
 test.use({ trace: "off", screenshot: "off", video: "off" });
 const origin = "http://127.0.0.1:3100";
@@ -172,9 +173,35 @@ test("posts: browser pagination follows scoped cursors without losing or duplica
   await page.goto(`/en/communities/${id}`);
   await expect(page.getByRole("article")).toHaveCount(20);
   const first = await page.getByRole("article").getByRole("link", { name: postText.en.open, exact: true }).evaluateAll(links => links.map(link => link.getAttribute("href")));
-  await page.getByRole("link", { name: postText.en.next, exact: true }).click();
-  await expect(page.getByRole("article")).toHaveCount(3);
-  const second = await page.getByRole("article").getByRole("link", { name: postText.en.open, exact: true }).evaluateAll(links => links.map(link => link.getAttribute("href")));
-  expect(new Set([...first, ...second]).size).toBe(23);
-  await expect(page.getByRole("link", { name: postText.en.next, exact: true })).toHaveCount(0);
+  const initialUrl = page.url();
+  await page.getByRole("button", { name: postText.en.more, exact: true }).scrollIntoViewIfNeeded();
+  await expect(page.getByRole("article")).toHaveCount(23);
+  const all = await page.getByRole("article").getByRole("link", { name: postText.en.open, exact: true }).evaluateAll(links => links.map(link => link.getAttribute("href")));
+  expect(all.slice(0, 20)).toEqual(first);
+  expect(new Set(all).size).toBe(23);
+  expect(all.map(href => href!.split("/").at(-1))).toEqual(ids.sort().reverse());
+  expect(page.url()).toBe(initialUrl);
+  await expect(page.getByRole("button", { name: postText.en.more, exact: true })).toHaveCount(0);
 });
+
+for (const locale of ["en", "ar"] as const) {
+  test(`${locale}: post pagination supports keyboard fallback and retry without IntersectionObserver`, async ({ context, page }) => {
+    const ownerId = await signIn(context, "Pagination author"), id = await space(context), text = postText[locale], paging = paginationText[locale];
+    const ids = Array.from({ length: 23 }, () => randomUUID());
+    await fixture(client => client.query('INSERT INTO "Post" (id,"communityId","authorId",type,title,body) SELECT id,$2::uuid,$3::uuid,\'QUESTION\',\'Page entry\',\'Synthetic page text\' FROM unnest($1::uuid[]) id', [ids, id, ownerId]));
+    await page.addInitScript(() => { Reflect.deleteProperty(window, "IntersectionObserver"); });
+    let attempts = 0;
+    await page.route(`**/communities/${id}/posts?after=*`, async route => { attempts++; await route.abort("failed"); });
+    await page.goto(`/${locale}/communities/${id}`);
+    const button = page.getByRole("button", { name: text.more, exact: true });
+    await button.focus(); await page.keyboard.press("Enter");
+    await expect(page.getByRole("main").getByRole("alert")).toHaveText(paging.failed);
+    await expect(page.getByRole("article")).toHaveCount(20); expect(attempts).toBe(1);
+    await page.unroute(`**/communities/${id}/posts?after=*`);
+    await page.getByRole("button", { name: paging.retry, exact: true }).focus(); await page.keyboard.press("Enter");
+    await expect(page.getByRole("article")).toHaveCount(23);
+    await expect(page.locator("article:focus")).toHaveCount(1);
+    await expect(page.getByRole("button", { name: text.more, exact: true })).toHaveCount(0);
+    await expect(page.locator("html")).toHaveAttribute("dir", locale === "ar" ? "rtl" : "ltr");
+  });
+}
