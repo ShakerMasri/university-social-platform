@@ -17,9 +17,9 @@ export function CommentsList({ locale, communityId, postId, initial }: { locale:
       const loaded = new Set(items.map(item => item.id)), recent = published.filter(item => !loaded.has(item.id));
       return <>
         {initial.canComment ? <CommentForm locale={locale} communityId={communityId} postId={postId} onPublished={comment => setPublished(previous => [comment, ...previous.filter(item => item.id !== comment.id)])} /> : <p>{text.hint}</p>}
-        {recent.length > 0 && <section aria-label={text.justPublished}><h3>{text.justPublished}</h3><div className="community-list">{recent.map(comment => <CommentCard key={comment.id} locale={locale} comment={comment} />)}</div></section>}
+        {recent.length > 0 && <section aria-label={text.justPublished}><h3>{text.justPublished}</h3><div className="community-list">{recent.map(comment => <CommentCard key={comment.id} locale={locale} comment={comment} communityId={communityId} postId={postId} />)}</div></section>}
         {items.length === 0 && recent.length === 0 && <p>{text.empty}</p>}
-        <div className="community-list">{items.map(comment => <CommentCard key={comment.id} locale={locale} comment={comment} />)}</div>
+        <div className="community-list">{items.map(comment => <CommentCard key={comment.id} locale={locale} comment={comment} communityId={communityId} postId={postId} />)}</div>
       </>;
     }}
   </CursorList>;

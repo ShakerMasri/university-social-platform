@@ -12,9 +12,10 @@ A Computer Engineering graduation project for university students and teachers t
 | M3, first slice | Public/private communities, discovery and membership management | Implemented and tested locally |
 | M3, posts slice | Create/read questions, discussions, resources and creator-only announcements | Implemented and tested locally |
 | M3, comments slice | Flat plain-text comments, immediate publication feedback, scrolling post/comment lists and safe retries | Implemented and tested locally |
+| M3, voting slice | Member upvotes on posts/comments, removal, counts and safe retries | Implemented and tested locally |
 | Local development | Interactive synthetic sign-in through posts with hot reload and persistent data | Implemented and tested locally |
 
-**Nothing is deployed.** Live university email is not connected. Post/comment editing/deletion, voting, notifications, direct messages, archive search and AI are still pending. See the [workflow checkpoint](docs/project-brief.md#interactive-development-workflow--2026-10-27) and the [approved comments checkpoint](docs/project-brief.md#createread-comments--approved-2026-10-27) for verification.
+**Nothing is deployed.** Live university email is not connected. Post/comment editing/deletion, notifications, direct messages, archive search and AI are still pending. See the [workflow checkpoint](docs/project-brief.md#interactive-development-workflow--2026-10-27), [comments checkpoint](docs/project-brief.md#createread-comments--approved-2026-10-27) and [voting checkpoint](docs/project-brief.md#postcomment-upvotes--approved-2026-10-27) for verification.
 
 ## Run locally
 
@@ -45,6 +46,8 @@ Open [English sign-in](http://localhost:3000/en/signin) or [Arabic sign-in](http
 4. Use another browser/incognito window with `bob@university.test` for a separate account.
 
 Posts and comments load more as you scroll, with a **Load more** button for keyboard access and retry. Confirmed comments appear beside the composer immediately, including in long threads; their **Just published** entries join the ordinary list as scrolling reaches them. Comments read oldest first; posts read newest first. Dedicated “For you” and “Your communities” feeds remain a discovery-design decision.
+
+Current members can **Upvote** posts and comments by other authors, then choose **Remove upvote**. Your pressed button state and the count update after confirmation. **Retry vote** repeats the same choice safely if a response is lost. Counts and your own vote state follow the content's read permissions; other voters' identities are not shown. A saved profile is not required for voting. Votes do not change list order or imply that content is correct. Counts refresh on reads and your own successful vote; cross-tab/realtime updates are not included.
 
 English and Arabic use the same flow. Edit application files under `src/` to see hot reload. Restart after changing launcher code under `tools/`, package scripts or operational configuration. Normal `npm run build` / `npm start` still leave synthetic identity disabled; they never install the launcher's in-memory context. A production `NODE_ENV` in the shell is refused by `npm run dev`.
 
@@ -124,7 +127,9 @@ You need Docker with a running Linux engine. The scripts use pinned PostgreSQL 1
 
 Comments use the additive `20261027000000_m3_comments` migration. Generate the client with `npm.cmd run db:generate`, review with `npm.cmd run db:review`, then apply locally with `npm.cmd run db:migrate`; `npm run dev` also performs guarded migration preparation on startup. Restart an already-running dev server with `npm.cmd run dev:stop` followed by `npm.cmd run dev` after this schema/client change: the launcher retains its Prisma client in memory. Existing user/community/membership/post data is retained. The runtime role receives only comment SELECT/INSERT privileges. `db:test` verifies populated forward upgrade and reapplication on disposable databases; `test:e2e:identity` includes bilingual comments and access-removal checks. No development-data reset is needed.
 
-The browser runner uses `http://127.0.0.1:3100`, synthetic `@university.test` addresses and an in-memory test mailbox. It covers sign-in, profile, logout, communities and posts, including adversarial access, forged sessions/authority and stored-script checks, then stops its servers.
+Voting adds `20261027010000_m3_votes`, creating two vote tables without changing existing content or memberships. Use the same generate → review → migrate → restart sequence above. Runtime vote privileges are SELECT/INSERT/DELETE, without UPDATE or DDL. Composite keys enforce one vote per user/target; restrictive foreign keys do not introduce an account/content deletion workflow. Recovery can run the previous application while retaining the additive tables and their data; do not drop votes to roll back. Any future deployment still needs explicit authorization and a backup/restore plan.
+
+The browser runner uses `http://127.0.0.1:3100`, synthetic `@university.test` addresses and an in-memory test mailbox. It covers sign-in, profile, logout, communities, posts, comments and voting, including adversarial access, forged sessions/authority and stored-script checks, then stops its servers.
 
 Use the guarded scripts rather than direct Compose commands or database resets. They refuse mismatched ownership. Keep `.cache/m1b/` and `.cache/m2-browser.json` private: they contain local operational credentials. If cleanup refuses a target, inspect it before retrying.
 
@@ -148,7 +153,8 @@ Protected flows require interactive dev, the explicit localhost preview or a syn
 ## Security and release limits
 
 - Profile access is owner-only. Community/post APIs recheck sessions, membership and creator permissions on the server.
-- Comments are plain text (1–4,000 Unicode code points), oldest first in pages of 20. Publishing requires a verified session, saved profile and current membership, including comments on announcements. Verified nonmembers can read public comments; private comments require current membership. Retries recheck access; changed text under the same request ID conflicts. Comments have their own durable limit of 30 attempts per user per 15 minutes and a 32 KiB request cap. No editing, deletion, nesting, voting, uploads or reply notifications are included.
+- Comments are plain text (1–4,000 Unicode code points), oldest first in pages of 20. Publishing requires a verified session, saved profile and current membership, including comments on announcements. Verified nonmembers can read public comments; private comments require current membership. Retries recheck access; changed text under the same request ID conflicts. Comments have their own durable limit of 30 attempts per user per 15 minutes and a 32 KiB request cap. No editing, deletion, nesting, uploads or reply notifications are included.
+- Voting requires a verified session and current membership for adding/removing an upvote; authors cannot vote on their own content. Desired-state writes recheck parent IDs and current access, including retries, with a separate durable 30-attempt/15-minute budget and 1 KiB request cap. Leaving does not automatically erase past votes. No downvotes, voter lists, vote-driven ranking or user reputation are included.
 - Posting requires current membership and a saved profile; announcements are creator-only. Public posts are readable by verified users, private posts by current approved members. Resource links are HTTP/HTTPS; no uploads or previews. Post feeds show 20 entries per page; posting is limited to 30 attempts per user per 15 minutes.
 - Verified users can discover private community names/descriptions; private spaces require current membership. A saved profile is required to create a community. Teachers receive no automatic privileges.
 - Test sign-in links expire after ten minutes, are single-use and are bound to the requesting browser. Sessions last seven days; logout revokes them. HTTP cookies are a loopback test exception, not deployed HTTPS security.

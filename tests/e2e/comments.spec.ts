@@ -118,7 +118,7 @@ for (const locale of ["en", "ar"] as const) {
       await expect(page.locator("html")).toHaveAttribute("dir", locale === "ar" ? "rtl" : "ltr");
       await expect(page.getByLabel(text.body, { exact: true })).toHaveValue("");
       expect(await page.locator("main script, main img, main svg").count()).toBe(0);
-      expect(await page.locator("article bdi").last().textContent()).toBe("كاتب Author 😀");
+      expect(await page.locator("article p:has(time) bdi").last().textContent()).toBe("كاتب Author 😀");
       expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true);
     }
     expect(executed).toBe(false);
@@ -259,7 +259,7 @@ test("comments: private pending/nonmember denial, forged authority/CSRF, parent 
     expect((await post(other.request, path, data)).status()).toBe(201);
     const read = await other.request.get(path); expect(read.headers()["cache-control"]).toBe("private, no-store");
     const listing = await read.json() as { items: Record<string, unknown>[] };
-    expect(Object.keys(listing.items[0]).sort()).toEqual(["authorName", "body", "createdAt", "id"]);
+    expect(Object.keys(listing.items[0]).sort()).toEqual(["authorName", "body", "createdAt", "id", "vote"]);
     for (const extra of [{ authorId: owner }, { postId }, { communityId: decoy }, { role: "admin" }, { createdAt: "2020-01-01" }]) expect((await post(other.request, path, comment(extra))).status()).toBe(400);
     for (const Origin of ["", "https://attacker.invalid"]) expect((await post(other.request, path, comment(), { Origin })).status()).toBe(403);
     expect((await other.request.get(`/api/communities/${decoy}/posts/${postId}/comments`)).status()).toBe(404);

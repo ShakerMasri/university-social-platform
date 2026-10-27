@@ -3,6 +3,7 @@ import { postPageSize, postTypes } from "@/server/posts/policy";
 import { commentPageSize } from "@/server/comments/policy";
 import type { listComments } from "@/server/comments/service";
 import type { listPosts } from "@/server/posts/service";
+import { voteSummary } from "@/server/votes/policy";
 
 export type CommentItem = Awaited<ReturnType<typeof listComments>>["items"][number];
 export type PostItem = Awaited<ReturnType<typeof listPosts>>["items"][number];
@@ -20,7 +21,7 @@ function attribution(row: Record<string, unknown>) {
   const createdAt = new Date(text(row.createdAt));
   if (!Number.isFinite(createdAt.getTime())) throw new Error("Invalid content date");
   return { id: communityId(row.id), body: text(row.body), createdAt,
-    authorName: row.authorName === null ? null : text(row.authorName) };
+    authorName: row.authorName === null ? null : text(row.authorName), vote: voteSummary(row.vote) };
 }
 export function commentResponse(value: unknown): CommentItem {
   return attribution(record(value));
