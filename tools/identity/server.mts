@@ -13,7 +13,8 @@ import { PrismaClient } from "../../src/generated/prisma/client.ts";
 
 // Synthetic test harness only; not the selected hosted architecture. The socket
 // peer is authoritative here, and client-supplied forwarding headers are stripped.
-export async function startLocalIdentityServer(manifest: LocalManifest, name: string, mode: "test" | "preview", port: number, controlPath: string) {
+export async function startLocalIdentityServer(manifest: LocalManifest, name: string, mode: "test" | "preview", port: number, controlPath: string, development = false) {
+if (development && (mode !== "preview" || process.env.NODE_ENV !== "development")) throw new Error("Invalid interactive development launch");
 await assertDatabaseIdentity(databaseUrl(manifest, name, "runtime"), manifest, "runtime");
 if (existsSync(controlPath)) throw new Error("Existing local server control file requires inspection");
 const context: LocalIdentity = { origin: `http://${mode === "preview" ? "localhost" : "127.0.0.1"}:${port}`, mode, databaseName: name,
@@ -22,13 +23,17 @@ const context: LocalIdentity = { origin: `http://${mode === "preview" ? "localho
   rateKey: keyedDigest(manifest.runtimePassword, "usp-m2-local-rate-limits"), mailbox: new Map(),
   database: new PrismaClient({ adapter: new PrismaPg({ connectionString: databaseUrl(manifest, name!, "runtime"), connectionTimeoutMillis: 5000, max: 4 }), log: [] }) };
 (globalThis as typeof globalThis & { __uspLocalIdentity?: LocalIdentity }).__uspLocalIdentity = context;
-const app = next({ dev: false, hostname: mode === "preview" ? "localhost" : "127.0.0.1", port });
-await app.prepare();
-const handle = app.getRequestHandler();
+function allowedPeer(request: import("node:http").IncomingMessage) {
+  const ip = peerAddress(request.socket.remoteAddress ?? "");
+  return (ip === "127.0.0.1" || (mode === "preview" && ip === "::1")) && request.headers.host === new URL(context.origin).host;
+}
+function allowedUpgrade(request: import("node:http").IncomingMessage) {
+  return development && allowedPeer(request) && request.headers.origin === context.origin;
+}
 const handler: import("node:http").RequestListener = async (request, response) => {
   try {
     const ip = peerAddress(request.socket.remoteAddress ?? "");
-    if ((ip !== "127.0.0.1" && !(mode === "preview" && ip === "::1")) || request.headers.host !== new URL(context.origin).host) { response.writeHead(403).end(); return; }
+    if (!allowedPeer(request) || (request.headers.upgrade && !allowedUpgrade(request))) { response.writeHead(403).end(); return; }
     if (mode === "preview" && request.url?.startsWith("/__local-preview/confirmation")) { await previewConfirmation(request, response, context); return; }
     for (const header of Object.keys(request.headers)) {
       if (header === "forwarded" || header.startsWith("x-forwarded-") || header === "x-real-ip" || header.startsWith("x-usp-")) delete request.headers[header];
@@ -46,8 +51,17 @@ const handler: import("node:http").RequestListener = async (request, response) =
     response.end();
   }
 };
-const server = httpServer({ requestTimeout: 10000, headersTimeout: 10000 }, handler);
-const ipv6 = mode === "preview" ? httpServer({ requestTimeout: 10000, headersTimeout: 10000 }, handler) : undefined;
+// Node checks every upgrade before Next's automatically installed HMR handler.
+// Apply the same socket/Host boundary and require the exact browser Origin.
+const options = { requestTimeout: 10000, headersTimeout: 10000, shouldUpgradeCallback: allowedUpgrade };
+const server = httpServer(options, handler);
+const ipv6 = mode === "preview" ? httpServer(options, handler) : undefined;
+const app = next({ dev: development, hostname: mode === "preview" ? "localhost" : "127.0.0.1", port, httpServer: server });
+await app.prepare();
+const handle = app.getRequestHandler();
+// Next installs one upgrade listener on httpServer. Both localhost address
+// families must reach it; Node has already authorized the IPv6 handshake.
+if (development) ipv6?.on("upgrade", (request, socket, head) => server.emit("upgrade", request, socket, head));
 try {
   await new Promise<void>((accept, reject) => { server.once("error", reject); server.listen(port, "127.0.0.1", accept); });
   if (ipv6) await new Promise<void>((accept, reject) => { ipv6.once("error", reject); ipv6.listen({ port, host: "::1", ipv6Only: true }, accept); });
@@ -69,7 +83,7 @@ const control = controlServer((socket) => {
           !timingSafeEqual(Buffer.from(input.key, "hex"), Buffer.from(key, "hex")) || (!("email" in input) && !(mode === "preview" && "operation" in input && ["stop", "status"].includes(String(input.operation))))) throw new Error("Rejected");
       if (mode === "preview" && "operation" in input && input.operation === "status") { socket.end(JSON.stringify({ databaseName: name }) + "\n"); return; }
       if (mode === "preview" && "operation" in input && input.operation === "stop") {
-        socket.end(JSON.stringify({ stopped: true, databaseName: name }) + "\n", () => { void stop(); }); return;
+        socket.end(JSON.stringify({ stopped: true, databaseName: name }) + "\n", requestStop); return;
       }
       if (!("email" in input)) throw new Error("Rejected");
       const emailKey = normalizeEmail(input.email).emailKey;
@@ -83,16 +97,23 @@ await new Promise<void>((accept, reject) => { control.once("error", reject); con
 const address = control.address();
 if (!address || typeof address === "string") throw new Error("Invalid control listener");
 writeFileSync(controlPath, JSON.stringify({ port: address.port, key, databaseName: name, pid: process.pid }), { flag: "wx", mode: 0o600 });
-console.log(mode === "preview" ? `Local synthetic preview ready: ${context.origin}/en/signin` : "Owned synthetic identity browser server ready on loopback");
+console.log(mode === "preview" ? `Local synthetic ${development ? "development (hot reload)" : "preview"} ready: ${context.origin}/en/signin` : "Owned synthetic identity browser server ready on loopback");
+let stopping = false;
 async function stop() {
+  if (stopping) return;
+  stopping = true;
   control.close(); server.closeAllConnections(); server.close(); ipv6?.closeAllConnections(); ipv6?.close();
   context.mailbox.clear();
   await app.close();
   await context.database.$disconnect();
   if (existsSync(controlPath) && JSON.parse(readFileSync(controlPath, "utf8")).databaseName === name && JSON.parse(readFileSync(controlPath, "utf8")).key === key) unlinkSync(controlPath);
+  console.log("Local synthetic server stopped; development data retained");
   process.exit(0);
 }
-process.once("SIGTERM", () => { void stop(); });
-process.once("SIGINT", () => { void stop(); });
+function requestStop() {
+  void stop().catch(() => { console.error("Local synthetic shutdown failed; inspect control state before restarting"); process.exit(1); });
+}
+process.once("SIGTERM", requestStop);
+process.once("SIGINT", requestStop);
 
 }

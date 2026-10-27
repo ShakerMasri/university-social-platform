@@ -4,6 +4,7 @@ import { useRouter } from "next/navigation";
 import type { Locale } from "@/i18n/locales";
 import { communityText } from "@/i18n/communities";
 import { communityInput, type MembershipAction } from "@/server/communities/policy";
+import { useHydrated } from "@/app/use-hydrated";
 
 async function post(path: string, data: object) {
   try {
@@ -14,6 +15,7 @@ async function post(path: string, data: object) {
   } catch { return { ok: false, status: 503 }; }
 }
 export function CreateCommunityForm({ locale }: { locale: Locale }) {
+  const hydrated = useHydrated();
   const text = communityText[locale], router = useRouter();
   const [busy, setBusy] = useState(false), [message, setMessage] = useState("");
   const feedback = useRef<HTMLParagraphElement>(null);
@@ -33,16 +35,17 @@ export function CreateCommunityForm({ locale }: { locale: Locale }) {
     <p id="visibility-hint">{text.hint}</p>
     <p id="community-limits">{text.limits}</p>
     <form onSubmit={submit} aria-busy={busy}>
-      <label htmlFor="community-name">{text.name}</label><input id="community-name" name="name" required dir="auto" aria-describedby="community-limits" />
-      <label htmlFor="community-description">{text.description}</label><textarea id="community-description" name="description" dir="auto" rows={3} aria-describedby="community-limits" />
+      <label htmlFor="community-name">{text.name}</label><input disabled={!hydrated} id="community-name" name="name" required dir="auto" aria-describedby="community-limits" />
+      <label htmlFor="community-description">{text.description}</label><textarea disabled={!hydrated} id="community-description" name="description" dir="auto" rows={3} aria-describedby="community-limits" />
       <label htmlFor="community-visibility">{text.visibility}</label>
-      <select id="community-visibility" name="visibility" aria-describedby="visibility-hint"><option value="PUBLIC">{text.public}</option><option value="PRIVATE">{text.private}</option></select>
-      <button disabled={busy} type="submit">{busy ? text.busy : text.create}</button>
+      <select disabled={!hydrated} id="community-visibility" name="visibility" aria-describedby="visibility-hint"><option value="PUBLIC">{text.public}</option><option value="PRIVATE">{text.private}</option></select>
+      <button disabled={busy || !hydrated} type="submit">{busy ? text.busy : text.create}</button>
     </form>
     <p ref={feedback} role="status" tabIndex={-1}>{message}</p>
   </section>;
 }
 export function MembershipControls({ locale, id, actions, userId, visibility, membership }: { locale: Locale; id: string; actions: MembershipAction[]; userId?: string; visibility?: "PUBLIC" | "PRIVATE"; membership?: "PENDING" | "MEMBER" | null }) {
+  const hydrated = useHydrated();
   const text = communityText[locale], router = useRouter();
   const [busy, setBusy] = useState(false), [message, setMessage] = useState("");
   const feedback = useRef<HTMLParagraphElement>(null);
@@ -54,7 +57,7 @@ export function MembershipControls({ locale, id, actions, userId, visibility, me
     if (result.ok) router.refresh();
   }
   return <div aria-busy={busy}>
-    <div className="community-actions">{actions.map((action) => <button key={action} disabled={busy} type="button" onClick={() => void change(action)}>
+    <div className="community-actions">{actions.map((action) => <button key={action} disabled={busy || !hydrated} type="button" onClick={() => void change(action)}>
       {busy ? text.busy : action === "join" ? visibility === "PRIVATE" ? text.request : text.join : action === "leave" ? membership === "PENDING" ? text.cancel : text.leave : action === "approve" ? text.approve : membership === "PENDING" ? text.reject : text.remove}
       {userId && <span className="visually-hidden"> · {text.userId}: <bdi dir="ltr">{userId}</bdi></span>}
     </button>)}</div>
