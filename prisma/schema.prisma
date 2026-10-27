@@ -22,6 +22,7 @@ model User {
   sessions        Session[]
   ownedCommunities Community[]
   memberships     CommunityMembership[]
+  posts           Post[]
 
   // The composite foreign key binds every challenge to the current email.
   @@unique([id, emailKey])
@@ -87,6 +88,7 @@ model Community {
   createdAt   DateTime @default(now()) @db.Timestamptz(3)
   owner       User @relation(fields: [ownerId], references: [id], onDelete: Restrict, onUpdate: Restrict)
   memberships CommunityMembership[]
+  posts       Post[]
 
   @@index([createdAt, id])
 }
@@ -101,4 +103,27 @@ model CommunityMembership {
 
   @@id([communityId, userId])
   @@index([userId, status])
+}
+
+enum PostType {
+  QUESTION
+  DISCUSSION
+  RESOURCE
+  ANNOUNCEMENT
+}
+
+model Post {
+  id            String    @id @default(uuid()) @db.Uuid
+  communityId   String    @db.Uuid
+  authorId      String?   @db.Uuid
+  submissionKey String?   @unique @db.VarChar(64)
+  type          PostType
+  title         String    @db.VarChar(160)
+  body          String    @db.VarChar(10000)
+  resourceUrl   String?   @db.VarChar(2048)
+  createdAt     DateTime  @default(now()) @db.Timestamptz(3)
+  community     Community @relation(fields: [communityId], references: [id], onDelete: Restrict, onUpdate: Restrict)
+  author        User?     @relation(fields: [authorId], references: [id], onDelete: SetNull, onUpdate: Restrict)
+
+  @@index([communityId, createdAt, id])
 }

@@ -19,24 +19,37 @@ function useFeedback() {
   return { message, show };
 }
 
-export function SignInForm({ locale }: { locale: Locale }) {
+export function SignInForm({ locale, preview = false }: { locale: Locale; preview?: boolean }) {
   const text = identityText[locale];
   const [email, setEmail] = useState("");
+  const [requested, setRequested] = useState(false);
   const [busy, setBusy] = useState(false);
   const feedback = useFeedback();
   async function submit(event: FormEvent) {
     event.preventDefault(); setBusy(true);
     const result = await post("request", { email, locale });
-    setBusy(false); feedback.show(result.ok ? text.requested : text.failed);
+    setBusy(false); setRequested(result.ok); feedback.show(result.ok ? text.requested : text.failed);
+  }
+  async function openPreviewConfirmation() {
+    setBusy(true);
+    try {
+      const response = await fetch("/__local-preview/confirmation", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ email }), cache: "no-store" });
+      const message = await response.json() as { token?: unknown };
+      if (!response.ok || typeof message.token !== "string" || !/^[A-Za-z0-9_-]{43}$/.test(message.token)) { feedback.show(text.linkError); return; }
+      window.location.assign(`/${locale}/verify#${message.token}`);
+    } catch { feedback.show(text.failed); }
+    finally { setBusy(false); }
   }
   return <>
     <h1>{text.signIn}</h1><p id="email-hint">{text.hint}</p>
     <form onSubmit={submit} aria-busy={busy}>
       <label htmlFor="email">{text.email}</label>
-      <input id="email" name="email" type="text" inputMode="email" autoComplete="email" dir="ltr" value={email} onChange={(event) => setEmail(event.target.value)} required aria-describedby="email-hint" />
+      <input id="email" name="email" type="text" inputMode="email" autoComplete="email" dir="ltr" value={email} onChange={(event) => { setEmail(event.target.value); setRequested(false); }} required aria-describedby="email-hint" />
       <button disabled={busy} type="submit">{busy ? text.busy : text.request}</button>
     </form>
     <p id="identity-feedback" role="status" tabIndex={-1}>{feedback.message}</p>
+    {preview && <p>{text.previewHint}</p>}
+    {preview && requested && <button type="button" disabled={busy} onClick={() => void openPreviewConfirmation()}>{text.previewOpen}</button>}
   </>;
 }
 

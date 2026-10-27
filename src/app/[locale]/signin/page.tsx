@@ -10,7 +10,7 @@ export const dynamic = "force-dynamic";
 export default async function SignIn({ params }: { params: Promise<{ locale: string }> }) {
   const { locale } = await params;
   if (!isLocale(locale)) notFound();
-  let enabled = false;
-  try { requireLocalIdentity(await headers()); enabled = true; } catch { /* Deliberately disabled outside the owned harness. */ }
-  return <IdentityShell locale={locale} path="signin">{enabled ? <SignInForm locale={locale} /> : <><h1>{identityText[locale].signIn}</h1><p>{identityText[locale].disabled}</p></>}</IdentityShell>;
+  let enabled = false, preview = false;
+  try { const { context } = requireLocalIdentity(await headers()); enabled = true; preview = context.mode === "preview"; } catch { /* Deliberately disabled outside the owned harness. */ }
+  return <IdentityShell locale={locale} path="signin">{enabled ? <SignInForm locale={locale} preview={preview} /> : <><h1>{identityText[locale].signIn}</h1><p>{identityText[locale].disabled}</p></>}</IdentityShell>;
 }

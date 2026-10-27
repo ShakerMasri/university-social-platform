@@ -32,7 +32,7 @@ export function cursor(request: NextRequest) {
   const value = request.nextUrl.searchParams.get("after");
   return value === null ? undefined : validInput(() => communityId(value));
 }
-export async function communityBody(request: NextRequest): Promise<Record<string, unknown>> {
+export async function communityBody(request: NextRequest, maximumBytes = 8192): Promise<Record<string, unknown>> {
   if (request.nextUrl.search || !request.headers.get("content-type")?.startsWith("application/json")) throw new InputError("Invalid input");
   const reader = request.body?.getReader();
   if (!reader) throw new InputError("Invalid input");
@@ -43,7 +43,7 @@ export async function communityBody(request: NextRequest): Promise<Record<string
       const { done, value } = await reader.read();
       if (done) break;
       size += value.byteLength;
-      if (size > 8192) { await reader.cancel(); throw new InputError("Input too large"); }
+      if (size > maximumBytes) { await reader.cancel(); throw new InputError("Input too large"); }
       chunks.push(value);
     }
     const body: unknown = JSON.parse(Buffer.concat(chunks).toString("utf8"));

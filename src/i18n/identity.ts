@@ -13,6 +13,8 @@ export const identityText = {
     nameHint: "A self-reported name, up to 60 characters. Arabic and English are supported.",
     invalidName: "Enter a nonblank display name of up to 60 characters.", saved: "Your profile has been saved.",
     private: "Only you can read or edit this test profile. Your email is private and cannot be changed.",
+    previewHint: "Manual local preview: use a made-up @university.test address, request a link, then open its confirmation here. No real email is sent.",
+    previewOpen: "Open local confirmation",
     home: "Home",
   },
   ar: {
@@ -27,6 +29,8 @@ export const identityText = {
     nameHint: "اسم تُدخله بنفسك، لا يتجاوز 60 حرفًا. تُدعم العربية والإنجليزية.",
     invalidName: "أدخل اسمًا غير فارغ لا يتجاوز 60 حرفًا.", saved: "تم حفظ ملفك الشخصي.",
     private: "يمكنك وحدك قراءة ملف الاختبار وتعديله. بريدك خاص ولا يمكن تغييره.",
+    previewHint: "معاينة محلية يدوية: استخدم عنوانًا وهميًا ينتهي بـ @university.test، واطلب رابطًا ثم افتح تأكيده هنا. لا يُرسل بريد حقيقي.",
+    previewOpen: "فتح التأكيد المحلي",
     home: "الرئيسية",
   },
 } satisfies Record<Locale, Record<string, string>>;

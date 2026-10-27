@@ -19,7 +19,7 @@ export const communityText: Record<Locale, CommunityText> = {
     unavailable: "This community is unavailable or you do not have access.",
     profileRequired: "Save your display name before creating a community.", profile: "My profile", busy: "Working…",
     changed: "Membership updated.", next: "Next page", back: "All communities",
-    space: "Community space. Posts will be added in a later checkpoint.", noMembers: "No members or requests on this page.", loading: "Loading communities…",
+    space: "Community space.", noMembers: "No members or requests on this page.", loading: "Loading communities…",
     rate: "Too many actions. Try again later.", limits: "Name: 1–80 characters. Description: up to 1,000 characters.",
   },
   ar: {
@@ -34,7 +34,7 @@ export const communityText: Record<Locale, CommunityText> = {
     unavailable: "هذا المجتمع غير متاح أو ليس لديك صلاحية الوصول.",
     profileRequired: "احفظ اسم العرض قبل إنشاء مجتمع.", profile: "ملفي الشخصي", busy: "جارٍ التنفيذ…",
     changed: "تم تحديث العضوية.", next: "الصفحة التالية", back: "جميع المجتمعات",
-    space: "مساحة المجتمع. ستُضاف المنشورات في مرحلة لاحقة.", noMembers: "لا توجد عضويات أو طلبات في هذه الصفحة.", loading: "جارٍ تحميل المجتمعات…",
+    space: "مساحة المجتمع.", noMembers: "لا توجد عضويات أو طلبات في هذه الصفحة.", loading: "جارٍ تحميل المجتمعات…",
     rate: "عمليات كثيرة. حاول مجددًا لاحقًا.", limits: "الاسم: من حرف واحد إلى 80 حرفًا. الوصف: حتى 1000 حرف.",
   },
 };

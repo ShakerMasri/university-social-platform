@@ -1,0 +1,10 @@
+import { resolve } from "node:path";
+import { readManifest } from "../database/targets.ts";
+import { localPreviewPort } from "../../src/server/identity/local-policy.ts";
+import { startLocalIdentityServer } from "./server.mts";
+const check = process.argv[2] === "check";
+if (process.argv.length !== (check ? 3 : 2)) throw new Error("Invalid local preview arguments");
+const manifest = readManifest();
+const record = check ? manifest.databases.find(record => record.name === process.env.USP_PREVIEW_TEST_DATABASE && record.kind === "test" && record.ready) : manifest.databases.find(record => record.kind === "development" && record.ready);
+if (!record) throw new Error("An explicitly owned preview database is required");
+await startLocalIdentityServer(manifest, record.name, "preview", localPreviewPort(process.env.USP_LOCAL_PREVIEW_PORT), resolve(check ? ".cache/m2-preview-check.json" : ".cache/m2-preview.json"));

@@ -24,11 +24,11 @@ function authorized<T>(db: PrismaClient, token: unknown, run: (tx: Transaction, 
     return result;
   });
 }
-async function mutating<T>(db: PrismaClient, token: unknown, run: (tx: Transaction, userId: string) => Promise<T>, requireProfile = false) {
+async function mutating<T>(db: PrismaClient, token: unknown, run: (tx: Transaction, userId: string) => Promise<T>, requireProfile = false, budget = "m3-community-write") {
   // Reserve attempts separately: a rejected write cannot roll back its budget.
   // Reuse the existing bounded counter table under a disjoint opaque user key.
   const allowed = await authorized(db, token, async (tx, userId) => {
-    const keyDigest = digest(`m3-community-write:${userId}`);
+    const keyDigest = digest(`${budget}:${userId}`);
     await tx.identityRateLimit.upsert({ where: { keyDigest }, create: { keyDigest }, update: { hits: { increment: 0 } } });
     const [counter] = await tx.$queryRaw<{ startedAt: Date; hits: number }[]>`SELECT "startedAt", hits FROM "IdentityRateLimit" WHERE "keyDigest" = ${keyDigest} FOR UPDATE`;
     const [clock] = await tx.$queryRaw<{ now: Date }[]>`SELECT clock_timestamp() AS now`;
@@ -133,4 +133,20 @@ export function changeMembership(db: PrismaClient, token: unknown, value: unknow
     if (await tx.communityMembership.count({ where: { userId } }) >= 500) throw new CommunityError(429);
     await tx.communityMembership.create({ data: { ...where, status: community.visibility === "PUBLIC" ? "MEMBER" : "PENDING" } });
   });
+}
+
+// Posts share the same session/clock and community-lock boundaries as membership
+// changes. Reads hold a shared lock; posting and membership transitions serialize.
+export function withCommunityPostAccess<T>(db: PrismaClient, token: unknown, value: unknown, write: boolean,
+  run: (tx: Transaction, community: { id: string; ownerId: string; visibility: "PUBLIC" | "PRIVATE" }, userId: string, member: boolean) => Promise<T>) {
+  const id = communityId(value);
+  const execute = async (tx: Transaction, userId: string) => {
+    const community = await lockedCommunity(tx, id, write);
+    const membership = await tx.communityMembership.findUnique({ where: { communityId_userId: { communityId: id, userId } }, select: { status: true } });
+    const member = membership?.status === "MEMBER";
+    if (community.visibility === "PRIVATE" && !member && community.ownerId !== userId) throw new CommunityError(404);
+    if (write && !member) throw new CommunityError(403);
+    return run(tx, community, userId, member);
+  };
+  return write ? mutating(db, token, execute, true, "m3-post-write") : authorized(db, token, execute);
 }

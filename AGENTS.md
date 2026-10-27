@@ -138,6 +138,8 @@ When generating or changing code, strictly apply these requirements beyond basic
 
 ## Git, migrations, and deployment
 
+- Use descriptive branch prefixes such as feat/, fix/ or chore/. Do not include agent or tool branding in GitHub branch names or commit messages. This is the owner's naming preference.
+
 - Inspect the current branch and working tree. Use focused feature branches, reviewable changes, checks, and PR review before merging. Suggest appropriate branch and checkpoint commit names. Carry out commits, pushes, and merges according to the user's authorization; never discard unrelated work or force-push without explicit authorization.
 - Preserve IDs, relationships, content, and memberships during migrations. Never reset production. Review generated migrations before applying them; use disposable data for destructive experiments.
 - Explain migration scope, backups, application order, compatibility, validation, and recovery. Identify environment/setup changes and whether each action targets local development, staging, or production.
