@@ -1,15 +1,17 @@
 import "server-only";
-import type { PrismaClient } from "../../generated/prisma/client.ts";
+import type { Prisma, PrismaClient } from "../../generated/prisma/client.ts";
 import { CommunityError, withCommunityPostAccess } from "../communities/service.ts";
 import { communityId } from "../communities/policy.ts";
 import { digest } from "../identity/policy.ts";
 import { postInput, postPageSize } from "./policy.ts";
+import { voteSummaries } from "../votes/service.ts";
+import type { VoteSummary } from "../votes/policy.ts";
 
-const projection = { id: true, communityId: true, type: true, title: true, body: true, resourceUrl: true,
+const projection = { id: true, authorId: true, communityId: true, type: true, title: true, body: true, resourceUrl: true,
   createdAt: true, author: { select: { profile: { select: { displayName: true } } } } } as const;
-function publicPost<T extends { author: { profile: { displayName: string } | null } | null }>(row: T) {
-  const { author, ...post } = row;
-  return { ...post, authorName: author?.profile?.displayName ?? null };
+function publicPost(row: Prisma.PostGetPayload<{ select: typeof projection }>, vote: VoteSummary) {
+  return { id: row.id, communityId: row.communityId, type: row.type, title: row.title, body: row.body,
+    resourceUrl: row.resourceUrl, createdAt: row.createdAt, authorName: row.author?.profile?.displayName ?? null, vote };
 }
 export function createPost(db: PrismaClient, token: unknown, value: unknown, input: Record<string, unknown>) {
   const { requestId, ...data } = postInput(input);
@@ -35,7 +37,8 @@ export function listPosts(db: PrismaClient, token: unknown, value: unknown, curs
     const rows = await tx.post.findMany({ where: { communityId: community.id, ...(anchor ? { OR: [
       { createdAt: { lt: anchor.createdAt } }, { createdAt: anchor.createdAt, id: { lt: anchor.id } },
     ] } : {}) }, orderBy: [{ createdAt: "desc" }, { id: "desc" }], take: postPageSize + 1, select: projection });
-    const items = rows.slice(0, postPageSize).map(publicPost);
+    const visible = rows.slice(0, postPageSize), votes = await voteSummaries(tx, "post", visible, userId, membership);
+    const items = visible.map(row => publicPost(row, votes.get(row.id)!));
     return { items, next: rows.length > postPageSize ? items.at(-1)!.id : null,
       canPost: membership && Boolean(await tx.profile.findUnique({ where: { userId }, select: { userId: true } })),
       canAnnounce: community.ownerId === userId };
@@ -43,9 +46,9 @@ export function listPosts(db: PrismaClient, token: unknown, value: unknown, curs
 }
 export function readPost(db: PrismaClient, token: unknown, value: unknown, postValue: unknown) {
   const id = communityId(postValue);
-  return withCommunityPostAccess(db, token, value, false, async (tx, community) => {
+  return withCommunityPostAccess(db, token, value, false, async (tx, community, userId, member) => {
     const post = await tx.post.findFirst({ where: { id, communityId: community.id }, select: projection });
     if (!post) throw new CommunityError(404);
-    return publicPost(post);
+    return publicPost(post, (await voteSummaries(tx, "post", [post], userId, member)).get(post.id)!);
   });
 }

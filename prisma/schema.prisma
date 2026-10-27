@@ -24,6 +24,8 @@ model User {
   memberships     CommunityMembership[]
   posts           Post[]
   comments        Comment[]
+  postVotes       PostVote[]
+  commentVotes    CommentVote[]
 
   // The composite foreign key binds every challenge to the current email.
   @@unique([id, emailKey])
@@ -126,6 +128,7 @@ model Post {
   community     Community @relation(fields: [communityId], references: [id], onDelete: Restrict, onUpdate: Restrict)
   author        User?     @relation(fields: [authorId], references: [id], onDelete: SetNull, onUpdate: Restrict)
   comments      Comment[]
+  votes         PostVote[]
 
   @@index([communityId, createdAt, id])
 }
@@ -139,6 +142,29 @@ model Comment {
   createdAt     DateTime @default(now()) @db.Timestamptz(3)
   post          Post     @relation(fields: [postId], references: [id], onDelete: Restrict, onUpdate: Restrict)
   author        User?    @relation(fields: [authorId], references: [id], onDelete: SetNull, onUpdate: Restrict)
+  votes         CommentVote[]
 
   @@index([postId, createdAt, id])
+}
+
+model PostVote {
+  postId    String   @db.Uuid
+  userId    String   @db.Uuid
+  createdAt DateTime @default(now()) @db.Timestamptz(3)
+  post      Post     @relation(fields: [postId], references: [id], onDelete: Restrict, onUpdate: Restrict)
+  user      User     @relation(fields: [userId], references: [id], onDelete: Restrict, onUpdate: Restrict)
+
+  @@id([postId, userId])
+  @@index([userId])
+}
+
+model CommentVote {
+  commentId String   @db.Uuid
+  userId    String   @db.Uuid
+  createdAt DateTime @default(now()) @db.Timestamptz(3)
+  comment   Comment  @relation(fields: [commentId], references: [id], onDelete: Restrict, onUpdate: Restrict)
+  user      User     @relation(fields: [userId], references: [id], onDelete: Restrict, onUpdate: Restrict)
+
+  @@id([commentId, userId])
+  @@index([userId])
 }

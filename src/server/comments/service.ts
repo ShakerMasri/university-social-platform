@@ -1,14 +1,15 @@
 import "server-only";
-import type { PrismaClient } from "../../generated/prisma/client.ts";
+import type { Prisma, PrismaClient } from "../../generated/prisma/client.ts";
 import { CommunityError, withCommunityPostAccess } from "../communities/service.ts";
 import { communityId } from "../communities/policy.ts";
 import { digest } from "../identity/policy.ts";
 import { commentInput, commentPageSize } from "./policy.ts";
+import { voteSummaries } from "../votes/service.ts";
+import type { VoteSummary } from "../votes/policy.ts";
 
-const displayProjection = { id: true, body: true, createdAt: true, author: { select: { profile: { select: { displayName: true } } } } } as const;
-function displayComment<T extends { author: { profile: { displayName: string } | null } | null }>(row: T) {
-  const { author, ...comment } = row;
-  return { ...comment, authorName: author?.profile?.displayName ?? null };
+const displayProjection = { id: true, authorId: true, body: true, createdAt: true, author: { select: { profile: { select: { displayName: true } } } } } as const;
+function displayComment(row: Prisma.CommentGetPayload<{ select: typeof displayProjection }>, vote: VoteSummary) {
+  return { id: row.id, body: row.body, createdAt: row.createdAt, authorName: row.author?.profile?.displayName ?? null, vote };
 }
 
 export function createComment(db: PrismaClient, token: unknown, communityValue: unknown, postValue: unknown, input: Record<string, unknown>) {
@@ -18,11 +19,11 @@ export function createComment(db: PrismaClient, token: unknown, communityValue: 
     // Community write lock serializes duplicate submissions and membership removal.
     const submissionKey = digest(`m3-comment:${postId}:${userId}:${requestId}`);
     const existing = await tx.comment.findUnique({ where: { submissionKey } });
-    if (existing) {
-      if (existing.authorId !== userId || existing.postId !== postId || existing.body !== body) throw new CommunityError(409);
-      return displayComment(await tx.comment.findUniqueOrThrow({ where: { id: existing.id }, select: displayProjection }));
-    }
-    return displayComment(await tx.comment.create({ data: { postId, authorId: userId, body, submissionKey }, select: displayProjection }));
+    if (existing && (existing.authorId !== userId || existing.postId !== postId || existing.body !== body)) throw new CommunityError(409);
+    const row = existing
+      ? await tx.comment.findUniqueOrThrow({ where: { id: existing.id }, select: displayProjection })
+      : await tx.comment.create({ data: { postId, authorId: userId, body, submissionKey }, select: displayProjection });
+    return displayComment(row, (await voteSummaries(tx, "comment", [row], userId, true)).get(row.id)!);
   }, "m3-comment-write", true);
 }
 
@@ -36,7 +37,8 @@ export function listComments(db: PrismaClient, token: unknown, communityValue: u
       { createdAt: { gt: anchor.createdAt } }, { createdAt: anchor.createdAt, id: { gt: anchor.id } },
     ] } : {}) }, orderBy: [{ createdAt: "asc" }, { id: "asc" }], take: commentPageSize + 1,
     select: displayProjection });
-    const items = rows.slice(0, commentPageSize).map(displayComment);
+    const visible = rows.slice(0, commentPageSize), votes = await voteSummaries(tx, "comment", visible, userId, member);
+    const items = visible.map(row => displayComment(row, votes.get(row.id)!));
     return { items, next: rows.length > commentPageSize ? items.at(-1)!.id : null,
       canComment: member && Boolean(await tx.profile.findUnique({ where: { userId }, select: { userId: true } })) };
   }, "m3-comment-write", true);

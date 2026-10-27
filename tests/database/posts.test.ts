@@ -104,7 +104,7 @@ describe("M3 posts on disposable PostgreSQL", () => {
     expect(await db.post.count({ where: { communityId: space.id } })).toBe(1);
     await deny(createPost(db, owner.token, space.id, { ...input, body: "Changed" }), 409);
     const read = await readPost(db, owner.token, space.id, results[0].id);
-    expect(Object.keys(read).sort()).toEqual(["authorName", "body", "communityId", "createdAt", "id", "resourceUrl", "title", "type"].sort());
+    expect(Object.keys(read).sort()).toEqual(["authorName", "body", "communityId", "createdAt", "id", "resourceUrl", "title", "type", "vote"].sort());
   });
 
   it("paginates tied timestamps without duplicates and scopes detail and cursors to their community", async () => {

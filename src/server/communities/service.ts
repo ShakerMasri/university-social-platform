@@ -138,7 +138,7 @@ export function changeMembership(db: PrismaClient, token: unknown, value: unknow
 // Posts share the same session/clock and community-lock boundaries as membership
 // changes. Reads hold a shared lock; posting and membership transitions serialize.
 export function withCommunityPostAccess<T>(db: PrismaClient, token: unknown, value: unknown, write: boolean,
-  run: (tx: Transaction, community: { id: string; ownerId: string; visibility: "PUBLIC" | "PRIVATE" }, userId: string, member: boolean) => Promise<T>, budget = "m3-post-write", requirePrivateMembership = false) {
+  run: (tx: Transaction, community: { id: string; ownerId: string; visibility: "PUBLIC" | "PRIVATE" }, userId: string, member: boolean) => Promise<T>, budget = "m3-post-write", requirePrivateMembership = false, requireProfile = true) {
   const id = communityId(value);
   const execute = async (tx: Transaction, userId: string) => {
     const community = await lockedCommunity(tx, id, write);
@@ -148,5 +148,5 @@ export function withCommunityPostAccess<T>(db: PrismaClient, token: unknown, val
     if (write && !member) throw new CommunityError(403);
     return run(tx, community, userId, member);
   };
-  return write ? mutating(db, token, execute, true, budget) : authorized(db, token, execute);
+  return write ? mutating(db, token, execute, requireProfile, budget) : authorized(db, token, execute);
 }
