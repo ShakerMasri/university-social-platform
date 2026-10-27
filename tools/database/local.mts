@@ -4,6 +4,8 @@ import { existsSync, mkdirSync, readFileSync, writeFileSync, unlinkSync, rmdirSy
 import { createServer } from "node:net";
 import { dirname, resolve } from "node:path";
 import { Client } from "pg";
+import { localPreviewPort } from "../../src/server/identity/local-policy.ts";
+import { recoverStalePreview, stopPreview } from "../identity/preview-control.ts";
 import { composeEnvironment, validateComposeConfig } from "./compose.ts";
 import {
   assertDatabaseIdentity, databaseUrl, image, manifestPath, readManifest, validateManifest,
@@ -100,10 +102,10 @@ function verifyResources(m: LocalManifest) {
   return c.Id;
 }
 
-async function ensurePortFree(port: number) {
+async function ensurePortFree(port: number, label = "Project-local PostgreSQL") {
   await new Promise<void>((accept, reject) => {
     const server = createServer();
-    server.once("error", () => reject(new Error("Project-local PostgreSQL port is occupied")));
+    server.once("error", () => reject(new Error(`${label} port is occupied or reserved`)));
     server.listen(port, "127.0.0.1", () => server.close(() => accept()));
   });
 }
@@ -176,7 +178,9 @@ async function migrate(m: LocalManifest, name: string) {
     GRANT INSERT (id, "ownerId", name, description, visibility, "createdAt") ON "Community" TO ${identifier(m.runtimeRole)};
     GRANT INSERT ("communityId", "userId", status, "createdAt") ON "CommunityMembership" TO ${identifier(m.runtimeRole)};
     GRANT UPDATE (status) ON "CommunityMembership" TO ${identifier(m.runtimeRole)};
-    GRANT DELETE ON "CommunityMembership" TO ${identifier(m.runtimeRole)};`);
+    GRANT DELETE ON "CommunityMembership" TO ${identifier(m.runtimeRole)};
+    GRANT SELECT ON "Post" TO ${identifier(m.runtimeRole)};
+    GRANT INSERT (id, "communityId", "authorId", "submissionKey", type, title, body, "resourceUrl", "createdAt") ON "Post" TO ${identifier(m.runtimeRole)};`);
   console.log(`Reviewed migration history applied: ${name}`);
 }
 
@@ -260,8 +264,8 @@ async function setup() {
 
 async function test(m: LocalManifest) {
   verifyResources(m);
-  // Two complete-history databases and populated Unicode/M2/M3 forward-upgrade fixtures.
-  const records: DatabaseRecord[] = [0, 1, 2, 3, 4].map(() => ({
+  // Two complete-history databases and populated Unicode/M2/community/posts upgrade fixtures.
+  const records: DatabaseRecord[] = [0, 1, 2, 3, 4, 5].map(() => ({
     name: `usp_m1b_${m.owner}_test_${randomBytes(6).toString("hex")}`, kind: "test", ready: false,
   }));
   m.databases.push(...records);
@@ -273,7 +277,7 @@ async function test(m: LocalManifest) {
     }
     const result = spawnSync(process.execPath, ["node_modules/vitest/vitest.mjs", "run", "--config", "vitest.database.config.mjs"], {
       env: { ...process.env, M1B_TEST_DATABASE: records[0].name, M1B_REPLAY_DATABASE: records[1].name,
-        M1B_UPGRADE_DATABASE: records[2].name, M2_UPGRADE_DATABASE: records[3].name, M3_UPGRADE_DATABASE: records[4].name },
+        M1B_UPGRADE_DATABASE: records[2].name, M2_UPGRADE_DATABASE: records[3].name, M3_UPGRADE_DATABASE: records[4].name, M3_POSTS_UPGRADE_DATABASE: records[5].name },
       encoding: "utf8", windowsHide: true,
     });
     process.stdout.write(result.stdout ?? "");
@@ -287,17 +291,19 @@ async function test(m: LocalManifest) {
     try {
       const before = await client.query('SELECT id, email, "emailKey" FROM "User" ORDER BY id');
       const communityBefore = await client.query('SELECT * FROM "Community" ORDER BY id');
+      const postBefore = await client.query('SELECT * FROM "Post" ORDER BY id');
       const membershipBefore = await client.query('SELECT * FROM "CommunityMembership" ORDER BY "communityId", "userId"');
       await migrate(m, records[0].name);
       const after = await client.query('SELECT id, email, "emailKey" FROM "User" ORDER BY id');
       const communityAfter = await client.query('SELECT * FROM "Community" ORDER BY id');
+      const postAfter = await client.query('SELECT * FROM "Post" ORDER BY id');
       const membershipAfter = await client.query('SELECT * FROM "CommunityMembership" ORDER BY "communityId", "userId"');
-      if (!before.rows.length || !communityBefore.rows.length || !membershipBefore.rows.length ||
-          JSON.stringify([before.rows, communityBefore.rows, membershipBefore.rows]) !==
-          JSON.stringify([after.rows, communityAfter.rows, membershipAfter.rows])) {
+      if (!before.rows.length || !communityBefore.rows.length || !membershipBefore.rows.length || !postBefore.rows.length ||
+          JSON.stringify([before.rows, communityBefore.rows, membershipBefore.rows, postBefore.rows]) !==
+          JSON.stringify([after.rows, communityAfter.rows, membershipAfter.rows, postAfter.rows])) {
         throw new Error("Migration reapplication changed synthetic data");
       }
-      console.log("Migration reapplication preserved populated user, community and membership records");
+      console.log("Migration reapplication preserved populated user, community, membership and post records");
     } finally { await client.end(); }
   } finally {
     for (const record of records) {
@@ -315,7 +321,7 @@ async function identityBrowser(m: LocalManifest) {
   try {
     await createDatabase(m, record);
     await migrate(m, record.name);
-    const result = spawnSync(process.execPath, ["node_modules/@playwright/test/cli.js", "test"], {
+    const result = spawnSync(process.execPath, ["tools/testing/run-playwright.mts", "test"], {
       env: { ...process.env, M2_IDENTITY_E2E: "1", M2_BROWSER_DATABASE: record.name },
       // The opt-in manual helper prints instructions before each Inspector pause.
       // Buffered output would hide them until the session had already ended.
@@ -338,7 +344,71 @@ function removeBrowserControl(path: string, name: string) {
   unlinkSync(path);
 }
 
+
+function removePreviewControl(path: string, name: string, pid?: number) {
+  if (![resolve(".cache/m2-preview.json"), resolve(".cache/m2-preview-check.json")].includes(path)) throw new Error("Invalid preview control path");
+  const control = JSON.parse(readFileSync(path, "utf8")) as { databaseName: string; pid?: number };
+  if (control.databaseName !== name || (pid !== undefined && control.pid !== pid)) throw new Error("Refusing another preview's control-file cleanup");
+  unlinkSync(path);
+}
+async function previewPreflight(m?: LocalManifest) {
+  if ([".cache/m2-preview-check.json", ".cache/m2-browser.json"].some(path => existsSync(resolve(path)))) throw new Error("An automated browser runner is active or needs inspection; stop it before restarting/building");
+  if (existsSync(resolve(".cache/m2-preview.json"))) {
+    const record = m?.databases.find(entry => entry.kind === "development" && entry.ready);
+    if (!m || !record || !await recoverStalePreview(m, record)) throw new Error("A local preview is active or needs inspection; open its existing URL or run npm run preview:stop before restarting/building");
+    console.log("Removed verified stale preview control file; development data retained");
+  }
+}
+async function resumePreviewDatabase(m: LocalManifest) {
+  const status = execute("docker", ["inspect", "--format", "{{.State.Status}}", m.container]).trim();
+  if (status === "running") return;
+  if (!m.containerId || !["exited", "created"].includes(status)) throw new Error("Owned database state needs inspection before starting the preview");
+  await ensurePortFree(m.port);
+  verifyResources(m);
+  execute("docker", ["start", m.container]);
+  for (let attempt = 0; attempt < 30; attempt++) {
+    const ready = spawnSync("docker", ["exec", m.container, "pg_isready", "--username", bootstrapRole, "--dbname", "postgres"], { encoding: "utf8", windowsHide: true, timeout: 5000 });
+    if (!ready.error && ready.status === 0) { console.log("Restarted the verified owned PostgreSQL container; development data retained"); return; }
+    await new Promise(accept => setTimeout(accept, 500));
+  }
+  throw new Error("Owned PostgreSQL did not become ready; development data retained");
+}
+async function preview(m: LocalManifest) {
+  verifyResources(m); await previewPreflight(m);
+  const port = localPreviewPort(process.env.USP_LOCAL_PREVIEW_PORT); await ensurePortFree(port, "Local preview");
+  const record = m.databases.find(record => record.kind === "development" && record.ready);
+  if (!record) throw new Error("Ready owned development database required");
+  await resumePreviewDatabase(m);
+  await assertDatabaseIdentity(databaseUrl(m, record.name, "runtime"), m, "runtime");
+  await reviewMigration(m); await migrate(m, record.name);
+  const build = spawnSync(process.execPath, ["node_modules/next/dist/bin/next", "build"], { stdio: "inherit", windowsHide: true, env: { ...process.env, NEXT_TELEMETRY_DISABLED: "1" } });
+  if (build.error || build.status !== 0) throw new Error("Preview build failed; run npm run build for diagnostics");
+  const path = resolve(".cache/m2-preview.json");
+  let pid: number | undefined;
+  try {
+    const result = spawnSync(process.execPath, ["tools/identity/preview-server.mts"], { stdio: "inherit", windowsHide: true });
+    pid = result.pid;
+    if (result.error || result.status !== 0) throw new Error("Local preview stopped unexpectedly; development data was retained");
+  } finally { if (existsSync(path)) removePreviewControl(path, record.name, pid); }
+}
+async function previewCheck(m: LocalManifest) {
+  verifyResources(m); await previewPreflight();
+  const port = localPreviewPort(process.env.USP_LOCAL_PREVIEW_PORT ?? "3201"); await ensurePortFree(port, "Preview check");
+  const record: DatabaseRecord = { name: `usp_m1b_${m.owner}_test_${randomBytes(6).toString("hex")}`, kind: "test", ready: false };
+  m.databases.push(record); save(m); const path = resolve(".cache/m2-preview-check.json");
+  try {
+    await createDatabase(m, record); await migrate(m, record.name);
+    const result = spawnSync(process.execPath, ["tools/testing/run-playwright.mts", "test", "--config", "playwright.preview.config.ts"], { encoding: "utf8", windowsHide: true, env: { ...process.env, USP_PREVIEW_TEST_DATABASE: record.name, USP_LOCAL_PREVIEW_PORT: String(port) } });
+    process.stdout.write(result.stdout ?? ""); process.stderr.write(result.stderr ?? "");
+    if (result.error || result.status !== 0) throw new Error("Local preview browser checks failed");
+  } finally {
+    if (existsSync(path)) removePreviewControl(path, record.name);
+    if (record.ready) await removeTestDatabase(m, record);
+  }
+}
+
 async function cleanup(m: LocalManifest) {
+  if (existsSync(resolve(".cache/m2-preview.json")) || existsSync(resolve(".cache/m2-preview-check.json"))) throw new Error("Stop the owned local preview before database cleanup; use npm run preview:stop");
   verifyResources(m);
   for (const record of m.databases) {
     if (!record.ready) throw new Error("Incomplete database setup requires inspection; automatic cleanup refused");
@@ -405,13 +475,28 @@ try {
   if (pkg.name !== "university-social-platform" || !existsSync(composeFile)) throw new Error("Run from this project root");
   const command = process.argv[2];
   if (process.argv.length !== 3) throw new Error("Use exactly one local database command");
-  if (command === "setup") await setup();
+  if (command === "preview") {
+    localPreviewPort(process.env.USP_LOCAL_PREVIEW_PORT);
+    if (!existsSync(manifestPath)) { await previewPreflight(); await setup(); }
+    await preview(readManifest());
+  }
+  else if (command === "preview-stop" && !existsSync(resolve(".cache/m2-preview.json"))) {
+    console.log("No registered local preview found; no process was stopped. Development data retained.");
+  }
+  else if (command === "setup") await setup();
   else {
     const m = readManifest();
     if (command === "migrate") {
       await reviewMigration(m);
       await migrate(m, m.databases.find((d) => d.kind === "development")!.name);
     }
+    else if (command === "preview-stop") {
+      verifyResources(m); const record = m.databases.find(record => record.kind === "development" && record.ready);
+      if (!record) throw new Error("Owned development preview required");
+      await stopPreview(m, record);
+      console.log("Owned local preview stopped; development data retained");
+    }
+    else if (command === "preview-check") { await reviewMigration(m); await previewCheck(m); }
     else if (command === "review") await reviewMigration(m);
     else if (command === "test") {
       await reviewMigration(m);

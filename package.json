@@ -16,7 +16,7 @@
     "lint": "eslint . --max-warnings=0",
     "typecheck": "next typegen && tsc --noEmit",
     "test": "vitest run",
-    "test:e2e": "playwright test",
+    "test:e2e": "node tools/testing/run-playwright.mts test",
     "test:e2e:identity": "node tools/database/local.mts identity-browser",
     "db:generate": "prisma generate",
     "db:validate": "prisma validate",
@@ -26,7 +26,10 @@
     "db:review": "node tools/database/local.mts review",
     "db:migrate": "node tools/database/local.mts migrate",
     "db:test": "node tools/database/local.mts test",
-    "db:cleanup": "node tools/database/local.mts cleanup"
+    "db:cleanup": "node tools/database/local.mts cleanup",
+    "preview:local": "node tools/database/local.mts preview",
+    "preview:stop": "node tools/database/local.mts preview-stop",
+    "test:preview:local": "node tools/database/local.mts preview-check"
   },
   "dependencies": {
     "@prisma/adapter-pg": "7.10.1",
