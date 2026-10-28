@@ -18,10 +18,19 @@ export function CursorList<T extends { id: string }>({ initial, endpoint, parseP
   const [source, setSource] = useState(initial), [page, setPage] = useState(initial);
   const [state, setState] = useState<"idle" | "loading" | "failed" | "unavailable" | "loaded">("idle");
   const pending = useRef<AbortController | null>(null), sentinel = useRef<HTMLDivElement>(null);
+  const focusAfterLoad = useRef<string | null>(null);
   // A server refresh replaces the authorized snapshot, including accumulated
   // pages. Reset during render so old content is never painted under new props.
   if (source !== initial) { setSource(initial); setPage(initial); setState("idle"); }
   useEffect(() => () => { pending.current?.abort(); pending.current = null; }, [initial, endpoint]);
+  // Focus only after React commits the new page. An animation-frame callback
+  // can run before heavier thread components have mounted, losing keyboard focus.
+  useEffect(() => {
+    if (focusAfterLoad.current) {
+      document.getElementById(focusAfterLoad.current)?.focus();
+      focusAfterLoad.current = null;
+    }
+  }, [page]);
 
   const loadMore = useCallback(async (manual: boolean) => {
     if (pending.current || !page.next || state === "unavailable") return;
@@ -34,12 +43,16 @@ export function CursorList<T extends { id: string }>({ initial, endpoint, parseP
         setPage({ items: [], next: null }); setState("unavailable"); router.refresh(); return;
       }
       if (!response.ok) throw new Error("Content page unavailable");
-      const result = parsePage(await response.json());
+      const value: unknown = await response.json();
+      // Decoding can outlive a server refresh. Do not call a parser that
+      // updates parent state (such as unread counts) for an obsolete request.
+      if (pending.current !== controller) return;
+      const result = parsePage(value);
       if (pending.current !== controller) return;
       if (result.next === page.next) throw new Error("Cursor did not advance");
       const known = new Set(page.items.map(item => item.id)), added = result.items.filter(item => !known.has(item.id));
+      if (manual && added[0]) focusAfterLoad.current = `${itemPrefix}-${added[0].id}`;
       setPage({ items: [...page.items, ...added], next: result.next }); setState("loaded");
-      if (manual && added[0]) requestAnimationFrame(() => document.getElementById(`${itemPrefix}-${added[0].id}`)?.focus());
     } catch {
       if (pending.current === controller) setState("failed");
     } finally {

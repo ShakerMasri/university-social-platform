@@ -27,6 +27,7 @@ test.afterAll(async () => {
     try {
       await client.query('DELETE FROM "CommentVote" WHERE "commentId" IN (SELECT c.id FROM "Comment" c JOIN "Post" p ON p.id=c."postId" WHERE p."communityId"=ANY($1::uuid[]))', [communities]);
       await client.query('DELETE FROM "PostVote" WHERE "postId" IN (SELECT id FROM "Post" WHERE "communityId"=ANY($1::uuid[]))', [communities]);
+      await client.query('DELETE FROM "Notification" WHERE "postId" IN (SELECT id FROM "Post" WHERE "communityId"=ANY($1::uuid[]))', [communities]);
       await client.query('DELETE FROM "Comment" WHERE "postId" IN (SELECT id FROM "Post" WHERE "communityId"=ANY($1::uuid[]))', [communities]);
       await client.query('DELETE FROM "Post" WHERE "communityId"=ANY($1::uuid[])', [communities]);
       await client.query('DELETE FROM "CommunityMembership" WHERE "communityId"=ANY($1::uuid[])', [communities]);

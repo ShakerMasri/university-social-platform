@@ -15,6 +15,12 @@ test("ordinary startup leaves synthetic identity disabled", async ({ request, pa
   expect((await request.get("/api/communities")).status()).toBe(503);
   expect((await request.post("/api/communities", { data: { name: "Synthetic", description: "", visibility: "PUBLIC" }, headers: { Origin: "http://127.0.0.1:3100" } })).status()).toBe(503);
   const id = "11111111-2222-3333-4444-555555555555";
+  expect((await request.get("/api/notifications/preferences")).status()).toBe(503);
+  expect((await request.get("/api/notifications")).status()).toBe(503);
+  expect((await request.post("/api/notifications/read-all", { data: {}, headers: { Origin: "http://127.0.0.1:3100" } })).status()).toBe(503);
+  expect((await request.post(`/api/notifications/${id}/open`, { data: {}, headers: { Origin: "http://127.0.0.1:3100" } })).status()).toBe(503);
+  expect((await request.put("/api/notifications/preferences", { data: { announcements: true, replies: true }, headers: { Origin: "http://127.0.0.1:3100" } })).status()).toBe(503);
+  expect((await request.get(`/api/communities/${id}/posts/${id}/comments/${id}/replies`)).status()).toBe(503);
   expect((await request.get(`/api/communities/${id}/posts`)).status()).toBe(503);
   expect((await request.get(`/api/communities/${id}/posts/${id}`)).status()).toBe(503);
   expect((await request.get(`/api/communities/${id}/posts/${id}/comments`)).status()).toBe(503);

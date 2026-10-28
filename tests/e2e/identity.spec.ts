@@ -67,7 +67,7 @@ async function savedProfile(page: Page, context: BrowserContext, locale: "en" | 
   await expect(page.getByLabel(text.name)).toBeVisible();
   await page.getByLabel(text.name).fill("Synthetic owner أحمد");
   await page.getByRole("button", { name: text.save }).click();
-  await expect(page.getByRole("status")).toHaveText(text.saved);
+  await expect(page.locator("#identity-feedback")).toHaveText(text.saved);
   const cookie = (await context.cookies()).find((item) => item.name === sessionCookie);
   if (!cookie) throw new Error("Synthetic session cookie missing; credentials omitted");
   await context.addCookies([{ name: pendingCookie, value: newToken(), url: origin, httpOnly: true, sameSite: "Lax" }]);
@@ -137,8 +137,8 @@ test("genuine database read/revocation failures retain cookies and show failure 
     expect(result.headers()["set-cookie"] === undefined).toBe(true);
     await expect(page).toHaveURL(/\/en\/profile$/);
     await expect(page.getByLabel(text.name)).toBeVisible();
-    await expect(page.getByRole("status")).toHaveText(text.failed);
-    await expect(page.getByRole("status")).toBeFocused();
+    await expect(page.locator("#identity-feedback")).toHaveText(text.failed);
+    await expect(page.locator("#identity-feedback")).toBeFocused();
     expect((await context.cookies()).some((item) => item.name === sessionCookie && item.value === cookie.value)).toBe(true);
     expect((await context.cookies()).some((item) => item.name === pendingCookie)).toBe(true);
   }
@@ -181,8 +181,8 @@ for (const locale of ["en", "ar"] as const) {
     await page.keyboard.press("Tab");
     await expect(page.getByRole("button", { name: text.request })).toBeFocused();
     await page.keyboard.press("Enter");
-    await expect(page.getByRole("status")).toHaveText(text.requested);
-    await expect(page.getByRole("status")).toBeFocused();
+    await expect(page.locator("#identity-feedback")).toHaveText(text.requested);
+    await expect(page.locator("#identity-feedback")).toBeFocused();
     const token = await tokenFor(email);
     await openLink(page, locale, token);
     expect((await context.request.get("/api/identity/profile")).status()).toBe(401); // GET/scanner has not signed in.
@@ -190,11 +190,11 @@ for (const locale of ["en", "ar"] as const) {
     await expect(page.getByLabel(text.name)).toBeVisible();
     const name = locale === "ar" ? "أحمد Ali 😀" : "Alice أحمد 😀";
     await page.getByLabel(text.name).fill(" "); await page.getByRole("button", { name: text.save }).click();
-    await expect(page.getByRole("status")).toHaveText(text.invalidName); await expect(page.getByRole("status")).toBeFocused();
+    await expect(page.locator("#identity-feedback")).toHaveText(text.invalidName); await expect(page.locator("#identity-feedback")).toBeFocused();
     await page.getByLabel(text.name).fill("😀".repeat(60)); await page.getByRole("button", { name: text.save }).click();
-    await expect(page.getByRole("status")).toHaveText(text.saved);
+    await expect(page.locator("#identity-feedback")).toHaveText(text.saved);
     await page.getByLabel(text.name).fill(name); await page.getByRole("button", { name: text.save }).click();
-    await expect(page.getByRole("status")).toHaveText(text.saved);
+    await expect(page.locator("#identity-feedback")).toHaveText(text.saved);
     expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true);
     await page.reload(); await expect(page.getByLabel(text.name)).toHaveValue(name);
     const cookie = (await context.cookies()).find((item) => item.name === sessionCookie)!;
@@ -208,7 +208,7 @@ for (const locale of ["en", "ar"] as const) {
     // A fresh email login preserves the profile rather than creating another account.
     await fixtureSQL('UPDATE "EmailOwnershipChallenge" SET "createdAt" = "createdAt" - interval \'61 seconds\' WHERE "emailKey" = $1', [email]);
     await page.getByLabel(text.email).fill(email); await page.getByRole("button", { name: text.request }).click();
-    await expect(page.getByRole("status")).toHaveText(text.requested);
+    await expect(page.locator("#identity-feedback")).toHaveText(text.requested);
     await openLink(page, locale, await tokenFor(email)); await page.getByRole("button", { name: text.confirm }).click();
     await expect(page.getByLabel(text.name)).toHaveValue(name);
   });
@@ -217,7 +217,7 @@ for (const locale of ["en", "ar"] as const) {
 test("browser binding, scanner GET, single-use replay, expiry and private profile boundaries", async ({ page, context, browser }) => {
   const email = address(), text = identityText.en;
   await page.goto("/en/signin"); await page.getByLabel(text.email).fill(email); await page.getByRole("button", { name: text.request }).click();
-  await expect(page.getByRole("status")).toHaveText(text.requested);
+  await expect(page.locator("#identity-feedback")).toHaveText(text.requested);
   const token = await tokenFor(email), pending = (await context.cookies()).find((item) => item.name === pendingCookie)!;
   const other = await browser.newContext({ baseURL: origin });
   try {
@@ -228,7 +228,7 @@ test("browser binding, scanner GET, single-use replay, expiry and private profil
     await openLink(page, "en", token); await page.getByRole("button", { name: text.confirm }).click();
     await expect(page.getByLabel(text.name)).toBeVisible();
     await page.getByLabel(text.name).fill("Alice"); await page.getByRole("button", { name: text.save }).click();
-    await expect(page.getByRole("status")).toHaveText(text.saved);
+    await expect(page.locator("#identity-feedback")).toHaveText(text.saved);
     expect((await post(context.request, "confirm", { token, locale: "en" }, { Cookie: `${pendingCookie}=${pending.value}` })).status()).toBe(400);
     expect((await post(context.request, "profile", { displayName: "Hijack", userId: randomUUID() })).status()).toBe(400);
     expect((await post(context.request, "profile", { displayName: "Hijack", email: address(), role: "teacher" })).status()).toBe(400);
@@ -248,7 +248,7 @@ test("browser binding, scanner GET, single-use replay, expiry and private profil
   await page.getByRole("link", { name: "العربية", exact: true }).click();
   await expect(page).toHaveURL(/\/ar\/verify$/);
   await page.getByRole("button", { name: identityText.ar.confirm }).click();
-  await expect(page.getByRole("status")).toHaveText(identityText.ar.linkError); await expect(page.getByRole("status")).toBeFocused();
+  await expect(page.locator("#identity-feedback")).toHaveText(identityText.ar.linkError); await expect(page.locator("#identity-feedback")).toBeFocused();
 });
 
 test("generic request responses, CSRF, immutable email and synthetic-only operation", async ({ request }) => {

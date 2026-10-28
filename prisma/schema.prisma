@@ -26,6 +26,8 @@ model User {
   comments        Comment[]
   postVotes       PostVote[]
   commentVotes    CommentVote[]
+  notificationPreference NotificationPreference?
+  notifications Notification[]
 
   // The composite foreign key binds every challenge to the current email.
   @@unique([id, emailKey])
@@ -129,6 +131,7 @@ model Post {
   author        User?     @relation(fields: [authorId], references: [id], onDelete: SetNull, onUpdate: Restrict)
   comments      Comment[]
   votes         PostVote[]
+  notifications Notification[]
 
   @@index([communityId, createdAt, id])
 }
@@ -143,8 +146,47 @@ model Comment {
   post          Post     @relation(fields: [postId], references: [id], onDelete: Restrict, onUpdate: Restrict)
   author        User?    @relation(fields: [authorId], references: [id], onDelete: SetNull, onUpdate: Restrict)
   votes         CommentVote[]
+  rootId        String? @db.Uuid
+  replyToId     String? @db.Uuid
+  root          Comment? @relation("ThreadRoot", fields: [rootId, postId], references: [id, postId], onDelete: Restrict, onUpdate: Restrict)
+  replies       Comment[] @relation("ThreadRoot")
+  replyTo       Comment? @relation("ReplyTarget", fields: [replyToId, postId], references: [id, postId], onDelete: Restrict, onUpdate: Restrict)
+  addressedReplies Comment[] @relation("ReplyTarget")
+  notifications Notification[]
 
+  @@unique([id, postId])
   @@index([postId, createdAt, id])
+  @@index([postId, rootId, createdAt, id])
+}
+
+model NotificationPreference {
+  userId String @id @db.Uuid
+  announcements Boolean @default(true)
+  replies Boolean @default(true)
+  user User @relation(fields: [userId], references: [id], onDelete: Restrict, onUpdate: Restrict)
+}
+
+enum NotificationKind {
+  ANNOUNCEMENT
+  COMMENT
+}
+
+model Notification {
+  id String @id @default(uuid()) @db.Uuid
+  recipientId String @db.Uuid
+  postId String @db.Uuid
+  commentId String? @db.Uuid
+  eventKey String @db.Uuid
+  kind NotificationKind
+  createdAt DateTime @default(now()) @db.Timestamptz(3)
+  readAt DateTime? @db.Timestamptz(3)
+  recipient User @relation(fields: [recipientId], references: [id], onDelete: Restrict, onUpdate: Restrict)
+  post Post @relation(fields: [postId], references: [id], onDelete: Restrict, onUpdate: Restrict)
+  comment Comment? @relation(fields: [commentId, postId], references: [id, postId], onDelete: Restrict, onUpdate: Restrict)
+
+  @@unique([recipientId, eventKey])
+  @@index([recipientId, createdAt, id])
+  @@index([recipientId, readAt])
 }
 
 model PostVote {

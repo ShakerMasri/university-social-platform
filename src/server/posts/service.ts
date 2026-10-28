@@ -6,6 +6,7 @@ import { digest } from "../identity/policy.ts";
 import { postInput, postPageSize } from "./policy.ts";
 import { voteSummaries } from "../votes/service.ts";
 import type { VoteSummary } from "../votes/policy.ts";
+import { notifyContent } from "../notifications/delivery.ts";
 
 const projection = { id: true, authorId: true, communityId: true, type: true, title: true, body: true, resourceUrl: true,
   createdAt: true, author: { select: { profile: { select: { displayName: true } } } } } as const;
@@ -26,7 +27,9 @@ export function createPost(db: PrismaClient, token: unknown, value: unknown, inp
           existing.title !== data.title || existing.body !== data.body || existing.resourceUrl !== data.resourceUrl) throw new CommunityError(409);
       return { id: existing.id };
     }
-    return tx.post.create({ data: { ...data, communityId: community.id, authorId: userId, submissionKey }, select: { id: true } });
+    const post = await tx.post.create({ data: { ...data, communityId: community.id, authorId: userId, submissionKey }, select: { id: true } });
+    if (data.type === "ANNOUNCEMENT") await notifyContent(tx, community.id, userId, post.id, null);
+    return post;
   });
 }
 export function listPosts(db: PrismaClient, token: unknown, value: unknown, cursor?: unknown) {

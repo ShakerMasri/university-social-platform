@@ -24,7 +24,9 @@ function attribution(row: Record<string, unknown>) {
     authorName: row.authorName === null ? null : text(row.authorName), vote: voteSummary(row.vote) };
 }
 export function commentResponse(value: unknown): CommentItem {
-  return attribution(record(value));
+  const row = record(value);
+  return { ...attribution(row), rootId: row.rootId === null ? null : communityId(row.rootId),
+    replyToId: row.replyToId === null ? null : communityId(row.replyToId), replyToName: row.replyToName === null ? null : text(row.replyToName) };
 }
 function postResponse(value: unknown): PostItem {
   const row = record(value);

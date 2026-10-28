@@ -109,14 +109,14 @@ describe("comments on disposable PostgreSQL", () => {
     await migration.query('INSERT INTO "Session" (id,"userId","tokenDigest","expiresAt") VALUES ($1,$2,$3,now()+interval \'1 day\')', [randomUUID(), owner.id, digest(secondSession)]);
     const results = await Promise.all([createComment(db, owner.token, space.id, post.id, data), createComment(db, secondSession, space.id, post.id, data)]);
     expect(results[0].id === results[1].id).toBe(true);
-    expect(Object.keys(results[0]).sort()).toEqual(["authorName", "body", "createdAt", "id", "vote"]);
+    expect(Object.keys(results[0]).sort()).toEqual(["authorName", "body", "createdAt", "id", "replyToId", "replyToName", "rootId", "vote"]);
     expect(results[1]).toEqual(results[0]);
     await deny(createComment(db, owner.token, space.id, post.id, { ...data, body: "Changed" }), 409);
     expect((await createComment(db, member.token, space.id, post.id, data)).id === results[0].id).toBe(false);
     expect((await createComment(db, owner.token, space.id, other.id, data)).id === results[0].id).toBe(false);
     expect(await db.comment.count({ where: { postId: post.id } })).toBe(2);
     const listing = await listComments(db, owner.token, space.id, post.id);
-    expect(Object.keys(listing.items[0]).sort()).toEqual(["authorName", "body", "createdAt", "id", "vote"]);
+    expect(Object.keys(listing.items[0]).sort()).toEqual(["authorName", "body", "createdAt", "id", "replyToId", "replyToName", "rootId", "vote"]);
   });
 
   it("paginates tied timestamps oldest first and rejects cross-parent/community cursors", async () => {
