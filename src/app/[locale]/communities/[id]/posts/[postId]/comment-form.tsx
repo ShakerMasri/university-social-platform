@@ -13,7 +13,11 @@ export function CommentForm({ locale, communityId, postId, onPublished, replyToI
   const feedback = useRef<HTMLParagraphElement>(null), requestId = useRef<string | null>(null), submitting = useRef(false);
   function notify(value: string) {
     setMessage(value);
-    requestAnimationFrame(() => { feedback.current?.focus({ preventScroll: true }); feedback.current?.scrollIntoView({ block: "center" }); });
+    requestAnimationFrame(() => {
+      // A response may arrive after the user switches to another reply target.
+      if (!feedback.current || feedback.current.closest("[hidden]")) return;
+      feedback.current.focus({ preventScroll: true }); feedback.current.scrollIntoView({ block: "center" });
+    });
   }
   async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -36,10 +40,10 @@ export function CommentForm({ locale, communityId, postId, onPublished, replyToI
     } catch { notify(text.failed); }
     finally { submitting.current = false; setBusy(false); }
   }
-  return <div className="comment-composer"><p id={`${formId}-limits`}>{text.limits}</p>
+  return <div className="comment-composer">
     <form onSubmit={submit} aria-busy={busy}>
       <label htmlFor={`${formId}-body`}>{replyToId ? replyText[locale].body : text.body}</label>
-      <textarea id={`${formId}-body`} name="body" rows={4} required dir="auto" disabled={busy || !hydrated} aria-describedby={`${formId}-limits`} />
-      <button type="submit" disabled={busy || !hydrated}>{busy ? text.busy : replyToId ? replyText[locale].publish : text.publish}</button>
+      <textarea id={`${formId}-body`} name="body" rows={2} required dir="auto" disabled={busy || !hydrated} aria-describedby={`${formId}-limits`} />
+      <div className="composer-actions"><p id={`${formId}-limits`}>{text.limits}</p><button type="submit" disabled={busy || !hydrated}>{busy ? text.busy : replyToId ? replyText[locale].publish : text.publish}</button></div>
     </form><p ref={feedback} role="status" tabIndex={-1}>{message}</p></div>;
 }

@@ -119,19 +119,23 @@ for (const locale of ["en", "ar"] as const) {
   test(`${locale}: reply loading failures and page retries preserve keyboard access`, async ({ context, page }) => {
     const author = await signIn(context), id = await space(context), target = await content(context, id), text = replyText[locale], paging = paginationText[locale];
     const endpoint = `/api/communities/${id}/posts/${target.postId}/comments/${target.commentId}/replies`;
+    await post(context.request, `/api/communities/${id}/posts/${target.postId}/comments`, { requestId: randomUUID(), body: "First paged reply", replyToId: target.commentId });
     await page.route(`**${endpoint}`, route => route.abort("failed"));
     await page.goto(`/${locale}/communities/${id}/posts/${target.postId}`);
     await page.getByRole("button", { name: text.show, exact: true }).click();
     await expect(page.getByRole("main").getByRole("alert")).toHaveText(text.failed);
     await page.unroute(`**${endpoint}`);
     await page.getByRole("button", { name: text.show, exact: true }).click();
-    await expect(page.getByText(text.empty, { exact: true })).toBeVisible();
-    const ids = Array.from({ length: 23 }, () => randomUUID());
+    await expect(page.locator(".comment-replies article")).toHaveCount(1);
+    const ids = Array.from({ length: 22 }, () => randomUUID());
     await fixture(client => client.query('INSERT INTO "Comment" (id,"postId","authorId","submissionKey",body,"rootId","replyToId") SELECT id,$2::uuid,$3::uuid,replace(id::text,\'-\',\'\')||replace(id::text,\'-\',\'\'),\'Paged reply\',$4::uuid,$4::uuid FROM unnest($1::uuid[]) id', [ids, target.postId, author, target.commentId]));
     await page.reload();
     await page.route(`**${endpoint}?after=*`, route => route.abort("failed"));
     await page.getByRole("button", { name: text.show, exact: true }).click();
     await page.getByRole("button", { name: text.more, exact: true }).scrollIntoViewIfNeeded();
+    await expect(page.locator(".comment-replies article")).toHaveCount(20);
+    await expect(page.getByRole("main").getByRole("alert")).toHaveCount(0);
+    await page.getByRole("button", { name: text.more, exact: true }).focus(); await page.keyboard.press("Enter");
     await expect(page.getByRole("main").getByRole("alert")).toHaveText(paging.failed);
     await expect(page.locator(".comment-replies article")).toHaveCount(20);
     await page.unroute(`**${endpoint}?after=*`);
@@ -143,11 +147,14 @@ for (const locale of ["en", "ar"] as const) {
     await signIn(context); await page.goto(`/${locale}/profile`);
     const text = notificationText[locale], settings = page.getByRole("region", { name: text.settings });
     await expect(settings.getByRole("checkbox", { name: text.announcements })).toBeChecked();
+    await expect(settings.getByRole("checkbox", { name: text.upvotes })).toBeChecked();
+    await settings.getByRole("checkbox", { name: text.upvotes }).focus(); await page.keyboard.press("Space");
     await settings.getByRole("checkbox", { name: text.announcements }).focus(); await page.keyboard.press("Space");
     await settings.getByRole("button", { name: text.save, exact: true }).focus(); await page.keyboard.press("Enter");
     await expect(settings.getByRole("status")).toHaveText(text.saved); await expect(settings.getByRole("status")).toBeFocused();
     await page.reload(); await expect(settings.getByRole("checkbox", { name: text.announcements })).not.toBeChecked();
     await expect(settings.getByRole("checkbox", { name: text.replies })).toBeChecked();
+    await expect(settings.getByRole("checkbox", { name: text.upvotes })).not.toBeChecked();
     await page.route("**/api/notifications/preferences", route => route.abort("failed"));
     await settings.getByRole("button", { name: text.save, exact: true }).click();
     await expect(settings.getByRole("status")).toHaveText(text.failed); await expect(settings.getByRole("status")).toBeFocused();
@@ -211,8 +218,8 @@ for (const locale of ["en", "ar"] as const) {
       const ownerPage = await context.newPage(); await ownerPage.goto(`/${locale}/communities/${id}/posts/${target.postId}`);
       await ownerPage.getByRole("button", { name: text.show, exact: true }).click();
       await ownerPage.locator(`#comment-${first.id}`).getByRole("button", { name: voteText[locale].add, exact: true }).click();
-      await expect(ownerPage.locator(`#comment-${first.id}`).getByRole("button", { name: voteText[locale].remove, exact: true })).toHaveAttribute("aria-pressed", "true");
-      expect(await fixture(async client => (await client.query('SELECT count(*) FROM "Notification" WHERE "postId"=$1', [target.postId])).rows[0].count)).toBe("2");
+      await expect(ownerPage.locator(`#comment-${first.id}`).getByRole("button", { name: voteText[locale].add, exact: true })).toHaveAttribute("aria-pressed", "true");
+      expect(await fixture(async client => (await client.query('SELECT kind,count(*)::int AS count FROM "Notification" WHERE "postId"=$1 GROUP BY kind ORDER BY kind', [target.postId])).rows)).toEqual([{ kind: "COMMENT", count: 2 }, { kind: "UPVOTE", count: 1 }]);
     } finally { await member.close(); }
   });
 }
@@ -300,7 +307,7 @@ test("reply routes enforce parent isolation, CSRF and private revocation; settin
     expect((await member.request.post(path, { data, headers: { Origin: "https://attacker.invalid" } })).status()).toBe(403);
     const saved = await post(member.request, path, data); expect(saved.status()).toBe(201);
     const response = await member.request.get(replies); expect(response.headers()["cache-control"]).toBe("private, no-store");
-    expect(Object.keys((await response.json()).items[0]).sort()).toEqual(["authorName", "body", "createdAt", "id", "replyToId", "replyToName", "rootId", "vote"]);
+    expect(Object.keys((await response.json()).items[0]).sort()).toEqual(["authorName", "body", "createdAt", "id", "replyCount", "replyToId", "replyToName", "rootId", "vote"]);
     expect((await member.request.put("/api/notifications/preferences", { data: { announcements: false, replies: true, userId }, headers: { Origin: origin } })).status()).toBe(400);
     expect((await member.request.put("/api/notifications/preferences", { data: { announcements: false, replies: true }, headers: { Origin: origin } })).status()).toBe(200);
     expect(await (await context.request.get("/api/notifications/preferences")).json()).toMatchObject({ announcements: true, replies: true });

@@ -9,6 +9,8 @@ import { createCommunity, changeMembership } from "../../src/server/communities/
 import { createPost, listPosts, readPost } from "../../src/server/posts/service";
 import { createComment, listComments } from "../../src/server/comments/service";
 import { setVote } from "../../src/server/votes/service";
+import { readPreferences, savePreferences } from "../../src/server/notifications/preferences";
+import { listNotifications, notificationTarget } from "../../src/server/notifications/service";
 import { readManifest, databaseUrl, assertDatabaseIdentity } from "../../tools/database/targets";
 
 const manifest = readManifest(), name = process.env.M1B_TEST_DATABASE, upgrade = process.env.M3_VOTES_UPGRADE_DATABASE;
@@ -37,7 +39,7 @@ async function setup(visibility = "PUBLIC", profile = true) {
   if (visibility === "PRIVATE") await changeMembership(db, owner.token, space.id, { action: "approve", userId: member.id });
   const post = await createPost(db, owner.token, space.id, { requestId: randomUUID(), type: "QUESTION", title: "Vote target", body: "Body" });
   const comment = await createComment(db, owner.token, space.id, post.id, { requestId: randomUUID(), body: "Comment target" });
-  const vote = (active: boolean, kind: "post" | "comment" = "post", token = member.token) => setVote(db, token, space.id, post.id, kind === "comment" ? comment.id : undefined, { active });
+  const vote = (active: boolean, kind: "post" | "comment" = "post", token = member.token) => setVote(db, token, space.id, post.id, kind === "comment" ? comment.id : undefined, { value: active ? 1 : 0 });
   return { owner, member, space, post, comment, vote };
 }
 async function locker(id: string) {
@@ -77,6 +79,19 @@ describe("voting on disposable PostgreSQL", () => {
       expect(await snapshot()).toBe(before);
       expect((await client.query('SELECT count(*) FROM "PostVote"')).rows[0].count).toBe("0");
       expect((await client.query('SELECT count(*) FROM "CommentVote"')).rows[0].count).toBe("0");
+      for (const file of readdirSync("prisma/migrations").filter(file => file > "20261027010000_m3_votes" && file < "20261102000000_m3_signed_votes" && /^\d/.test(file)).sort()) await client.query(readFileSync(`prisma/migrations/${file}/migration.sql`, "utf8"));
+      await client.query('INSERT INTO "PostVote" ("postId","userId","createdAt") VALUES ($1,$2,\'2026-10-27T10:00Z\')', [post, user]);
+      await client.query('INSERT INTO "CommentVote" ("commentId","userId","createdAt") VALUES ($1,$2,\'2026-10-27T10:00Z\')', [comment, user]);
+      await client.query('INSERT INTO "NotificationPreference" ("userId",announcements,replies) VALUES ($1,false,false)', [user]);
+      const populated = await snapshot();
+      await client.query(readFileSync("prisma/migrations/20261102000000_m3_signed_votes/migration.sql", "utf8"));
+      expect(await snapshot()).toBe(populated);
+      for (const table of ["PostVote", "CommentVote"]) {
+        const row = (await client.query(`SELECT value,"firstUpvotedAt"="createdAt" AS historical FROM "${table}"`)).rows[0];
+        expect(row).toEqual({ value: 1, historical: true });
+      }
+      expect((await client.query('SELECT announcements,replies,upvotes FROM "NotificationPreference"')).rows[0]).toEqual({ announcements: false, replies: false, upvotes: true });
+      expect((await client.query('SELECT count(*) FROM "Notification"')).rows[0].count).toBe("0");
     } finally { await client.end(); }
   });
 
@@ -87,12 +102,12 @@ describe("voting on disposable PostgreSQL", () => {
       const post = await createPost(db, owner.token, space.id, { requestId: randomUUID(), type, title: "Target", body: "Body" });
       const comment = await createComment(db, owner.token, space.id, post.id, { requestId: randomUUID(), body: "Target" });
       for (const id of [undefined, comment.id]) {
-        const set = (active: boolean, token = member.token) => setVote(db, token, space.id, post.id, id, { active });
+        const set = (active: boolean, token = member.token) => setVote(db, token, space.id, post.id, id, { value: active ? 1 : 0 });
         await deny(set(true, owner.token), 403); await deny(set(false, owner.token), 403);
-        expect(await set(true)).toEqual({ count: 1, active: true, canVote: true });
-        expect(await set(true)).toEqual({ count: 1, active: true, canVote: true });
-        expect(await set(false)).toEqual({ count: 0, active: false, canVote: true });
-        expect(await set(false)).toEqual({ count: 0, active: false, canVote: true });
+        expect(await set(true)).toEqual({ score: 1, upvotes: 1, downvotes: 0, value: 1, canVote: true });
+        expect(await set(true)).toEqual({ score: 1, upvotes: 1, downvotes: 0, value: 1, canVote: true });
+        expect(await set(false)).toEqual({ score: 0, upvotes: 0, downvotes: 0, value: 0, canVote: true });
+        expect(await set(false)).toEqual({ score: 0, upvotes: 0, downvotes: 0, value: 0, canVote: true });
       }
     }
   });
@@ -104,19 +119,115 @@ describe("voting on disposable PostgreSQL", () => {
     await migration.query('INSERT INTO "Session" (id,"userId","tokenDigest","expiresAt") VALUES ($1,$2,$3,now()+interval \'1 day\')', [randomUUID(), member.id, digest(second)]);
     for (const kind of ["post", "comment"] as const) {
       const results = await Promise.all([vote(true, kind), vote(true, kind, second)]);
-      expect(results).toEqual([{ count: 1, active: true, canVote: true }, { count: 1, active: true, canVote: true }]);
-      expect(await vote(true, kind, other.token)).toEqual({ count: 2, active: true, canVote: true });
+      expect(results).toEqual([{ score: 1, upvotes: 1, downvotes: 0, value: 1, canVote: true }, { score: 1, upvotes: 1, downvotes: 0, value: 1, canVote: true }]);
+      expect(await vote(true, kind, other.token)).toEqual({ score: 2, upvotes: 2, downvotes: 0, value: 1, canVote: true });
       const block = await locker(space.id);
       let first: Promise<unknown> | undefined, last: Promise<unknown> | undefined;
       try {
         first = vote(false, kind); await waiting(1);
         last = vote(true, kind, second); await waiting(2);
         await block.query("COMMIT"); await first;
-        expect(await last).toEqual({ count: 2, active: true, canVote: true });
+        expect(await last).toEqual({ score: 2, upvotes: 2, downvotes: 0, value: 1, canVote: true });
       } finally { await block.query("ROLLBACK"); await block.end(); await Promise.all([first, last]); }
     }
-    expect((await readPost(db, member.token, space.id, post.id)).vote).toEqual({ count: 2, active: true, canVote: true });
-    expect((await listComments(db, member.token, space.id, post.id)).items.find(row => row.id === comment.id)?.vote).toEqual({ count: 2, active: true, canVote: true });
+    expect((await readPost(db, member.token, space.id, post.id)).vote).toEqual({ score: 2, upvotes: 2, downvotes: 0, value: 1, canVote: true });
+    expect((await listComments(db, member.token, space.id, post.id)).items.find(row => row.id === comment.id)?.vote).toEqual({ score: 2, upvotes: 2, downvotes: 0, value: 1, canVote: true });
+  });
+
+  it("counts each direction independently and excludes neutral markers on every target", async () => {
+    const { owner, member, space, post, comment } = await setup(), opposite = await actor(), neutral = await actor();
+    for (const voter of [opposite, neutral]) await changeMembership(db, voter.token, space.id, { action: "join" });
+    const reply = await createComment(db, owner.token, space.id, post.id, { requestId: randomUUID(), body: "Separate totals", replyToId: comment.id });
+    for (const id of [undefined, comment.id, reply.id]) {
+      const set = (token: string, value: number) => setVote(db, token, space.id, post.id, id, { value });
+      await set(member.token, 1); await set(opposite.token, -1); await set(neutral.token, 1);
+      expect(await set(neutral.token, 0)).toEqual({ score: 0, upvotes: 1, downvotes: 1, value: 0, canVote: true });
+      expect(await set(member.token, -1)).toEqual({ score: -2, upvotes: 0, downvotes: 2, value: -1, canVote: true });
+      expect(await set(opposite.token, -1)).toEqual({ score: -2, upvotes: 0, downvotes: 2, value: -1, canVote: true });
+      expect(await set(member.token, 0)).toEqual({ score: -1, upvotes: 0, downvotes: 1, value: 0, canVote: true });
+      expect(await set(member.token, 1)).toEqual({ score: 0, upvotes: 1, downvotes: 1, value: 1, canVote: true });
+    }
+    expect((await readPost(db, member.token, space.id, post.id)).vote).toEqual({ score: 0, upvotes: 1, downvotes: 1, value: 1, canVote: true });
+    const roots = await listComments(db, member.token, space.id, post.id), children = await listComments(db, member.token, space.id, post.id, undefined, comment.id);
+    for (const row of [roots.items[0], children.items[0]]) expect(row.vote).toEqual({ score: 0, upvotes: 1, downvotes: 1, value: 1, canVote: true });
+  });
+
+  it("switches signed votes on posts, comments and replies without notifying on toggles", async () => {
+    const { owner, member, space, post, comment } = await setup(), other = await actor();
+    await changeMembership(db, other.token, space.id, { action: "join" });
+    const reply = await createComment(db, owner.token, space.id, post.id, { requestId: randomUUID(), body: "Reply target", replyToId: comment.id });
+    for (const id of [undefined, comment.id, reply.id]) {
+      const set = (value: number, token = member.token) => setVote(db, token, space.id, post.id, id, { value });
+      const where = { postId: post.id, commentId: id ?? null, kind: "UPVOTE" as const };
+      expect(await set(-1)).toEqual({ score: -1, upvotes: 0, downvotes: 1, value: -1, canVote: true });
+      expect(await db.notification.count({ where })).toBe(0);
+      expect(await Promise.all([set(1), set(1)])).toEqual([{ score: 1, upvotes: 1, downvotes: 0, value: 1, canVote: true }, { score: 1, upvotes: 1, downvotes: 0, value: 1, canVote: true }]);
+      expect(await db.notification.count({ where })).toBe(1);
+      expect(await set(-1)).toEqual({ score: -1, upvotes: 0, downvotes: 1, value: -1, canVote: true });
+      expect(await set(0)).toEqual({ score: 0, upvotes: 0, downvotes: 0, value: 0, canVote: true });
+      const row = id ? await db.commentVote.findUniqueOrThrow({ where: { commentId_userId: { commentId: id, userId: member.id } } }) : await db.postVote.findUniqueOrThrow({ where: { postId_userId: { postId: post.id, userId: member.id } } });
+      expect(row.value).toBe(0); expect(row.firstUpvotedAt).not.toBeNull();
+      await set(1); expect(await db.notification.count({ where })).toBe(1);
+      expect(await set(-1, other.token)).toEqual({ score: 0, upvotes: 1, downvotes: 1, value: -1, canVote: true });
+      const notification = await db.notification.findFirstOrThrow({ where });
+      expect(notification.recipientId).toBe(owner.id);
+      const target = await notificationTarget(db, owner.token, notification.id);
+      expect(target).toMatchObject({ communityId: space.id, postId: post.id, commentId: id ?? null });
+      await deny(notificationTarget(db, member.token, notification.id), 404);
+    }
+    const inbox = await listNotifications(db, owner.token);
+    expect(inbox.items.filter(item => item.kind === "UPVOTE")).toHaveLength(3);
+    expect(Object.keys(inbox.items[0]).sort()).toEqual(["createdAt", "id", "kind", "read", "title"]);
+    const roots = await listComments(db, member.token, space.id, post.id);
+    expect(roots.items.find(item => item.id === comment.id)?.replyCount).toBe(1);
+  });
+
+  it("respects independent upvote preferences and current membership without backfill", async () => {
+    const { owner, member, space, post, comment } = await setup();
+    expect(await readPreferences(db, owner.token)).toEqual({ announcements: true, replies: true, upvotes: true });
+    await savePreferences(db, owner.token, { announcements: true, replies: true, upvotes: false });
+    await savePreferences(db, owner.token, { announcements: false, replies: true });
+    expect((await readPreferences(db, owner.token)).upvotes).toBe(false);
+    await setVote(db, member.token, space.id, post.id, undefined, { value: 1 });
+    expect(await db.notification.count({ where: { postId: post.id, kind: "UPVOTE" } })).toBe(0);
+    await savePreferences(db, owner.token, { announcements: true, replies: true, upvotes: true });
+    await setVote(db, member.token, space.id, post.id, undefined, { value: 0 });
+    await setVote(db, member.token, space.id, post.id, undefined, { value: 1 });
+    expect(await db.notification.count({ where: { postId: post.id, kind: "UPVOTE" } })).toBe(0);
+    const target = await createComment(db, member.token, space.id, post.id, { requestId: randomUUID(), body: "Former member target" });
+    await changeMembership(db, member.token, space.id, { action: "leave" });
+    await setVote(db, owner.token, space.id, post.id, target.id, { value: 1 });
+    await changeMembership(db, member.token, space.id, { action: "join" });
+    await setVote(db, owner.token, space.id, post.id, target.id, { value: 0 });
+    await setVote(db, owner.token, space.id, post.id, target.id, { value: 1 });
+    expect(await db.notification.count({ where: { commentId: target.id, kind: "UPVOTE" } })).toBe(0);
+    await setVote(db, member.token, space.id, post.id, comment.id, { value: 1 });
+    expect(await db.notification.count({ where: { commentId: comment.id, kind: "UPVOTE" } })).toBe(1);
+    const old = await db.notification.findFirstOrThrow({ where: { commentId: comment.id, kind: "UPVOTE" } });
+    // Live access is rechecked for upvote notifications too, even in public spaces.
+    const memberTarget = await createComment(db, member.token, space.id, post.id, { requestId: randomUUID(), body: "Visible before leave" });
+    await setVote(db, owner.token, space.id, post.id, memberTarget.id, { value: 1 });
+    const mine = await db.notification.findFirstOrThrow({ where: { commentId: memberTarget.id, kind: "UPVOTE" } });
+    await changeMembership(db, member.token, space.id, { action: "leave" });
+    await deny(notificationTarget(db, member.token, mine.id), 404);
+    await deny(notificationTarget(db, member.token, old.id), 404);
+  });
+
+  it("rolls back the signed vote and first-event marker when notification delivery fails", async () => {
+    const { member, space, post, comment } = await setup();
+    await migration.query(`CREATE FUNCTION reject_test_upvote() RETURNS trigger LANGUAGE plpgsql AS $$ BEGIN IF NEW.kind::text='UPVOTE' AND NEW."postId"='${post.id}'::uuid THEN RAISE EXCEPTION 'Synthetic delivery failure'; END IF; RETURN NEW; END; $$`);
+    await migration.query('CREATE TRIGGER reject_test_upvote BEFORE INSERT ON "Notification" FOR EACH ROW EXECUTE FUNCTION reject_test_upvote()');
+    try {
+      for (const id of [undefined, comment.id]) await expect(setVote(db, member.token, space.id, post.id, id, { value: 1 })).rejects.toThrow();
+      expect(await db.postVote.count({ where: { postId: post.id } })).toBe(0);
+      expect(await db.commentVote.count({ where: { commentId: comment.id } })).toBe(0);
+      expect(await db.notification.count({ where: { postId: post.id, kind: "UPVOTE" } })).toBe(0);
+    } finally {
+      await migration.query('DROP TRIGGER reject_test_upvote ON "Notification"');
+      await migration.query('DROP FUNCTION reject_test_upvote()');
+    }
+    await setVote(db, member.token, space.id, post.id, undefined, { value: 1 });
+    expect(await db.notification.count({ where: { postId: post.id, kind: "UPVOTE" } })).toBe(1);
   });
 
   it("authorizes visibility, isolates every parent and exposes no voter identity in summaries", async () => {
@@ -128,13 +239,13 @@ describe("voting on disposable PostgreSQL", () => {
         await vote(true, kind);
       }
       const read = await readPost(db, owner.token, space.id, post.id);
-      expect(read.vote).toEqual({ count: 1, active: false, canVote: false });
-      expect(Object.keys(read.vote).sort()).toEqual(["active", "canVote", "count"]);
-      expect((await listPosts(db, member.token, space.id)).items.find(row => row.id === post.id)?.vote).toEqual({ count: 1, active: true, canVote: true });
-      await deny(setVote(db, member.token, space.id, randomUUID(), comment.id, { active: true }), 404);
+      expect(read.vote).toEqual({ score: 1, upvotes: 1, downvotes: 0, value: 0, canVote: false });
+      expect(Object.keys(read.vote).sort()).toEqual(["canVote", "downvotes", "score", "upvotes", "value"]);
+      expect((await listPosts(db, member.token, space.id)).items.find(row => row.id === post.id)?.vote).toEqual({ score: 1, upvotes: 1, downvotes: 0, value: 1, canVote: true });
+      await deny(setVote(db, member.token, space.id, randomUUID(), comment.id, { value: 1 }), 404);
       const other = await createPost(db, owner.token, space.id, { requestId: randomUUID(), type: "DISCUSSION", title: "Other", body: "Other" });
-      await deny(setVote(db, member.token, space.id, other.id, comment.id, { active: true }), 404);
-      await deny(setVote(db, member.token, randomUUID(), post.id, undefined, { active: true }), 404);
+      await deny(setVote(db, member.token, space.id, other.id, comment.id, { value: 1 }), 404);
+      await deny(setVote(db, member.token, randomUUID(), post.id, undefined, { value: 1 }), 404);
       await changeMembership(db, stranger.token, space.id, { action: "join" });
       if (visibility === "PRIVATE") await deny(vote(true, "comment", stranger.token), 404);
       await changeMembership(db, owner.token, space.id, { action: "remove", userId: member.id });
@@ -142,8 +253,8 @@ describe("voting on disposable PostgreSQL", () => {
       if (visibility === "PRIVATE") {
         await deny(readPost(db, member.token, space.id, post.id), 404); await deny(listComments(db, member.token, space.id, post.id), 404);
       } else {
-        expect((await readPost(db, member.token, space.id, post.id)).vote).toEqual({ count: 1, active: true, canVote: false });
-        expect((await listComments(db, member.token, space.id, post.id)).items[0].vote).toEqual({ count: 1, active: true, canVote: false });
+        expect((await readPost(db, member.token, space.id, post.id)).vote).toEqual({ score: 1, upvotes: 1, downvotes: 0, value: 1, canVote: false });
+        expect((await listComments(db, member.token, space.id, post.id)).items[0].vote).toEqual({ score: 1, upvotes: 1, downvotes: 0, value: 1, canVote: false });
       }
     }
   });
@@ -177,7 +288,7 @@ describe("voting on disposable PostgreSQL", () => {
     const { owner, member, space, post, vote } = await setup();
     const key = digest(`m3-vote-write:${member.id}`);
     await migration.query('INSERT INTO "IdentityRateLimit" ("keyDigest",hits) VALUES ($1,29)', [key]);
-    await deny(setVote(db, member.token, space.id, randomUUID(), undefined, { active: true }), 404);
+    await deny(setVote(db, member.token, space.id, randomUUID(), undefined, { value: 1 }), 404);
     await deny(vote(true), 429);
     expect(await db.postVote.count({ where: { postId: post.id } })).toBe(0);
     await createComment(db, member.token, space.id, post.id, { requestId: randomUUID(), body: "Separate comment budget" });
@@ -195,6 +306,9 @@ describe("voting on disposable PostgreSQL", () => {
       await expect(insert(randomUUID(), member.id)).rejects.toMatchObject({ code: "23503" });
       await expect(insert(target, randomUUID())).rejects.toMatchObject({ code: "23503" });
       await expect(db.$executeRawUnsafe(`UPDATE "${table}" SET "userId"=$1`, member.id)).rejects.toThrow();
+      await expect(db.$executeRawUnsafe(`DELETE FROM "${table}"`)).rejects.toThrow();
+      await expect(migration.query(`UPDATE "${table}" SET value=2 WHERE "${field}"=$1`, [target])).rejects.toMatchObject({ code: "23514" });
+      await expect(migration.query(`UPDATE "${table}" SET "firstUpvotedAt"=NULL WHERE "${field}"=$1`, [target])).rejects.toMatchObject({ code: "23514" });
     }
     await expect(migration.query('DELETE FROM "Comment" WHERE id=$1', [comment.id])).rejects.toMatchObject({ code: "23001" });
     const bare = randomUUID();

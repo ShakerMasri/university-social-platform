@@ -163,12 +163,14 @@ model NotificationPreference {
   userId String @id @db.Uuid
   announcements Boolean @default(true)
   replies Boolean @default(true)
+  upvotes Boolean @default(true)
   user User @relation(fields: [userId], references: [id], onDelete: Restrict, onUpdate: Restrict)
 }
 
 enum NotificationKind {
   ANNOUNCEMENT
   COMMENT
+  UPVOTE
 }
 
 model Notification {
@@ -193,6 +195,8 @@ model PostVote {
   postId    String   @db.Uuid
   userId    String   @db.Uuid
   createdAt DateTime @default(now()) @db.Timestamptz(3)
+  value     Int      @default(1)
+  firstUpvotedAt DateTime? @default(now()) @db.Timestamptz(3)
   post      Post     @relation(fields: [postId], references: [id], onDelete: Restrict, onUpdate: Restrict)
   user      User     @relation(fields: [userId], references: [id], onDelete: Restrict, onUpdate: Restrict)
 
@@ -204,6 +208,8 @@ model CommentVote {
   commentId String   @db.Uuid
   userId    String   @db.Uuid
   createdAt DateTime @default(now()) @db.Timestamptz(3)
+  value     Int      @default(1)
+  firstUpvotedAt DateTime? @default(now()) @db.Timestamptz(3)
   comment   Comment  @relation(fields: [commentId], references: [id], onDelete: Restrict, onUpdate: Restrict)
   user      User     @relation(fields: [userId], references: [id], onDelete: Restrict, onUpdate: Restrict)
 

@@ -10,9 +10,10 @@ const pageRequestTimeout = 15_000;
 
 // Each request stays cursor-bounded and server-authorized. A transport failure
 // requires an explicit retry; observation never creates an automatic retry loop.
-export function CursorList<T extends { id: string }>({ initial, endpoint, parsePage, locale, moreLabel, itemPrefix, children }: {
+export function CursorList<T extends { id: string }>({ initial, endpoint, parsePage, locale, moreLabel, itemPrefix, children, automatic = true, buttonClassName, onAccessDenied }: {
   initial: ContentPage<T>; endpoint: string; parsePage: (value: unknown) => ContentPage<T>;
-  locale: Locale; moreLabel: string; itemPrefix: string; children: (items: T[]) => ReactNode;
+  locale: Locale; moreLabel: string; itemPrefix: string; children: (items: T[]) => ReactNode; automatic?: boolean; buttonClassName?: string;
+  onAccessDenied?: () => void;
 }) {
   const router = useRouter(), hydrated = useHydrated(), text = paginationText[locale];
   const [source, setSource] = useState(initial), [page, setPage] = useState(initial);
@@ -40,6 +41,9 @@ export function CursorList<T extends { id: string }>({ initial, endpoint, parseP
       const response = await fetch(`${endpoint}?after=${page.next}`, { cache: "no-store", signal: controller.signal });
       if (pending.current !== controller) return;
       if ([401, 403, 404].includes(response.status)) {
+        // Let a surrounding thread invalidate its composers and pending writes
+        // synchronously, before pagination clears its own rows or refreshes.
+        focusAfterLoad.current = null; onAccessDenied?.();
         setPage({ items: [], next: null }); setState("unavailable"); router.refresh(); return;
       }
       if (!response.ok) throw new Error("Content page unavailable");
@@ -59,20 +63,20 @@ export function CursorList<T extends { id: string }>({ initial, endpoint, parseP
       clearTimeout(timeout);
       if (pending.current === controller) pending.current = null;
     }
-  }, [endpoint, itemPrefix, page, parsePage, router, state]);
+  }, [endpoint, itemPrefix, onAccessDenied, page, parsePage, router, state]);
 
   useEffect(() => {
-    if (!page.next || state === "loading" || state === "failed" || state === "unavailable" || !sentinel.current || typeof IntersectionObserver === "undefined") return;
+    if (!automatic || !page.next || state === "loading" || state === "failed" || state === "unavailable" || !sentinel.current || typeof IntersectionObserver === "undefined") return;
     const observer = new IntersectionObserver(entries => { if (entries.some(entry => entry.isIntersecting)) void loadMore(false); }, { rootMargin: "0px 0px 200px 0px" });
     observer.observe(sentinel.current);
     return () => observer.disconnect();
-  }, [page.next, state, loadMore]);
+  }, [automatic, page.next, state, loadMore]);
 
   if (state === "unavailable") return <p role="alert">{text.unavailable}</p>;
   return <>{children(page.items)}
     <div ref={sentinel} aria-busy={state === "loading"}>
       {state === "failed" && <p role="alert">{text.failed}</p>}
-      {page.next && <button type="button" disabled={!hydrated || state === "loading"} onClick={() => void loadMore(true)}>
+      {page.next && <button className={buttonClassName} type="button" disabled={!hydrated || state === "loading"} onClick={() => void loadMore(true)}>
         {state === "loading" ? text.loading : state === "failed" ? text.retry : moreLabel}
       </button>}
       <p aria-live="polite">{state === "loading" ? text.loading : state === "loaded" ? page.next ? text.loaded : text.end : ""}</p>

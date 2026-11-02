@@ -9,10 +9,10 @@ export function notificationPageResponse(value: unknown) {
   const items: NotificationItem[] = page.items.map((value: unknown) => {
     if (!value || typeof value !== "object") throw new Error("Invalid notification");
     const row = value as Record<string, unknown>;
-    if ((row.kind !== "ANNOUNCEMENT" && row.kind !== "COMMENT") || typeof row.read !== "boolean" || typeof row.title !== "string" || typeof row.createdAt !== "string") throw new Error("Invalid notification");
+    if (!["ANNOUNCEMENT", "COMMENT", "UPVOTE"].includes(row.kind as string) || typeof row.read !== "boolean" || typeof row.title !== "string" || typeof row.createdAt !== "string") throw new Error("Invalid notification");
     const createdAt = new Date(row.createdAt);
     if (!Number.isFinite(createdAt.getTime())) throw new Error("Invalid notification");
-    return { id: communityId(row.id), kind: row.kind, title: row.title, read: row.read, createdAt };
+    return { id: communityId(row.id), kind: row.kind as NotificationItem["kind"], title: row.title, read: row.read, createdAt };
   });
   return { items, next: page.next === null ? null : communityId(page.next), unread: page.unread as number, scope: page.scope };
 }

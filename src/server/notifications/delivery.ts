@@ -1,5 +1,19 @@
 import "server-only";
 import type { Prisma } from "../../generated/prisma/client.ts";
+import { randomUUID } from "node:crypto";
+
+// Called only for a first-upvote transition inside the same authorized vote
+// transaction. No voter identity or content is copied into the notification.
+export async function notifyUpvote(tx: Prisma.TransactionClient, communityId: string, actorId: string, recipientId: string, postId: string, commentId: string | null) {
+  const eventKey = randomUUID();
+  await tx.$executeRaw`SET LOCAL statement_timeout = '4000ms'`;
+  await tx.$executeRaw`INSERT INTO "Notification" (id, "recipientId", "postId", "commentId", "eventKey", kind)
+    SELECT gen_random_uuid(), m."userId", ${postId}::uuid, ${commentId}::uuid, ${eventKey}::uuid, 'UPVOTE'::"NotificationKind"
+    FROM "CommunityMembership" m LEFT JOIN "NotificationPreference" p ON p."userId" = m."userId"
+    WHERE m."communityId" = ${communityId}::uuid AND m.status = 'MEMBER' AND m."userId" = ${recipientId}::uuid
+      AND m."userId" <> ${actorId}::uuid AND COALESCE(p.upvotes, true)
+    ON CONFLICT ("recipientId", "eventKey") DO NOTHING`;
+}
 
 // Called only inside the content transaction while its community write lock is
 // held. A set-based insert bounds application memory, preserves atomicity and

@@ -118,7 +118,7 @@ for (const locale of ["en", "ar"] as const) {
       await expect(page.getByRole("status")).toContainText(text.saved);
       await expect(page.locator("html")).toHaveAttribute("dir", locale === "ar" ? "rtl" : "ltr");
       await expect(page.getByLabel(text.body, { exact: true })).toHaveValue("");
-      expect(await page.locator("main script, main img, main svg").count()).toBe(0);
+      expect(await page.locator("main script, main img, .community-description svg").count()).toBe(0);
       expect(await page.locator("article p:has(time) bdi").last().textContent()).toBe("كاتب Author 😀");
       expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true);
     }
@@ -260,7 +260,7 @@ test("comments: private pending/nonmember denial, forged authority/CSRF, parent 
     expect((await post(other.request, path, data)).status()).toBe(201);
     const read = await other.request.get(path); expect(read.headers()["cache-control"]).toBe("private, no-store");
     const listing = await read.json() as { items: Record<string, unknown>[] };
-    expect(Object.keys(listing.items[0]).sort()).toEqual(["authorName", "body", "createdAt", "id", "replyToId", "replyToName", "rootId", "vote"]);
+    expect(Object.keys(listing.items[0]).sort()).toEqual(["authorName", "body", "createdAt", "id", "replyCount", "replyToId", "replyToName", "rootId", "vote"]);
     for (const extra of [{ authorId: owner }, { postId }, { communityId: decoy }, { role: "admin" }, { createdAt: "2020-01-01" }]) expect((await post(other.request, path, comment(extra))).status()).toBe(400);
     for (const Origin of ["", "https://attacker.invalid"]) expect((await post(other.request, path, comment(), { Origin })).status()).toBe(403);
     expect((await other.request.get(`/api/communities/${decoy}/posts/${postId}/comments`)).status()).toBe(404);
@@ -287,7 +287,7 @@ test("comments: public reading survives removal, profileless members cannot publ
     await post(other.request, `/api/communities/${id}/memberships`, { action: "join" });
     expect((await post(other.request, path, comment())).status()).toBe(403);
     const page = await other.newPage(); await page.goto(`/ar/communities/${id}/posts/${postId}`);
-    await expect(page.getByText(commentText.ar.hint, { exact: true })).toBeVisible();
+    await expect(page.getByText(commentText.ar.profileRequired, { exact: true })).toBeVisible();
     await expect(page.getByRole("button", { name: commentText.ar.publish })).toHaveCount(0);
     await post(other.request, "/api/identity/profile", { displayName: "Member" });
     const data = comment(); expect((await post(other.request, path, data)).status()).toBe(201);

@@ -39,7 +39,7 @@ async function setup(visibility = "PUBLIC", profile = true) {
   if (visibility === "PRIVATE") await changeMembership(db, owner.token, space.id, { action: "approve", userId: member.id });
   const post = await createPost(db, owner.token, space.id, { requestId: randomUUID(), type: "QUESTION", title: "Vote target", body: "Body" });
   const comment = await createComment(db, owner.token, space.id, post.id, { requestId: randomUUID(), body: "Comment target" });
-  const vote = (active: boolean, kind: "post" | "comment" = "post", token = member.token) => setVote(db, token, space.id, post.id, kind === "comment" ? comment.id : undefined, { active });
+  const vote = (active: boolean, kind: "post" | "comment" = "post", token = member.token) => setVote(db, token, space.id, post.id, kind === "comment" ? comment.id : undefined, { value: active ? 1 : 0 });
   return { owner, member, space, post, comment, vote };
 }
 async function locker(id: string) {
@@ -186,9 +186,9 @@ describe("reply threads and atomic notification delivery", () => {
     try {
       for (const sql of ['DELETE FROM "Notification"', 'DELETE FROM "NotificationPreference"', 'UPDATE "Notification" SET "recipientId"=gen_random_uuid()', 'UPDATE "NotificationPreference" SET "userId"=gen_random_uuid()']) await expect(runtime.query(sql)).rejects.toMatchObject({ code: "42501" });
     } finally { await runtime.end(); }
-    await deny(savePreferences(db, newToken(), { announcements: true, replies: true }), 401);
-    expect(await readPreferences(db, member.token)).toEqual({ announcements: false, replies: false });
-    expect(await readPreferences(db, owner.token)).toEqual({ announcements: true, replies: true });
+    await deny(savePreferences(db, newToken(), { announcements: true, replies: true, upvotes: true }), 401);
+    expect(await readPreferences(db, member.token)).toEqual({ announcements: false, replies: false, upvotes: true });
+    expect(await readPreferences(db, owner.token)).toEqual({ announcements: true, replies: true, upvotes: true });
     await changeMembership(db, member.token, space.id, { action: "leave" });
   });
   it("upgrades populated voting data without changing existing identities, memberships, content or votes", async () => {
@@ -230,8 +230,8 @@ describe("reply threads and atomic notification delivery", () => {
     expect((await db.notification.findMany({ where: { commentId: second.id } })).map(row => row.recipientId).sort()).toEqual([owner.id, member.id].sort());
     expect((await listComments(db, member.token, space.id, post.id)).items.map(row => row.id)).toEqual([comment.id]);
     expect((await listComments(db, member.token, space.id, post.id, undefined, comment.id)).items.map(row => row.id)).toEqual([first.id, second.id]);
-    expect(await setVote(db, owner.token, space.id, post.id, second.id, { active: true })).toEqual({ count: 1, active: true, canVote: true });
-    await deny(setVote(db, third.token, space.id, post.id, second.id, { active: true }), 403);
+    expect(await setVote(db, owner.token, space.id, post.id, second.id, { value: 1 })).toEqual({ score: 1, upvotes: 1, downvotes: 0, value: 1, canVote: true });
+    await deny(setVote(db, third.token, space.id, post.id, second.id, { value: 1 }), 403);
   });
 
   it("rejects cross-post targets, forged roots, wrong-thread cursors and invalid SQL relationships", async () => {
@@ -253,7 +253,7 @@ describe("reply threads and atomic notification delivery", () => {
   it("uses defaults and independent preferences, excluding pending, former members and the actor", async () => {
     const { owner, member, space, post, comment } = await setup("PRIVATE"), pending = await actor();
     await changeMembership(db, pending.token, space.id, { action: "join" });
-    expect(await readPreferences(db, member.token)).toEqual({ announcements: true, replies: true });
+    expect(await readPreferences(db, member.token)).toEqual({ announcements: true, replies: true, upvotes: true });
     const announce = () => createPost(db, owner.token, space.id, { requestId: randomUUID(), type: "ANNOUNCEMENT", title: "Announcement", body: "Body" });
     const first = await announce();
     expect((await db.notification.findMany({ where: { postId: first.id } })).map(row => row.recipientId)).toEqual([member.id]);

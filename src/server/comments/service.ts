@@ -11,9 +11,9 @@ import { notifyContent } from "../notifications/delivery.ts";
 const displayProjection = { id: true, authorId: true, body: true, createdAt: true, rootId: true, replyToId: true,
   replyTo: { select: { author: { select: { profile: { select: { displayName: true } } } } } },
   author: { select: { profile: { select: { displayName: true } } } } } as const;
-function displayComment(row: Prisma.CommentGetPayload<{ select: typeof displayProjection }>, vote: VoteSummary) {
+function displayComment(row: Prisma.CommentGetPayload<{ select: typeof displayProjection }>, vote: VoteSummary, replyCount = 0) {
   return { id: row.id, body: row.body, createdAt: row.createdAt, authorName: row.author?.profile?.displayName ?? null, vote,
-    rootId: row.rootId, replyToId: row.replyToId, replyToName: row.replyTo?.author?.profile?.displayName ?? null };
+    rootId: row.rootId, replyToId: row.replyToId, replyToName: row.replyTo?.author?.profile?.displayName ?? null, replyCount };
 }
 
 export function createComment(db: PrismaClient, token: unknown, communityValue: unknown, postValue: unknown, input: Record<string, unknown>) {
@@ -31,7 +31,8 @@ export function createComment(db: PrismaClient, token: unknown, communityValue: 
       ? await tx.comment.findUniqueOrThrow({ where: { id: existing.id }, select: displayProjection })
       : await tx.comment.create({ data: { postId, authorId: userId, body, submissionKey, replyToId, rootId: parent ? parent.rootId ?? parent.id : null }, select: displayProjection });
     if (!existing) await notifyContent(tx, community.id, userId, postId, row.id, [post.authorId, parent?.authorId].filter((id): id is string => Boolean(id)));
-    return displayComment(row, (await voteSummaries(tx, "comment", [row], userId, true)).get(row.id)!);
+    const replyCount = existing && row.rootId === null ? await tx.comment.count({ where: { postId, rootId: row.id } }) : 0;
+    return displayComment(row, (await voteSummaries(tx, "comment", [row], userId, true)).get(row.id)!, replyCount);
   }, "m3-comment-write", true);
 }
 
@@ -50,8 +51,13 @@ export function listComments(db: PrismaClient, token: unknown, communityValue: u
     ] } : {}) }, orderBy: [{ createdAt: "asc" }, { id: "asc" }], take: commentPageSize + 1,
     select: displayProjection });
     const visible = rows.slice(0, commentPageSize), votes = await voteSummaries(tx, "comment", visible, userId, member);
-    const items = visible.map(row => displayComment(row, votes.get(row.id)!));
+    // Count only roots in the already-authorized page, in one aggregate query.
+    const rootIds = visible.filter(row => row.rootId === null).map(row => row.id);
+    const counts = rootIds.length ? await tx.comment.groupBy({ by: ["rootId"], where: { postId, rootId: { in: rootIds } }, _count: { _all: true } }) : [];
+    const replyCounts = new Map(counts.map(row => [row.rootId, row._count._all]));
+    const items = visible.map(row => displayComment(row, votes.get(row.id)!, replyCounts.get(row.id) ?? 0));
+    const profileSaved = member && Boolean(await tx.profile.findUnique({ where: { userId }, select: { userId: true } }));
     return { items, next: rows.length > commentPageSize ? items.at(-1)!.id : null,
-      canComment: member && Boolean(await tx.profile.findUnique({ where: { userId }, select: { userId: true } })) };
+      canComment: profileSaved, commentRequirement: !member ? "membership" as const : !profileSaved ? "profile" as const : null };
   }, "m3-comment-write", true);
 }

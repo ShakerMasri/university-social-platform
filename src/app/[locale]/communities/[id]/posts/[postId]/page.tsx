@@ -16,6 +16,7 @@ import { reportOperationalFailure } from "@/server/diagnostics";
 import { CommentsList } from "./comments-list";
 import { IdentityShell } from "../../../../identity-shell";
 import { PostCard } from "../../post-card";
+import { DiscussionFocus } from "./discussion-focus";
 export const dynamic = "force-dynamic";
 export default async function PostPage({ params, searchParams }: { params: Promise<{ locale: string; id: string; postId: string }>; searchParams: Promise<{ after?: string; notification?: string }> }) {
   const { locale, id, postId } = await params;
@@ -29,6 +30,7 @@ export default async function PostPage({ params, searchParams }: { params: Promi
   } catch { notFound(); }
   let post: Awaited<ReturnType<typeof readPost>> | undefined, comments: Awaited<ReturnType<typeof listComments>> | undefined, status = 503;
   let notificationThread: { rootId: string; replies: Awaited<ReturnType<typeof listComments>> } | undefined;
+  let linkedTarget: string | undefined;
   let enabled = false;
   try {
     const { context } = requireLocalIdentity(await headers());
@@ -44,6 +46,7 @@ export default async function PostPage({ params, searchParams }: { params: Promi
     // The intervening ordinary public reads cannot restore a notification's
     // access after membership removal. Recheck before returning any projection.
     if (query.notification) await notificationTarget(db, token, query.notification);
+    if (target) linkedTarget = target.commentId ? `comment-${target.commentId}` : `post-${postId}`;
   } catch (error) {
     post = undefined;
     if (error instanceof CommunityError) status = error.status;
@@ -54,7 +57,8 @@ export default async function PostPage({ params, searchParams }: { params: Promi
     <p><Link prefetch={false} href={`/${locale}/communities/${id}`}>{postText[locale].back}</Link></p>
     {post ? <PostCard locale={locale} post={post} detail /> : <><h1>{postText[locale].title}</h1><p role="alert">{status === 404 || status === 403 ? postText[locale].unavailable : identityText[locale].failed}</p></>}
     {post && comments && <section aria-labelledby="comments-heading">
-      <h2 id="comments-heading">{commentText[locale].title}</h2>
+      <DiscussionFocus linkedTarget={linkedTarget} />
+      <h2 id="comments-heading" tabIndex={-1}>{commentText[locale].title}</h2>
       <CommentsList key={`${id}:${postId}:${query.after ?? query.notification ?? ""}`} locale={locale} communityId={id} postId={postId} initial={comments} notificationThread={notificationThread} />
       {(query.after || query.notification) && <p><Link prefetch={false} href={`/${locale}/communities/${id}/posts/${postId}`}>{commentText[locale].first}</Link></p>}
       <noscript>{comments.next && <p><Link prefetch={false} href={`/${locale}/communities/${id}/posts/${postId}?after=${comments.next}`}>{commentText[locale].next}</Link></p>}</noscript>

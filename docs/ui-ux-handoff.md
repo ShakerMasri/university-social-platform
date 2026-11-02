@@ -1,4 +1,153 @@
-# Continuation — remaining accessibility and usability evidence
+# Fix-session handoff
+
+Publication authorization — 2026-11-03: the owner requested **push**. This authorizes committing and pushing the completed discussion checkpoint to `origin/feat/discussion-actions`; it supersedes earlier no-commit/no-push wording for this publication only. Merge and deployment remain unauthorized. The checkpoint includes signed voting/first-upvote notifications, the reviewed lifecycle fixes and the compact separate-counter UI. The application/test sources still match the passing isolated build; no tests were weakened or fresh runs invented for this Git-only step. Private/generated artifacts remain ignored and outside the publication file set. Verify the remote branch matches local HEAD after pushing; continue to keep UI checkpoint 3 partial.
+
+Current checkpoint — 2026-11-03: **separate vote totals and compact discussion UI are implemented and locally verified**. The owner superseded the earlier shared-net-score display: each arrow now has its own total, with original filled/outline SVGs and compact 36px controls. Comments is an aligned icon-only link with a translated accessible name/title. Comment/reply composers use two-row fields, aligned compact footers and a combined reply addressee/Cancel row. No copied Reddit asset, new dependency, schema/migration or provider was added. Vote switching, no self-votes, retries, first-upvote deduplication and all completed lifecycle fixes remain covered. See the [current UI decision/evidence](project-brief.md#separate-vote-totals-and-compact-discussion-controls--2026-11-03).
+
+Fresh checks: **85 unit, 90 PostgreSQL, 149 permanent synthetic Chromium and 8 ordinary Chromium cases**, lint, direct TypeScript, full isolated typecheck/build, source comparison and diff review/check all passed. Two extra temporary EN/AR cases produced inspected, sanitized anonymous mobile previews; their first moved-import startup was corrected without weakening assertions. Both final permanent layout cases pass at 320/1280px. The old 44px display assertion was updated to the owner's new 36px presentation choice; accessible names, pressed states, descriptions and keyboard focus remain checked.
+
+All **16 new disposable targets** from this UI change were removed; development remains at `20261102000000_m3_signed_votes` and both retained targets remain. The owned app/PostgreSQL stayed running; EN/AR sign-in returned HTTP 200 and automated registrations are absent. No development-data writes/migrations/reset, active `.next` rebuild, installation, live provider calls, commit/push/merge/deployment occurred. Existing work is unstaged/uncommitted on `feat/discussion-actions` at `fc7d06d`.
+
+Next: owner/partner review of the compact UI using the [short checklist](ui-ux-plan.md#manual-testing-checklist). UI checkpoint 3 stays **partial** for unverified screen-reader speech, participant usability and backup restoration. Suggested eventual commit: `feat: compact discussion actions and separate vote totals`; do not publish without owner authorization. Use the current source/copy checks before reusing ignored `.cache/ui-fixes/` helpers, and keep final suites filter-free.
+
+<details>
+<summary>Previous shared-denial checkpoint (reference)</summary>
+
+Previous checkpoint — 2026-11-02: **the paginated-reply denial gap is fixed and locally verified**. Initial and additional reply reads share one thread-level invalidation path. Denial clears loaded/local replies and visible/hidden composers, invalidates older publication callbacks, and blocks stale Reply until a fresh server authorization snapshot arrives. Temporary network/503 failures preserve drafts, confirmed content and retry IDs. All prior fixes remain covered.
+
+Added **12 regressions**: EN/AR real private revocation with held publication headers/JSON and delayed refresh; EN/AR transient failures; English 401/403 routing for both loaders and fresh-snapshot recovery. Fresh gates passed: **85 unit, 147 synthetic + 8 ordinary Chromium cases**, lint, direct TypeScript, full isolated typecheck/build, source comparison and focused diff/whitespace checks. See the [shared-denial evidence](project-brief.md#shared-reply-denial-boundary--2026-11-02) for exact commands, baseline failures and evidence boundaries. Dedicated `db:test` was not repeated; its unchanged 89-test evidence is reused.
+
+All four test databases created in this continuation were removed. Development remains at `20261102000000_m3_signed_votes`; both retained targets remain. The owned app/PostgreSQL remain running; EN/AR sign-in returned HTTP 200 and automated registrations are absent. No development-data writes/migrations/reset, active `.next` rebuild, installation, live provider calls, commit/push/merge/deployment occurred. Existing tracked/untracked work remains unstaged/uncommitted on `feat/discussion-actions` at `fc7d06d`.
+
+Next smallest step: focused review/owner or partner retest using the short [manual checklist](ui-ux-plan.md#manual-testing-checklist), then the already-recorded remaining evaluation. Screen-reader speech, participant usability and backup restoration remain unverified; UI checkpoint 3 is **partial**. Suggested eventual fix commit: `fix: invalidate reply threads on paginated access denial`; do not commit/push without owner authorization. Ignored verification copies/results remain under `.cache/ui-fixes/`; inspect before reuse and never run a baseline filter as a final gate.
+
+</details>
+
+<details>
+<summary>Completed paginated-denial continuation prompt (reference)</summary>
+
+Review before this fix — 2026-11-02: the previously reported scenarios passed, but one P2 access-denial gap remained in reply pagination. The initial reply loader invalidated the thread; the nested pagination component did not. The continuation prompt below supplied this fix's scope and safeguards.
+
+```text
+Continue the existing fix session in D:\university-social-platform. Use one agent. Fix the remaining paginated-reply access-denial gap, add meaningful regressions and verify it. Preserve all completed fixes and all existing tracked/untracked work. Do not restart the redesign or repeat completed implementation. No commit, push, merge, deployment, installation, development-data write/migration/reset, or interruption of the owner's app is authorized.
+
+Read AGENTS.md, the current discussion-actions/lifecycle sections in docs/project-brief.md, relevant README verification instructions, and the complete affected components/tests. Recheck Git and runtime. Last inspected: feat/discussion-actions at fc7d06d, with unstaged changes and four untracked paths. Full-branch review used merge base f97af0b2ac665792a0d287a436c2717873ff61f6 with the local origin/main tracking ref; no live fetch occurred. Stay on the current feature branch and preserve owner work.
+
+Remaining finding [P2]:
+- src/app/[locale]/communities/[id]/posts/[postId]/comment-thread.tsx:35-39 advances publicationGeneration and clears local state only when load() receives 401/403/404.
+- Its nested CursorList at approximately line 69 handles additional replies separately. src/app/[locale]/communities/cursor-list.tsx:42-43 clears only its own rows and refreshes; it never tells the surrounding thread to invalidate callbacks or remove composers.
+- Confirmed reproduction against the real isolated app and disposable PostgreSQL: create a private root with 21 replies; load the first 20; open Reply on the root; submit while holding the real successful publication response; remove membership; activate Show more replies; receive the denied page while holding the actual page refresh; release the publication. The composer remains mounted, becomes enabled and displays “Comment published.” until refresh completes. The completed refresh clears it. This demonstrates incomplete client invalidation, not a server authorization bypass or a failed transaction.
+
+Fix the shared denial boundary so both initial and paginated reply denials synchronously invalidate pre-denial publication callbacks and clear the thread's retained composers/publication state. Prefer one focused thread-level invalidation path, with an explicit signal from pagination if needed; keep CursorList suitable for posts, root comments and notifications. Prevent stale thread props from reopening an eligible composer while authorization is unresolved. Preserve temporary-network/5xx failure behavior: drafts, confirmed content and safe retry state must survive those failures. Client invalidation must not undo a server-confirmed write, reuse its submission key for another target, or manufacture another notification. Preserve normal authorized reload/rejoin behavior.
+
+Acceptance and regression coverage:
+1. Reproduce the missing paginated-denial case before the fix using existing guarded fixtures. Scope the root Reply action to its article: after loading 20 replies, a thread-wide Reply locator is ambiguous. Earlier review probe setup failures were locator failures, not product results.
+2. Test English/Arabic with a real private-membership 404, a delayed refresh, and publication held at fetch resolution and JSON delivery. After denial and after releasing the old response, no retained composer, stale publication feedback, focus transfer or reintroduced reply should appear. Include an unsent draft/visited hidden composer and ensure stale controls cannot reopen them before fresh authorization. Cover the supported 401/403 denial routing proportionately.
+3. Verify a transient read failure preserves draft/retry state; a later authorized request or reapproval works; the already-confirmed reply exists exactly once. Keep server membership/ownership checks intact.
+4. Retain the 32 existing bilingual fix regressions: separate target drafts/retry IDs, repeated Reply focus, late-response isolation, stale notification actions, initial-load denial, and stable recent-root-to-chronological movement for draft/in-flight/ambiguous submissions. Preserve manual oldest-first reply batches of 20, keyboard pagination focus, RTL/narrow layout, signed votes and durable first-upvote notification deduplication. Do not weaken tests or introduce blanket autofocus.
+
+Verification evidence to reuse accurately:
+- The latest review freshly passed npm.cmd test (85 tests/15 files), npm.cmd run lint, direct node node_modules/typescript/bin/tsc --noEmit --incremental false, git diff --check, all 135 synthetic Chromium cases via node .cache/ui-fixes/identity-local.mts identity-browser with USP_MANUAL_REVIEW=1, and eight ordinary Chromium cases via node tools/testing/run-playwright.mts test --config .cache/ui-fixes/ordinary.config.ts. Guarded browser launches replayed/reviewed migrations. All 144 checked application/test/config files matched the isolated source copy.
+- These passing suites did not cover the remaining paginated-denial interaction. A separate in-memory Node/Playwright probe confirmed it with real routes/database and controlled transport delays; no review test/source files were written.
+- Dedicated db:test (89 tests) and the existing isolated build were reused during review. The preceding fix session's full isolated build/typecheck evidence is separately recorded in the brief. After changing source, produce a matching fresh isolated build before claiming browser verification. Inspect existing .cache/ui-fixes helpers/configs before reuse; do not run baseline filters as final gates or assume old copies match new source. No dependency reinstall is needed.
+
+Runtime/data safeguards:
+- Last review exit: the owned dev app at http://localhost:3000 and PostgreSQL stayed running; EN/AR sign-in returned HTTP 200. Development and retained targets ending 9384f39c7150 / f38dab8b0c88 remained; every review-created target was removed. .cache/m2-preview.json remained; browser/preview-check registrations were absent. Development was previously verified at 20261102000000_m3_signed_votes; no development migration was applied by review. Recheck actual state, ownership/context/container/volume/loopback binding and ports before testing.
+- Do not stop/rebuild the active app or its .next directory. Use the established isolated source/build workflow and maintained ownership guards, with sequential guarded database/browser commands because they share the manifest. Automated writes must use new owned disposable targets and synthetic accounts. Never reset databases or touch retained targets; restore only resources this session created/changed.
+- Keep authenticated traces/screenshots/videos off. Never print credentials, tokens, cookies, database URLs, private content or private .cache backup/control files. No live email/SSO/paid AI calls. Older upvote-only code is incompatible with signed/neutral records; do not roll back through table drops or resets.
+- Screen-reader speech, participant usability and backup restoration remain unverified; keep UI checkpoint 3 partial. Passing automated suites do not close those gaps.
+
+Review the final focused diff and affected complete files. Record actual changes, regression failures/passes, fresh versus reused checks and resource/Git closure in the existing brief/plan/handoff as appropriate. Finish with the fix, exact validation and any remaining gaps. Do not publish or ask to publish an incompletely verified result.
+```
+
+</details>
+
+<details>
+<summary>Prior lifecycle checkpoint (reference)</summary>
+
+Previous lifecycle checkpoint (before the latest review) — 2026-11-02: all three original findings and both subsequently reported lifecycle scenarios were fixed and locally verified. Reply drafts/retry state now also survive the recent-root-to-chronological transition, and pre-denial publication callbacks cannot restore cleared private content after an initial-load denial while refresh is delayed. The original target-switch, repeated Reply and stale-notification fixes remain covered. Added **10 follow-up bilingual regressions** (32 total). Reported final results: 85 unit tests, **135 synthetic + 8 ordinary Chromium cases**, lint, direct TypeScript, full isolated typecheck/build and diff review/check passed. Tests use the matching fresh isolated default Turbopack build; the active `.next` was not rebuilt. See the [lifecycle follow-up evidence](project-brief.md#thread-lifecycle-follow-up--2026-11-02) for exact commands, baseline failures, the unchanged unit timeout/separate passing rerun and evidence limits. Earlier [original fix evidence](project-brief.md#discussion-ui-review-fixes--2026-11-02) remains historical.
+
+Existing work is preserved, unstaged/uncommitted, on `feat/discussion-actions` at `fc7d06d`; no commit/push/merge/deployment, installation or development-data migration/reset. All four new disposable databases from this follow-up were removed (the earlier fix session's 14 were already removed); development remains at `20261102000000_m3_signed_votes`, both retained test targets remain and automated registrations are absent. The owned app/PostgreSQL remain running; English/Arabic sign-in returned HTTP 200. Ignored isolated verification artifacts are under `.cache/ui-fixes/`. Do not stop the owner's app or rebuild its active `.next` without authorization.
+
+Next smallest step: complete the paginated-denial continuation above, then owner/partner retest from the short [manual checklist](ui-ux-plan.md#manual-testing-checklist) and the separately recorded screen-reader/manual/participant evaluation when available. UI checkpoint 3 remains **partial**. Dedicated `db:test` was not repeated for these client-only fixes; its earlier 89-test evidence is reused for unchanged server/database code. No backup restoration, live provider, screen-reader speech, participant evaluation or deployment is claimed. Suggested eventual fix commit: `fix: preserve thread state and invalidate denied publications`; do not commit/push without a new owner instruction.
+
+</details>
+
+The original fix instructions are retained below for scope and safeguards; consult the current evidence above before repeating work. Historical session-specific publication permissions do not authorize publishing these fixes.
+
+<details>
+<summary>Original fix-session prompt (reference)</summary>
+
+```text
+Work in D:\university-social-platform. Use one agent. Fix the three findings below, add meaningful regression coverage, and verify the changes. Do not spawn agents. No commit, push, merge, deployment, dependency installation or development-data migration/reset is authorized. Preserve all existing work and continue on the current feature branch unless inspection reveals a conflict that needs resolution.
+
+Start with AGENTS.md, Git status/history, the discussion-actions section near the top of docs/project-brief.md, and relevant README setup/test instructions. Read complete affected files, including untracked code. This is a focused fix session, not a new redesign or repeated whole-repository audit.
+
+Last inspected on 2026-11-02: feat/discussion-actions at fc7d06d, with 40 modified tracked files and four untracked paths (including the signed-vote migration). Committed branch work includes 18bf809 (replies/notifications) and fc7d06d (bilingual UI). The merge base with the local origin/main tracking ref was f97af0b2ac665792a0d287a436c2717873ff61f6; local main was older, with merge base f20e374488740a2de45d8e31944f56cf795e3527. No live remote fetch was performed. Recheck state; do not discard changes or treat existing implementation as automatic approval.
+
+Findings to fix (line numbers are review-time references):
+
+1. [P2] Switching reply targets loses an unsent draft. In src/app/[locale]/communities/[id]/posts/[postId]/comment-thread.tsx:47, CommentForm is keyed by target.id. Open Reply on a root, type a draft, select Reply on an existing reply in that thread, then return to the root: its draft is gone. Preserve drafts by target in component memory, with no new persistent browser storage. Keep each draft bound to its actual addressee and preserve existing ambiguous-write retry IDs/409 behavior. Never reuse a submission key across different targets or let a late confirmation clear another target's draft. Keep explicit Cancel behavior distinct from merely switching targets.
+
+2. [P2] A delayed notification-open response can override later navigation. In src/app/[locale]/notifications/notifications-list.tsx:22-35, act() can call router.push after its component is no longer current. Start opening a notification, navigate to Profile or change language before the response arrives, then release the response: the old action can push its captured destination. Invalidate obsolete actions on navigation/unmount and relevant snapshot changes. Check currency after both fetch and JSON decoding; an abort alone is insufficient. Prevent stale navigation, refresh and feedback-focus effects without undoing a server-confirmed read. Preserve normal successful opening and safe retries.
+
+3. [P3] Reply does not refocus its already-open field. In comment-thread.tsx:19-21, focus depends only on target changing. Open a reply, move focus elsewhere, then activate Reply on that same target: focus stays on the button. Every explicit Reply activation must focus the correct existing textarea while preserving its draft. Do not introduce blanket page autofocus or interfere with normal navigation/skip-link behavior.
+
+Evidence boundaries: all three behaviors were reproduced with current source components and real React in an isolated Chromium page. Router/fetch, hydration and list/vote children were mocked; these were component probes, not full application reproductions. No permanent test or application file was changed by the review. Reproduce through maintained disposable application fixtures where feasible, then add regressions that fail for the old behavior and pass for the fixes. Do not claim the existing passing suites covered these cases.
+
+Acceptance:
+- Root/reply target round trips restore the correct separate draft; publication and ambiguous-response retries still create exactly one correctly addressed reply. Check target switching during an in-flight submission and confirm a late result cannot clear the active draft.
+- Delayed notification headers and delayed JSON bodies cannot navigate or move focus after leaving the inbox or changing locale. A current successful open still marks read, opens the correct authorized destination and focuses it. Existing mark-all/pagination stale-response protection remains intact.
+- Repeated Reply activation by keyboard and pointer focuses the intended field without losing text. Check English/Arabic, RTL and a narrow layout; preserve cancel focus and manual oldest-first reply batches of 20.
+- Keep server-enforced ownership/membership, private revocation/rejoin, minimal projections, signed desired-state votes, no self-votes, immutable first-upvote markers and preference-respecting deduplication unchanged. No schema/provider/product expansion is expected. Review the final focused diff and relevant complete files; do not weaken assertions or authorization to make tests pass.
+
+Verification and runtime safeguards:
+- Use README's pinned Node 24.21.0/npm 11.19.0, installed dependencies and project Chromium cache. Derive commands from current package scripts.
+- Review-session fresh results: npm.cmd test passed 85 tests/15 files; npm.cmd run db:test passed 89 tests/7 files plus migration review/reapplication; npm.cmd run test:e2e:identity passed 103 Chromium cases; npm.cmd run test:e2e passed eight cases; lint, direct node node_modules/typescript/bin/tsc --noEmit --incremental false, and git diff --check passed. Sandbox subprocess/Docker failures passed on permitted retries. Browser suites used the existing production build. No fresh build, client generation or full npm typecheck script was run in that review; older handoff reports for those remain historical evidence.
+- After fixes, run focused regressions plus applicable required gates. Tests against an unchanged pre-fix production build cannot verify new source. Do not rebuild the active .next directory or stop the owner's running app without explicit authorization. Use a safe isolated output/workflow if available; if a fresh build is blocked, complete independent implementation/checks and report the exact unverified gates instead of claiming success.
+- Last exit: the owned dev app remained at http://localhost:3000; English/Arabic sign-in returned HTTP 200. Owned PostgreSQL remained running. Read-only inspection confirmed development's latest migration 20261102000000_m3_signed_votes. The two retained test databases ending 9384f39c7150 and f38dab8b0c88 were preserved. All 12 new review-run disposable targets were removed; .cache/m2-browser.json was absent and the existing .cache/m2-preview.json remained. Recheck actual registrations, listeners, Docker context, ownership/container/volume/loopback identity before running workflows. Never kill unrelated resources.
+- Run guarded database/browser workflows sequentially: they share an ownership manifest. Use only ownership-checked new disposable databases and synthetic accounts for automated writes. Do not apply development migrations, alter development data, reset databases, or touch retained targets. Authenticated traces/screenshots/videos remain off. Never print credentials, session cookies, verification inputs, database URLs, private content or private .cache backup/control files.
+- Older upvote-only code is incompatible with signed/neutral records. Do not roll back by dropping tables or resetting data. The private backup's archive listing/hash were verified earlier; actual restoration, screen-reader speech and consenting participant usability remain unverified. Keep UI checkpoint 3 partial and do not invent evidence.
+
+Record actual fixes, regression methods/results, remaining limitations and resource/Git state in the existing project-brief/plan/handoff as appropriate; avoid duplicate planning files. Finish with what changed and why, relevant paths, exact fresh versus reused checks, any blocked verification, and the next smallest step. No commit/push/merge/deployment; do not ask to publish an incompletely verified result.
+```
+
+</details>
+
+<details>
+<summary>Completed review prompt (reference only)</summary>
+
+```text
+Work in D:\university-social-platform. Use one agent. REVIEW ONLY: do not fix code, edit files (including documentation/tests), install dependencies, create commits/branches, push, merge or deploy. Report findings in chat. Existing tests may produce ordinary ignored artifacts or use ownership-checked disposable databases; never alter development data, reset a database, apply development migrations, or start/stop the owner's running app for this review. Do not spawn agents.
+
+Review everything added or changed on feat/discussion-actions relative to its main-branch merge base, including BOTH committed branch work and all staged/unstaged/untracked additions. Do not limit the review to the latest diff or compare only with HEAD/fc7d06d.
+
+Start with AGENTS.md, Git status/history and the actual merge base with main/origin/main. Local inspection on 2026-11-02 found HEAD fc7d06d and merge base f97af0b2ac665792a0d287a436c2717873ff61f6 against the local origin/main ref. Branch commits include 18bf809 (replies/notifications) and fc7d06d (bilingual UI foundation); the latest discussion-action changes are uncommitted. Recheck these facts, distinguish local tracking refs from live remote state, inspect complete relevant files and explicitly include untracked code/migrations. Preserve every existing change.
+
+Read the current discussion-actions section near the top of docs/project-brief.md and relevant README setup/verification instructions. Consult older requirements/evidence only as needed. Existing code and passing tests are evidence, not proof of correctness.
+
+Cover the whole branch: reply/thread relationships and pagination; notifications/preferences/inbox/deep links; authorization, ownership, membership removal/rejoin, private-content leakage and concurrency; bilingual UI/navigation/forms, RTL, keyboard focus, responsive layout and zoom; migrations/runtime grants, failure/retry handling and meaningful test coverage. Check that tests were not weakened to conceal defects. Avoid an unrelated whole-repository audit or redesign based on taste.
+
+Give EXTRA attention to the latest work:
+- Discoverable Comments link; actionable join/profile prerequisites; Reply opens its field; no misleading Show replies for empty roots; manual oldest-first Show more replies in batches of 20.
+- Original compact up/down/comment SVGs, one net score, stable accessible names/pressed states and usable targets. One vote per person/target: +1, -1 or neutral; switching replaces it and clicking the active icon clears it. No self-votes; preserve server authorization and safe desired-state retries.
+- First-upvote in-app notifications on posts, comments and replies. Separate preference defaults on; downvotes/repeated toggles do not notify. Check durable deduplication, transactional rollback, recipient access/preferences, revocation and absence of voter-identity leaks or historical backfill.
+- 20261102000000_m3_signed_votes: preserve historical +1 votes, IDs/content/preferences; neutral records retain an immutable first-upvote marker. Review constraints and restricted runtime UPDATE/DELETE grants. Older upvote-only code is incompatible with signed/neutral records.
+- Explicit Comments/notification destination focus, stale responses/navigation, draft preservation, reply counts and bounded database queries.
+
+Previously reported evidence: 85 unit tests, 89 database tests, 103 synthetic Chromium tests and 8 ordinary Chromium tests passed, as did generate/review/typecheck/lint/build. Verify proportionately using established package scripts; do not treat these reports as your own fresh results. Run guarded database/browser workflows sequentially because they share a manifest. The owned dev app was last restored at http://localhost:3000 with PostgreSQL running and the signed-vote migration applied; two retained disposable databases must be preserved. Recheck runtime before checks. Do not rebuild the active .next directory or interrupt dev. If fresh verification would require that, report the limitation and continue source review. Private backup/control files under .cache must not be printed, exposed or committed. Backup archive listing/hash were verified; restoration itself, screen-reader speech and participant usability remain unverified.
+
+Return actionable findings first, ordered by severity, with file/line references, concrete trigger, impact and supporting evidence. Review the latest changes deeply without skipping older branch additions. Distinguish confirmed defects, plausible concerns requiring evidence and validation gaps; do not invent findings or claim tests you did not run. If there are no actionable findings, say so explicitly, then state remaining gaps. Finish with checks actually run versus reused evidence. Stop after the review; do not implement fixes or update project files.
+```
+
+</details>
+
+<details>
+<summary>Earlier implementation handoff and historical evidence (reference only)</summary>
+
+# Continuation — discussion actions and remaining manual evidence
+
+Current checkpoint — 2026-11-02: `feat/discussion-actions` contains the owner's requested Comments/Reply entry points, compact signed voting, first-upvote notifications/preferences and manual reply batches. All 85 unit, 89 database, 103 synthetic and 8 ordinary Chromium tests plus lint/typecheck/build passed. Development was backed up, migrated without changing existing records, and restored at `http://localhost:3000`; both retained test databases remain. Changes are **uncommitted/unpushed**; no merge/deployment. See the short [manual checklist](ui-ux-plan.md#manual-testing-checklist) for retesting and the [checkpoint evidence](project-brief.md#discussion-actions-and-signed-voting--owner-decisions-2026-11-02) for exact checks, backup/recovery limits and runtime state. Human screen-reader speech and participant evidence remain open. Historical publication instructions below apply to the already-pushed `fc7d06d` checkpoint, not permission to publish these new changes.
 
 Publication authorization — 2026-11-02: the owner authorized committing and pushing `feat/ui-ux-foundation` for partner testing, explicitly **without merging**. Deployment is not authorized. This supersedes historical no-commit/no-push instructions below; preserve their remaining safeguards and incomplete-evaluation status. Partner setup and known limitations are in the short [README review section](../README.md#partner-review-of-the-uiux-branch); use the [manual checklist](ui-ux-plan.md#manual-testing-checklist), not the historical narrative. No partner results are claimed in advance.
 
@@ -75,3 +224,5 @@ For confirmed defects, implement focused fixes and meaningful regressions, expla
 
 Update the existing plan/brief/handoff with actual methods/results, changed files, fresh versus reused evidence, remaining gaps and resource/Git state. Keep planned/implemented/tested/deployed separate; no duplicate planning files. Finish with confirmed fixes/findings first, exact checks/results, limitations and next smallest step. Do not mark checkpoint 3 complete while acceptance evidence is missing. No commit, push, merge or deployment.
 ```
+
+</details>
