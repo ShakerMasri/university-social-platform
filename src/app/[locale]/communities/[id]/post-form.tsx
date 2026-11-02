@@ -34,7 +34,7 @@ export function CreatePostForm({ locale, communityId, canAnnounce }: { locale: L
     } catch { notify(text.failed); }
     finally { setBusy(false); }
   }
-  return <section aria-labelledby="create-post-heading">
+  return <section className="form-panel" aria-labelledby="create-post-heading">
     <h2 id="create-post-heading">{text.create}</h2><p id="post-limits">{text.limits}</p>
     <form onSubmit={submit} aria-busy={busy}>
       <label htmlFor="post-type">{text.type}</label>

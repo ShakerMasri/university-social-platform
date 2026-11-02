@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useState, type FormEvent } from "react";
+import { Fragment, useEffect, useState, type FormEvent } from "react";
 import type { Locale } from "@/i18n/locales";
 import { identityText } from "@/i18n/identity";
 import { capturePendingConfirmation, clearPendingConfirmation, pendingConfirmationToken } from "./pending-confirmation";
@@ -18,6 +18,15 @@ function useFeedback() {
   const [message, setMessage] = useState("");
   const show = (value: string) => { setMessage(value); requestAnimationFrame(() => document.getElementById("identity-feedback")?.focus()); };
   return { message, show };
+}
+
+function SyntheticEmailHint({ text }: { text: string }) {
+  // This fixed local-test identifier is translated as surrounding prose, but
+  // must retain its character order inside an Arabic paragraph.
+  const suffix = "@university.test";
+  return text.split(suffix).map((segment, index) => <Fragment key={index}>
+    {index > 0 && <bdi dir="ltr">{suffix}</bdi>}{segment}
+  </Fragment>);
 }
 
 export function SignInForm({ locale, preview = false }: { locale: Locale; preview?: boolean }) {
@@ -43,14 +52,14 @@ export function SignInForm({ locale, preview = false }: { locale: Locale; previe
     finally { setBusy(false); }
   }
   return <>
-    <h1>{text.signIn}</h1><p id="email-hint">{text.hint}</p>
+    <h1>{text.signIn}</h1><p id="email-hint"><SyntheticEmailHint text={text.hint} /></p>
     <form onSubmit={submit} aria-busy={busy}>
       <label htmlFor="email">{text.email}</label>
       <input disabled={!hydrated} id="email" name="email" type="text" inputMode="email" autoComplete="email" dir="ltr" value={email} onChange={(event) => { setEmail(event.target.value); setRequested(false); }} required aria-describedby="email-hint" />
       <button disabled={busy || !hydrated} type="submit">{busy ? text.busy : text.request}</button>
     </form>
     <p id="identity-feedback" role="status" tabIndex={-1}>{feedback.message}</p>
-    {preview && <p>{text.previewHint}</p>}
+    {preview && <p><SyntheticEmailHint text={text.previewHint} /></p>}
     {preview && requested && <button type="button" disabled={busy || !hydrated} onClick={() => void openPreviewConfirmation()}>{text.previewOpen}</button>}
   </>;
 }
@@ -120,6 +129,6 @@ export function ProfileForm({ locale, profile }: { locale: Locale; profile: { em
       <button disabled={busy || !hydrated} type="submit">{busy ? text.busy : text.save}</button>
     </form>
     <p id="identity-feedback" role="status" tabIndex={-1}>{feedback.message}</p>
-    <button disabled={busy || !hydrated} type="button" onClick={endSession}>{text.logout}</button>
+    <button className="button-secondary profile-logout" disabled={busy || !hydrated} type="button" onClick={endSession}>{text.logout}</button>
   </>;
 }

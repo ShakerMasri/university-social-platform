@@ -38,7 +38,7 @@ export function NotificationsList({ locale, initial }: { locale: Locale; initial
     {!unavailable && <><p>{text.unread}: {unread.toLocaleString(locale)}</p>
       <button type="button" disabled={!hydrated || busy || unread === 0} onClick={() => void act()}>{text.markAll}</button>
       <CursorList initial={initial} endpoint="/api/notifications" parsePage={parsePage} locale={locale} moreLabel={text.more} itemPrefix="notification">
-        {items => <>{items.length === 0 && <p>{text.empty}</p>}<div className="community-list">{items.map(item => <article className="community-card" key={item.id} id={`notification-${item.id}`} tabIndex={-1}>
+        {items => <>{items.length === 0 && <p className="empty-state">{text.empty}</p>}<div className="community-list">{items.map(item => <article className={`community-card notification-card${item.read ? "" : " notification-unread"}`} key={item.id} id={`notification-${item.id}`} tabIndex={-1}>
           <p>{item.read ? text.read : <strong>{text.unread}</strong>} · {item.kind === "ANNOUNCEMENT" ? text.announcement : text.comment}</p>
           <p dir="auto">{item.title}</p>
           <time dateTime={item.createdAt.toISOString()}>{item.createdAt.toLocaleDateString(locale, { timeZone: "UTC" })}</time>

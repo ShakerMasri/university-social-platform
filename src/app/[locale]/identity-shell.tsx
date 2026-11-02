@@ -3,24 +3,18 @@ import type { ReactNode } from "react";
 import type { Locale } from "@/i18n/locales";
 import { dictionaries } from "@/i18n/dictionaries";
 import { identityText } from "@/i18n/identity";
-import { notificationText } from "@/i18n/notifications";
+import { SiteHeader } from "./site-header";
 
 export function IdentityShell({ locale, children, path }: { locale: Locale; children: ReactNode; path: "signin" | "verify" | "profile" | "notifications" | "communities" | `communities/${string}` | `communities/${string}/posts/${string}` }) {
   const text = dictionaries[locale];
+  const identityPage = path === "signin" || path === "verify";
   return <div className="shell">
     <a className="skip-link" href="#main-content">{text.skipToContent}</a>
-    <header className="site-header">
-      <p className="project-title">{text.title}</p>
-      <nav aria-label={text.languageNavigation}><ul className="language-list">
-        <li><Link href={`/en/${path}`} lang="en" dir="ltr" aria-current={locale === "en" ? "page" : undefined}>English</Link></li>
-        <li><Link href={`/ar/${path}`} lang="ar" dir="rtl" aria-current={locale === "ar" ? "page" : undefined}>العربية</Link></li>
-      </ul></nav>
-      {!["signin", "verify"].includes(path) && <p><Link prefetch={false} href={`/${locale}/notifications`}>{notificationText[locale].title}</Link> · <Link prefetch={false} href={`/${locale}/profile`}>{identityText[locale].profile}</Link></p>}
-    </header>
-    <main id="main-content" tabIndex={-1} className="identity-main">
+    <SiteHeader locale={locale} path={path} accountNavigation={!identityPage} />
+    <main id="main-content" tabIndex={-1} className={`identity-main ${identityPage ? "identity-entry" : path === "communities" ? "directory-main" : "reading-main"}`}>
       <p className="project-status">{identityText[locale].local}</p>
       {children}
-      <p><Link href={`/${locale}`}>{identityText[locale].home}</Link></p>
+      <p className="home-link"><Link href={`/${locale}`}>{identityText[locale].home}</Link></p>
     </main>
     <footer><p>{text.footer}</p></footer>
   </div>;

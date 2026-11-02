@@ -7,8 +7,6 @@ import { ownProfile } from "@/server/identity/service";
 import { sessionCookie } from "@/server/identity/policy";
 import { IdentityShell } from "../identity-shell";
 import { ProfileForm } from "../identity-forms";
-import Link from "next/link";
-import { communityText } from "@/i18n/communities";
 import { readPreferences } from "@/server/notifications/preferences";
 import { NotificationPreferencesForm } from "../notifications/preferences-form";
 
@@ -27,5 +25,5 @@ export default async function Profile({ params }: { params: Promise<{ locale: st
     return <IdentityShell locale={locale} path="profile"><h1>{identityText[locale].profile}</h1><p>{identityText[locale].failed}</p></IdentityShell>;
   }
   if (!profile) redirect(`/${locale}/signin`);
-  return <IdentityShell locale={locale} path="profile"><ProfileForm locale={locale} profile={profile} /><p><Link prefetch={false} href={`/${locale}/communities`}>{communityText[locale].title}</Link></p>{preferences && <NotificationPreferencesForm locale={locale} initial={preferences} />}</IdentityShell>;
+  return <IdentityShell locale={locale} path="profile"><div className="form-panel"><ProfileForm locale={locale} profile={profile} /></div>{preferences && <NotificationPreferencesForm locale={locale} initial={preferences} />}</IdentityShell>;
 }

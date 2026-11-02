@@ -36,10 +36,10 @@ export function CommentForm({ locale, communityId, postId, onPublished, replyToI
     } catch { notify(text.failed); }
     finally { submitting.current = false; setBusy(false); }
   }
-  return <><p id={`${formId}-limits`}>{text.limits}</p>
+  return <div className="comment-composer"><p id={`${formId}-limits`}>{text.limits}</p>
     <form onSubmit={submit} aria-busy={busy}>
       <label htmlFor={`${formId}-body`}>{replyToId ? replyText[locale].body : text.body}</label>
       <textarea id={`${formId}-body`} name="body" rows={4} required dir="auto" disabled={busy || !hydrated} aria-describedby={`${formId}-limits`} />
       <button type="submit" disabled={busy || !hydrated}>{busy ? text.busy : replyToId ? replyText[locale].publish : text.publish}</button>
-    </form><p ref={feedback} role="status" tabIndex={-1}>{message}</p></>;
+    </form><p ref={feedback} role="status" tabIndex={-1}>{message}</p></div>;
 }

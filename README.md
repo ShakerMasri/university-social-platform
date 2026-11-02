@@ -18,6 +18,14 @@ A Computer Engineering graduation project for university students and teachers t
 
 **Nothing is deployed.** Live university email is not connected. Post/comment editing/deletion, direct messages, archive search and AI are still pending. See the [replies and notifications checkpoint](docs/project-brief.md#replies-and-in-app-notifications--local-checkpoint-2026-10-28), [workflow checkpoint](docs/project-brief.md#interactive-development-workflow--2026-10-27), [comments checkpoint](docs/project-brief.md#createread-comments--approved-2026-10-27) and [voting checkpoint](docs/project-brief.md#postcomment-upvotes--approved-2026-10-27) for verification.
 
+## Partner review of the UI/UX branch
+
+Check out `feat/ui-ux-foundation` and follow [Run locally](#run-locally): Node 24.21.0, npm 11.19.0, Docker Desktop's Linux engine, `npm.cmd ci` on a fresh checkout, then `npm.cmd run dev`. Open `http://localhost:3000/en/signin`; `npm start` leaves synthetic sign-in disabled. Each checkout creates/uses its own guarded local database; do not copy someone else's `.cache/` or credentials. Startup can apply pending local migrations, and test data persists across restarts.
+
+Use made-up `@university.test` addresses in a normal and an incognito window. Sign in using **Request a sign-in link → Open local confirmation → Confirm sign-in**, then save a display name. No real email is sent. Test the short [manual checklist](docs/ui-ux-plan.md#manual-testing-checklist) in English/Arabic and on a narrow window. Publish announcements/replies after the recipient joins; earlier events are not backfilled.
+
+Search, direct messages and AI remain pending project features. Screen-reader speech, wider manual cases and participant feedback remain unverified; the large-list disposable fixture is not prepared. The recorded skip-link/reload behavior can traverse browser controls before returning to the page on the fifth physical Tab; its cause is unresolved. Report `steps → expected → actual`, language/browser and whether help was needed. Stop with Ctrl+C; normal shutdown retains test data. Nothing is deployed, and this branch is for review before any merge.
+
 ## Run locally
 
 Use **Node.js 24.21.0** and **npm 11.19.0**. Run commands from the repository root. Initial installation needs internet access.
@@ -135,6 +143,8 @@ Voting adds `20261027010000_m3_votes`, creating two vote tables without changing
 Replies and notification persistence add `20261028000000_m3_replies_notifications`. It adds nullable reply relationships to existing comments, composite foreign keys and a thread-integrity trigger, plus notification and preference tables. Existing comments remain top-level; existing events are not backfilled. The migration has been replayed on disposable databases; development has not been migrated for this checkpoint. Use the same generate → review → migrate → restart sequence when continuing locally. Keep all tables/data during recovery; do not reverse this migration by dropping content. The previous application can still read the extended tables, but it does not group replies or create notifications, so using it after replies exist would display replies as flat comments and omit new notifications. Future deployment still requires authorization, backups and recovery validation.
 
 The browser runner uses `http://127.0.0.1:3100`, synthetic `@university.test` addresses and an in-memory test mailbox. It covers sign-in, profile, logout, communities, posts, comments/replies, voting and notifications, including adversarial access, forged sessions/authority and stored-script checks, then stops its servers.
+
+The guarded identity suite also checks real Chromium page zoom at 200% and 400%, including 320 CSS-pixel reflow and form interactions in both languages. It uses the original permission-free extension under `tests/e2e/fixtures/page-zoom` in a disposable browser profile; it does not use or install anything in a personal browser profile. Zoom factor, viewport width and pixel ratio are verified after route changes. This automated check does not replace headed browser, screen-reader or usability evaluation.
 
 Use the guarded scripts rather than direct Compose commands or database resets. They refuse mismatched ownership. Keep `.cache/m1b/` and `.cache/m2-browser.json` private: they contain local operational credentials. If cleanup refuses a target, inspect it before retrying.
 

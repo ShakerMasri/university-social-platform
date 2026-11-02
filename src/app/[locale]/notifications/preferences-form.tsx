@@ -19,7 +19,7 @@ export function NotificationPreferencesForm({ locale, initial }: { locale: Local
     } catch { setMessage(text.failed); }
     finally { submitting.current = false; setBusy(false); requestAnimationFrame(() => feedback.current?.focus()); }
   }
-  return <section aria-labelledby="notification-settings"><h2 id="notification-settings">{text.settings}</h2>
+  return <section className="form-panel" aria-labelledby="notification-settings"><h2 id="notification-settings">{text.settings}</h2>
     <form onSubmit={submit} aria-busy={busy}>
       <label><input type="checkbox" name="announcements" defaultChecked={initial.announcements} disabled={!hydrated || busy} /> {text.announcements}</label>
       <label><input type="checkbox" name="replies" defaultChecked={initial.replies} disabled={!hydrated || busy} /> {text.replies}</label>

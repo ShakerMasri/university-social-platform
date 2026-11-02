@@ -34,10 +34,10 @@ export function VoteControl({ initial, endpoint, locale }: { initial: VoteSummar
     finally { clearTimeout(timeout); if (pending.current === controller) { pending.current = null; setBusy(false); } }
   }
 
-  return <div role="group" aria-label={text.group} aria-busy={busy}>
+  return <div className="vote-control" role="group" aria-label={text.group} aria-busy={busy}>
     {!unavailable && <>
       <p>{text.count}: <bdi>{vote.count.toLocaleString(locale)}</bdi></p>
-      {vote.canVote ? <button type="button" disabled={!hydrated || busy} aria-pressed={vote.active} onClick={() => void submit()}>
+      {vote.canVote ? <button className="button-secondary" type="button" disabled={!hydrated || busy} aria-pressed={vote.active} onClick={() => void submit()}>
         {busy ? text.busy : desired !== null ? text.retry : vote.active ? text.remove : text.add}
       </button> : <p>{text.hint}</p>}
     </>}
