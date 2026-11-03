@@ -2,9 +2,9 @@
 
 ## Manual testing checklist
 
-Latest UI decision — 2026-11-03: separate up/down totals, compact original filled/outline arrows, an icon-only aligned Comments action and smaller aligned composers. This replaces the earlier shared net-score display. The discussion checkpoint was published as `4018428` on `feat/discussion-actions`; its subsequent vote-error reflow fix now has [151 passing authenticated browser cases](project-brief.md#vote-failure-feedback-reflow--2026-11-03). The owner authorized pushing the latest fix and merging into `main` after CI passes. **Deployment remains unauthorized.** Checkpoint 3 remains partial. Partner setup is summarized in [README](../README.md#partner-review-of-the-uiux-branch).
+Latest UI decision — 2026-11-03: separate up/down totals, compact original filled/outline arrows, an icon-only aligned Comments action and smaller aligned composers. This replaces the earlier shared net-score display. The latest fix and earlier UI/replies work are merged into `main` through [PR #15](https://github.com/ShakerMasri/university-social-platform/pull/15) as `8fb431c`, after both CI runs passed, with [151 passing authenticated browser cases](project-brief.md#vote-failure-feedback-reflow--2026-11-03). M3's agreed local feature scope is complete; UI checkpoint 3's human evaluation remains partial. **Deployment remains unauthorized.** Partner setup is summarized in [README](../README.md#partner-review-of-the-uiux-branch).
 
-**Read this section only to run the remaining manual tests.** Use the latest discussion checkpoint on `feat/discussion-actions`, or `main` after its authorized merge is confirmed. Recorded automated checks have the limits above. Manual accessibility testing and feedback from actual people remain. Test in English and Arabic. Report what fails; do not write a long report.
+**Read this section only to run the remaining manual tests.** Use the latest `main`. Recorded automated checks have the limits above. Manual accessibility testing and feedback from actual people remain. Test in English and Arabic. Report what fails; do not write a long report.
 
 ### 1. Start the app and create two test accounts
 

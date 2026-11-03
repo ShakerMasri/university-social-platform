@@ -1,5 +1,9 @@
 # Fix-session handoff
 
+Current status — 2026-11-03: **M3's agreed local feature scope is complete: implemented, locally verified and merged; not deployed.** [PR #15](https://github.com/ShakerMasri/university-social-platform/pull/15) merged the latest fix and the replies/UI ancestor branches into `main` as `8fb431c` after both CI runs passed. Use the latest `main`. The next main milestone is M4; live email/recovery remain M2 follow-ups, and UI checkpoint 3's human evaluation and real-user/release gates remain open. See the [current milestone record](project-brief.md#m3-completion-and-next-milestone--2026-11-03). The separate draft manual-QA branch remains unmerged.
+
+The fix and publication instructions below are historical records, not outstanding publication steps.
+
 Publication follow-up — 2026-11-03: the owner authorized committing/pushing the latest fixes and merging into `main` **after CI passes**. This supersedes earlier no-commit/no-push/no-merge wording for this checkpoint; deployment remains unauthorized. `feat/discussion-actions` contains the complete replies/notifications and UI-foundation ancestor branches. The separate draft manual-QA branch has unique work and is outside this merge. Use a merge commit to preserve ancestry, verify the exact PR head and successful CI before merging, then verify the remote result.
 
 Current follow-up — 2026-11-03, after published `4018428`: **vote failure feedback reflow is fixed locally**. Zero-minimum grid tracks and bounded feedback in `src/app/globals.css` keep the error inside narrow cards. Reproduced the reported 381px English / 348px Arabic widths before the fix; actual React/post/comment/reply component fixtures now fit at 320px and 1280px in both languages, with working keyboard Retry. The two reported trailing blank lines are removed.

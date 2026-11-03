@@ -9,22 +9,25 @@ A Computer Engineering graduation project for university students and teachers t
 | M1a | Next.js/TypeScript, English/Arabic, RTL and testing tools | Implemented and tested; dependency exceptions recorded |
 | M1b | PostgreSQL/Prisma, persistence and guarded database tooling | Implemented and tested locally |
 | M2 | Email-link confirmation, sessions, own profile and logout | Implemented and tested with synthetic local email |
+| M3 overall | Agreed local community-interaction feature scope | Complete locally; verified and merged through PR #15; not deployed |
 | M3, first slice | Public/private communities, discovery and membership management | Implemented and tested locally |
 | M3, posts slice | Create/read questions, discussions, resources and creator-only announcements | Implemented and tested locally |
 | M3, comments slice | Flat plain-text comments, immediate publication feedback, scrolling post/comment lists and safe retries | Implemented and tested locally |
-| M3, voting slice | Member signed votes on posts/comments/replies, net scores and safe retries | Implemented and tested locally |
+| M3, voting slice | Member signed votes on posts/comments/replies, separate up/down totals and safe retries | Implemented and tested locally |
 | M3, replies/notifications slice | Flat reply threads, in-app inbox/read actions and profile preferences | Implemented and tested locally |
 | Local development | Interactive synthetic sign-in through posts with hot reload and persistent data | Implemented and tested locally |
 
 **Nothing is deployed.** Live university email is not connected. Post/comment editing/deletion, direct messages, archive search and AI are still pending. See the [replies and notifications checkpoint](docs/project-brief.md#replies-and-in-app-notifications--local-checkpoint-2026-10-28), [workflow checkpoint](docs/project-brief.md#interactive-development-workflow--2026-10-27), [comments checkpoint](docs/project-brief.md#createread-comments--approved-2026-10-27) and [voting checkpoint](docs/project-brief.md#postcomment-upvotes--approved-2026-10-27) for verification.
 
+The next main milestone is **M4: study-relevant discovery, searchable archive and direct text messaging**. Live email/recovery are M2 follow-ups; manual accessibility/usability evaluation and real-user lifecycle/release decisions remain open. See the [current M3 completion record](docs/project-brief.md#m3-completion-and-next-milestone--2026-11-03) for scope and evidence.
+
 ## Partner review of the UI/UX branch
 
-The published review branch is `feat/ui-ux-foundation`; the newer discussion-action fixes are currently local on `feat/discussion-actions` and are not yet published. Check out the agreed review branch and follow [Run locally](#run-locally): Node 24.21.0, npm 11.19.0, Docker Desktop's Linux engine, `npm.cmd ci` on a fresh checkout, then `npm.cmd run dev`. Open `http://localhost:3000/en/signin`; `npm start` leaves synthetic sign-in disabled. Each checkout creates/uses its own guarded local database; do not copy someone else's `.cache/` or credentials. Startup can apply pending local migrations, and test data persists across restarts.
+The replies, UI-foundation and latest discussion-action fixes are merged into `main` through [PR #15](https://github.com/ShakerMasri/university-social-platform/pull/15), merge commit `8fb431c`. Use the latest `main` and follow [Run locally](#run-locally): Node 24.21.0, npm 11.19.0, Docker Desktop's Linux engine, `npm.cmd ci` on a fresh checkout, then `npm.cmd run dev`. Open `http://localhost:3000/en/signin`; `npm start` leaves synthetic sign-in disabled. Each checkout creates/uses its own guarded local database; do not copy someone else's `.cache/` or credentials. Startup can apply pending local migrations, and test data persists across restarts.
 
 Use made-up `@university.test` addresses in a normal and an incognito window. Sign in using **Request a sign-in link → Open local confirmation → Confirm sign-in**, then save a display name. No real email is sent. Test the short [manual checklist](docs/ui-ux-plan.md#manual-testing-checklist) in English/Arabic and on a narrow window. Publish announcements/replies after the recipient joins; earlier events are not backfilled.
 
-Search, direct messages and AI remain pending project features. Screen-reader speech, wider manual cases and participant feedback remain unverified; the large-list disposable fixture is not prepared. The recorded skip-link/reload behavior can traverse browser controls before returning to the page on the fifth physical Tab; its cause is unresolved. Report `steps → expected → actual`, language/browser and whether help was needed. Stop with Ctrl+C; normal shutdown retains test data. Nothing is deployed, and this branch is for review before any merge.
+Search, direct messages and AI remain pending project features. Screen-reader speech, wider manual cases and participant feedback remain unverified; the large-list disposable fixture is not prepared. The recorded skip-link/reload behavior can traverse browser controls before returning to the page on the fifth physical Tab; its cause is unresolved. Report `steps → expected → actual`, language/browser and whether help was needed. Stop with Ctrl+C; normal shutdown retains test data. Manual evaluation remains open after the merge. Nothing is deployed.
 
 ## Run locally
 
