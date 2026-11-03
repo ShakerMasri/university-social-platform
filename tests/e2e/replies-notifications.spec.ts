@@ -362,4 +362,3 @@ test("inbox pagination drops revoked communities and HTTP boundaries isolate own
     expect(await fixture(async client => (await client.query('SELECT count(*) FROM "Notification" WHERE "recipientId"=$1 AND "readAt" IS NULL', [recipient])).rows[0].count)).toBe("2");
   } finally { await member.close(); await anonymous.close(); }
 });
-

@@ -303,4 +303,3 @@ describe("reply threads and atomic notification delivery", () => {
     } finally { await block.query("ROLLBACK"); await block.end(); await pending; }
   });
 });
-

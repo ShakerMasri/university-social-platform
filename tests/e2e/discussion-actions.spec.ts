@@ -504,6 +504,53 @@ for (const locale of ["en", "ar"] as const) {
     });
   }
 
+  test(`${locale}: vote failure feedback reflows and keyboard retry preserves the choice`, async ({ context, browser }) => {
+    const { id, postId, commentId } = await setup(context, locale), voter = await browser.newContext({ baseURL: origin });
+    const { id: replyId } = await post(context, `/api/communities/${id}/posts/${postId}/comments`, { requestId: randomUUID(), body: "Narrow reply vote target", replyToId: commentId });
+    const text = voteText[locale];
+    try {
+      await signIn(voter, locale); await post(voter, `/api/communities/${id}/memberships`, { action: "join" }, 200);
+      const page = await voter.newPage(); await page.setViewportSize({ width: 320, height: 900 });
+      await page.goto(`/${locale}/communities/${id}/posts/${postId}`);
+      await page.getByRole("button", { name: replyText[locale].show, exact: true }).click();
+      await expect(page.locator("html")).toHaveAttribute("dir", locale === "ar" ? "rtl" : "ltr");
+      for (const [targetId, suffix, choice] of [[`post-${postId}`, "", 1], [`comment-${commentId}`, `/comments/${commentId}`, -1], [`comment-${replyId}`, `/comments/${replyId}`, 1]] as const) {
+        const target = page.locator(`#${targetId}`), group = target.getByRole("group", { name: text.group });
+        const action = group.getByRole("button", { name: choice === 1 ? text.add : text.down, exact: true });
+        const endpoint = `/api/communities/${id}/posts/${postId}${suffix}/vote`;
+        const attempts: unknown[] = [];
+        // Only the first transport response fails. Retry reaches the real route
+        // with the same choice, preserving normal authorization and persistence.
+        await page.route(`**${endpoint}`, route => {
+          attempts.push(route.request().postDataJSON());
+          return attempts.length === 1 ? route.fulfill({ status: 503, json: {} }) : route.continue();
+        });
+        await action.click(); await expect(group.locator("[aria-live]")).toHaveText(text.failed);
+        await expect(action).toHaveAttribute("aria-pressed", "false");
+        await expect(group.locator(".vote-up-count")).toHaveText(`${text.upvotes}: ${(0).toLocaleString(locale)}`);
+        await expect(group.locator(".vote-down-count")).toHaveText(`${text.downvotes}: ${(0).toLocaleString(locale)}`);
+        const retry = group.getByRole("button", { name: text.retry, exact: true });
+        for (const width of [320, 1280]) {
+          await page.setViewportSize({ width, height: 900 });
+          await expect(retry).toBeVisible();
+          expect(await group.evaluate(element => {
+            const card = element.closest("article")!.getBoundingClientRect(), control = element.getBoundingClientRect();
+            const feedback = element.querySelector("[aria-live]")!.getBoundingClientRect();
+            const children = [...element.querySelectorAll("button, [aria-live]")].map(child => child.getBoundingClientRect());
+            return document.documentElement.scrollWidth <= innerWidth && control.left >= card.left && control.right <= card.right &&
+              feedback.left >= control.left && feedback.right <= control.right && children.every(box => box.left >= control.left && box.right <= control.right);
+          })).toBe(true);
+        }
+        await page.setViewportSize({ width: 320, height: 900 });
+        await retry.focus(); await expect(retry).toBeFocused(); await page.keyboard.press("Enter");
+        await expect(group.locator("[aria-live]")).toHaveText(choice === 1 ? text.saved : text.downSaved);
+        await expect(action).toHaveAttribute("aria-pressed", "true");
+        expect(attempts).toEqual([{ value: choice }, { value: choice }]);
+        expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
+      }
+    } finally { await voter.close(); }
+  });
+
   test(`${locale}: independent vote totals, filled arrows and compact aligned composers`, async ({ context, browser }) => {
     const { id, postId, commentId } = await setup(context, locale), voter = await browser.newContext({ baseURL: origin }), opposite = await browser.newContext({ baseURL: origin });
     const { id: replyId } = await post(context, `/api/communities/${id}/posts/${postId}/comments`, { requestId: randomUUID(), body: "Compact reply target", replyToId: commentId });

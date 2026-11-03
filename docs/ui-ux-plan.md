@@ -2,9 +2,9 @@
 
 ## Manual testing checklist
 
-Latest UI decision — 2026-11-03: separate up/down totals, compact original filled/outline arrows, an icon-only aligned Comments action and smaller aligned composers. This replaces the earlier shared net-score display. The discussion follow-up is local and uncommitted; earlier authorization to publish `feat/ui-ux-foundation` does not authorize publishing these changes. **Do not merge or deploy.** Checkpoint 3 remains partial. Partner setup is summarized in [README](../README.md#partner-review-of-the-uiux-branch).
+Latest UI decision — 2026-11-03: separate up/down totals, compact original filled/outline arrows, an icon-only aligned Comments action and smaller aligned composers. This replaces the earlier shared net-score display. The discussion checkpoint was published as `4018428` on `feat/discussion-actions`; its subsequent vote-error reflow fix now has [151 passing authenticated browser cases](project-brief.md#vote-failure-feedback-reflow--2026-11-03). The owner authorized pushing the latest fix and merging into `main` after CI passes. **Deployment remains unauthorized.** Checkpoint 3 remains partial. Partner setup is summarized in [README](../README.md#partner-review-of-the-uiux-branch).
 
-**Read this section only to run the remaining tests.** The discussion-action follow-up is local on `feat/discussion-actions`; the previously published branch does not contain these fixes yet. The UI work and recorded automated checks are done for this checkpoint. What remains is manual accessibility testing and feedback from actual people. Test in English and Arabic. Report what fails; do not write a long report.
+**Read this section only to run the remaining manual tests.** Use the latest discussion checkpoint on `feat/discussion-actions`, or `main` after its authorized merge is confirmed. Recorded automated checks have the limits above. Manual accessibility testing and feedback from actual people remain. Test in English and Arabic. Report what fails; do not write a long report.
 
 ### 1. Start the app and create two test accounts
 
@@ -37,6 +37,7 @@ As Alice, create one public and one private community, a discussion/resource and
 | Failed submission and retry | In Chrome, type a comment. Press F12 → Network → choose Offline in the throttling menu. Try publishing. Change the menu back to No throttling and retry. | A readable error appears; the draft stays; retry publishes exactly once. Restore No throttling before continuing. [Chrome instructions](https://developer.chrome.com/docs/devtools/network/reference#offline). |
 | Long lists and identical names | With a prepared list of over 20 items, reach Show more replies using Tab and activate it. Scrolling alone should not load additional replies. In membership management, distinguish two people with the same display name using their IDs. | Focus reaches the first newly loaded item; names/IDs/buttons remain readable and separated. **Have Codex prepare this disposable fixture first; do not create 20 accounts by hand. Mark this check not run until it is available.** |
 | Arabic and narrow layout | Switch the same discussion to Arabic. Narrow the browser window. Read a mixed Arabic/English title and a long resource URL; use the forms/buttons again. | The discussion stays open, Arabic layout is RTL, identifiers/URLs remain readable, and text/actions are not clipped or overlapping. |
+| Vote failure at narrow widths | During a synthetic vote transport failure, inspect a post, comment and nested reply at 320px in both languages. Restore transport and keyboard-activate Retry. | The complete failure message wraps inside its card, arrows and Retry stay visible, and the page has no horizontal scrolling. Retry applies the same choice. |
 
 ### 3. Check spoken output
 
