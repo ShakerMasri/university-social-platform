@@ -2,6 +2,12 @@ import { describe, expect, it } from "vitest";
 import { commentInput } from "./policy";
 const requestId = "11111111-2222-3333-4444-555555555555";
 describe("comment input", () => {
+  it("accepts only a valid direct reply target and forbids client-supplied thread roots", () => {
+    expect(commentInput({ requestId, body: "Reply", replyToId: requestId }).replyToId).toBe(requestId);
+    expect(commentInput({ requestId, body: "Comment" }).replyToId).toBeNull();
+    for (const replyToId of [null, "bad", [], 1]) expect(() => commentInput({ requestId, body: "Reply", replyToId })).toThrow();
+    expect(() => commentInput({ requestId, body: "Reply", rootId: requestId })).toThrow();
+  });
   it("trims text and bounds Unicode code points rather than UTF-16 units", () => {
     expect(commentInput({ requestId, body: " \n عربي English 😀\t " }).body).toBe("عربي English 😀");
     expect(commentInput({ requestId, body: "😀".repeat(4000) }).body.length).toBe(8000);

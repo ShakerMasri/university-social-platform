@@ -32,8 +32,8 @@ export default async function CommunityPage({ params, searchParams }: { params: 
   return <IdentityShell locale={locale} path={`communities/${id}`}>
     <p><Link href={`/${locale}/communities`}>{text.back}</Link></p>
     {!community ? <><h1>{text.title}</h1><p role="alert">{status === 404 ? text.unavailable : status === 403 ? text.profileRequired : text.failed}</p></> : <>
-      <h1><bdi>{community.name}</bdi></h1><p dir="auto" className="community-description">{community.description}</p>
-      <p>{community.visibility === "PUBLIC" ? text.public : text.private} · {community.isOwner ? text.owner : community.membership === "MEMBER" ? text.joined : ""}</p>
+      <div className="page-heading"><h1><bdi>{community.name}</bdi></h1><p dir="auto" className="community-description">{community.description}</p>
+      <p className="card-meta"><span className="badge">{community.visibility === "PUBLIC" ? text.public : text.private}</span>{community.isOwner ? text.owner : community.membership === "MEMBER" ? text.joined : ""}</p></div>
       <p>{text.space}</p>
       {posts && <section aria-labelledby="posts-heading"><h2 id="posts-heading">{postText[locale].title}</h2>
         <PostsList key={`${id}:${postAfter ?? ""}`} locale={locale} communityId={id} initial={posts} />

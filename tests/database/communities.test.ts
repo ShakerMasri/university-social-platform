@@ -96,7 +96,13 @@ describe("M3 real PostgreSQL persistence and authorization", () => {
   it("allows approved discovery metadata but denies private space and owner operations to non-members and members", async () => {
     const owner = await user(), member = await user(), outsider = await user();
     const { id } = await createCommunity(db, owner.token, input());
-    const card = (await discoverCommunities(db, outsider.token)).items.find((item) => item.id === id);
+    // Other suites share this disposable database; the target can be beyond page one.
+    let page = await discoverCommunities(db, outsider.token);
+    let card = page.items.find(item => item.id === id);
+    while (!card && page.next) {
+      page = await discoverCommunities(db, outsider.token, page.next);
+      card = page.items.find(item => item.id === id);
+    }
     expect(card).toMatchObject({ id, name: input().name, description: input().description, isOwner: false, membership: null });
     expect(card).not.toHaveProperty("ownerId"); expect(card).not.toHaveProperty("memberships");
     await denied(readCommunity(db, outsider.token, id), 404);

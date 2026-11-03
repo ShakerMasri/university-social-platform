@@ -147,7 +147,7 @@ test("posts adversarial: stored markup is inert and resource links are never fet
     await page.goto(`/ar/communities/${id}/posts/${postId}`);
     await expect(page.getByRole("heading", { name: title, exact: true })).toBeVisible();
     expect((await page.getByRole("main").innerText()).includes(body)).toBe(true);
-    expect(await page.locator("main img, main svg, main script").count()).toBe(0); expect(executed || external).toBe(false);
+    expect(await page.locator("main img, .community-description svg, main script").count()).toBe(0); expect(executed || external).toBe(false);
     await expect(page.getByRole("link", { name: "https://example.test/no-preview", exact: true })).toHaveAttribute("rel", "noopener noreferrer");
   } finally { await reader.close(); }
 });

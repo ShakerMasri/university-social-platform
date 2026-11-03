@@ -14,7 +14,7 @@ async function actor(tx: Transaction, token: unknown, requireProfile = false) {
   if (requireProfile && !access.session.user.profile) throw new CommunityError(403);
   return access.session.userId;
 }
-function authorized<T>(db: PrismaClient, token: unknown, run: (tx: Transaction, userId: string) => Promise<T>, requireProfile = false) {
+export function authorized<T>(db: PrismaClient, token: unknown, run: (tx: Transaction, userId: string) => Promise<T>, requireProfile = false) {
   return db.$transaction(async (tx) => {
     const userId = await actor(tx, token, requireProfile);
     const result = await run(tx, userId);
@@ -24,7 +24,7 @@ function authorized<T>(db: PrismaClient, token: unknown, run: (tx: Transaction, 
     return result;
   });
 }
-async function mutating<T>(db: PrismaClient, token: unknown, run: (tx: Transaction, userId: string) => Promise<T>, requireProfile = false, budget = "m3-community-write") {
+export async function mutating<T>(db: PrismaClient, token: unknown, run: (tx: Transaction, userId: string) => Promise<T>, requireProfile = false, budget = "m3-community-write") {
   // Reserve attempts separately: a rejected write cannot roll back its budget.
   // Reuse the existing bounded counter table under a disjoint opaque user key.
   const allowed = await authorized(db, token, async (tx, userId) => {

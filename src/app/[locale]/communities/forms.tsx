@@ -5,6 +5,7 @@ import type { Locale } from "@/i18n/locales";
 import { communityText } from "@/i18n/communities";
 import { communityInput, type MembershipAction } from "@/server/communities/policy";
 import { useHydrated } from "@/app/use-hydrated";
+import { interfaceText } from "@/i18n/interface";
 
 async function post(path: string, data: object) {
   try {
@@ -30,8 +31,9 @@ export function CreateCommunityForm({ locale }: { locale: Locale }) {
     if (result.ok && result.id) router.push(`/${locale}/communities/${result.id}`);
     else { setMessage(result.status === 429 ? text.rate : text.failed); requestAnimationFrame(() => feedback.current?.focus()); }
   }
-  return <section aria-labelledby="create-heading">
-    <h2 id="create-heading">{text.create}</h2>
+  return <section className="form-panel" aria-labelledby="create-heading">
+    <h2 id="create-heading" tabIndex={-1}>{text.create}</h2>
+    <p>{interfaceText[locale].createIntro}</p>
     <p id="visibility-hint">{text.hint}</p>
     <p id="community-limits">{text.limits}</p>
     <form onSubmit={submit} aria-busy={busy}>
@@ -57,7 +59,7 @@ export function MembershipControls({ locale, id, actions, userId, visibility, me
     if (result.ok) router.refresh();
   }
   return <div aria-busy={busy}>
-    <div className="community-actions">{actions.map((action) => <button key={action} disabled={busy || !hydrated} type="button" onClick={() => void change(action)}>
+    <div className="community-actions">{actions.map((action) => <button className={action === "join" || action === "approve" ? undefined : "button-secondary"} key={action} disabled={busy || !hydrated} type="button" onClick={() => void change(action)}>
       {busy ? text.busy : action === "join" ? visibility === "PRIVATE" ? text.request : text.join : action === "leave" ? membership === "PENDING" ? text.cancel : text.leave : action === "approve" ? text.approve : membership === "PENDING" ? text.reject : text.remove}
       {userId && <span className="visually-hidden"> · {text.userId}: <bdi dir="ltr">{userId}</bdi></span>}
     </button>)}</div>

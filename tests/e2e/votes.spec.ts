@@ -10,7 +10,7 @@ import { postText } from "../../src/i18n/posts";
 test.use({ trace: "off", screenshot: "off", video: "off" });
 const origin = "http://127.0.0.1:3100", communities: string[] = [];
 const post = (request: APIRequestContext, path: string, data: object) => request.post(path, { data, headers: { Origin: origin } });
-const vote = (request: APIRequestContext, path: string, active: boolean, headers: Record<string, string> = {}) => request.put(path, { data: { active }, headers: { Origin: origin, ...headers } });
+const vote = (request: APIRequestContext, path: string, active: boolean, headers: Record<string, string> = {}) => request.put(path, { data: { value: active ? 1 : 0 }, headers: { Origin: origin, ...headers } });
 async function fixture<T>(run: (client: Client) => Promise<T>) {
   const manifest = readManifest(), name = process.env.M2_BROWSER_DATABASE;
   if (!manifest.databases.some(record => record.name === name && record.kind === "test" && record.ready)) throw new Error("Owned disposable voting browser target required");
@@ -27,6 +27,7 @@ test.afterAll(async () => {
     try {
       await client.query('DELETE FROM "CommentVote" WHERE "commentId" IN (SELECT c.id FROM "Comment" c JOIN "Post" p ON p.id=c."postId" WHERE p."communityId"=ANY($1::uuid[]))', [communities]);
       await client.query('DELETE FROM "PostVote" WHERE "postId" IN (SELECT id FROM "Post" WHERE "communityId"=ANY($1::uuid[]))', [communities]);
+      await client.query('DELETE FROM "Notification" WHERE "postId" IN (SELECT id FROM "Post" WHERE "communityId"=ANY($1::uuid[]))', [communities]);
       await client.query('DELETE FROM "Comment" WHERE "postId" IN (SELECT id FROM "Post" WHERE "communityId"=ANY($1::uuid[]))', [communities]);
       await client.query('DELETE FROM "Post" WHERE "communityId"=ANY($1::uuid[])', [communities]);
       await client.query('DELETE FROM "CommunityMembership" WHERE "communityId"=ANY($1::uuid[])', [communities]);
@@ -70,21 +71,23 @@ for (const locale of ["en", "ar"] as const) {
         for (const targetId of [`post-${target.postId}`, `comment-${target.commentId}`]) {
           const group = page.locator(`#${targetId}`).getByRole("group", { name: text.group });
           await group.getByRole("button", { name: text.add, exact: true }).focus(); await page.keyboard.press("Enter");
-          await expect(group.getByRole("button", { name: text.remove, exact: true })).toHaveAttribute("aria-pressed", "true");
+          await expect(group.getByRole("button", { name: text.add, exact: true })).toHaveAttribute("aria-pressed", "true");
           await expect(group).toContainText(text.saved);
-          await expect(group).toContainText(`${text.count}: ${(1).toLocaleString(locale)}`);
+          await expect(group.locator(".vote-up-count")).toHaveText(`${text.upvotes}: ${(1).toLocaleString(locale)}`);
+          await expect(group.locator(".vote-down-count")).toHaveText(`${text.downvotes}: ${(0).toLocaleString(locale)}`);
           await page.reload();
-          await expect(group.getByRole("button", { name: text.remove, exact: true })).toHaveAttribute("aria-pressed", "true");
-          await group.getByRole("button", { name: text.remove, exact: true }).focus(); await page.keyboard.press("Enter");
+          await expect(group.getByRole("button", { name: text.add, exact: true })).toHaveAttribute("aria-pressed", "true");
+          await group.getByRole("button", { name: text.add, exact: true }).focus(); await page.keyboard.press("Enter");
           await expect(group).toContainText(text.removed);
           await expect(group.getByRole("button", { name: text.add, exact: true })).toHaveAttribute("aria-pressed", "false");
-          await expect(group).toContainText(`${text.count}: ${(0).toLocaleString(locale)}`);
+          await expect(group.locator(".vote-up-count")).toHaveText(`${text.upvotes}: ${(0).toLocaleString(locale)}`);
+          await expect(group.locator(".vote-down-count")).toHaveText(`${text.downvotes}: ${(0).toLocaleString(locale)}`);
         }
         expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true);
         expect(await page.locator("main script").count()).toBe(0);
       }
       const ownerPage = await context.newPage(); await ownerPage.goto(`/${locale}/communities/${id}`);
-      await expect(ownerPage.getByRole("button", { name: text.add, exact: true })).toHaveCount(0);
+      for (const button of await ownerPage.getByRole("button", { name: text.add, exact: true }).all()) await expect(button).toBeDisabled();
     } finally { await memberContext.close(); }
   });
 
@@ -101,14 +104,18 @@ for (const locale of ["en", "ar"] as const) {
           const hold = new Promise<void>(resolve => { release = resolve; }), ready = new Promise<void>(resolve => { reached = resolve; });
           await page.route(`**${path}`, async route => { await route.fetch(); reached(); await hold; await route.abort("failed"); });
           try {
-            await group.getByRole("button", { name: active ? text.add : text.remove, exact: true }).click(); await ready;
-            await expect(group.getByRole("button", { name: text.busy, exact: true })).toBeDisabled();
+            await group.getByRole("button", { name: text.add, exact: true }).click(); await ready;
+            await expect(group).toHaveAttribute("aria-busy", "true");
+            await expect(group.getByRole("button", { name: text.add, exact: true })).toBeDisabled();
+            await expect(group.getByRole("button", { name: text.down, exact: true })).toBeDisabled();
             release(); await expect(group).toContainText(text.failed);
-            await expect(group.getByRole("button", { name: text.retry, exact: true })).toHaveAttribute("aria-pressed", String(!active));
+            await expect(group.getByRole("button", { name: text.retry, exact: true })).toBeVisible();
+            await expect(group.getByRole("button", { name: text.add, exact: true })).toHaveAttribute("aria-pressed", String(!active));
           } finally { release(); await page.unroute(`**${path}`); }
           await group.getByRole("button", { name: text.retry, exact: true }).focus(); await page.keyboard.press("Enter");
-          await expect(group.getByRole("button", { name: active ? text.remove : text.add, exact: true })).toHaveAttribute("aria-pressed", String(active));
-          await expect(group).toContainText(`${text.count}: ${(active ? 1 : 0).toLocaleString(locale)}`);
+          await expect(group.getByRole("button", { name: text.add, exact: true })).toHaveAttribute("aria-pressed", String(active));
+          await expect(group.locator(".vote-up-count")).toHaveText(`${text.upvotes}: ${(active ? 1 : 0).toLocaleString(locale)}`);
+          await expect(group.locator(".vote-down-count")).toHaveText(`${text.downvotes}: ${(0).toLocaleString(locale)}`);
         }
       }
     } finally { await memberContext.close(); }
@@ -126,12 +133,12 @@ test("votes: forged authority, input bounds, CSRF, self-votes, scoped parents an
     }
     await post(memberContext.request, `/api/communities/${id}/memberships`, { action: "join" });
     for (const path of [target.postPath, target.commentPath]) {
-      for (const data of [{}, { active: 1 }, { active: "true" }, { active: true, userId: owner }, { active: true, count: 99 }, { active: true, extra: "x".repeat(1100) }]) expect((await memberContext.request.put(path, { data, headers: { Origin: origin } })).status()).toBe(400);
+      for (const data of [{}, { active: true }, { value: true }, { value: "1" }, { value: 2 }, { value: 0.5 }, { value: 1, userId: owner }, { value: 1, score: 99 }, { value: 1, extra: "x".repeat(1100) }]) expect((await memberContext.request.put(path, { data, headers: { Origin: origin } })).status()).toBe(400);
       expect((await vote(memberContext.request, path, true, { Origin: "https://attacker.invalid" })).status()).toBe(403);
       const responses = await Promise.all([vote(memberContext.request, path, true), vote(memberContext.request, path, true)]);
       for (const response of responses) {
         expect(response.status()).toBe(200); expect(response.headers()["cache-control"]).toBe("private, no-store");
-        expect(await response.json()).toEqual({ ok: true, count: 1, active: true, canVote: true });
+        expect(await response.json()).toEqual({ ok: true, score: 1, upvotes: 1, downvotes: 0, value: 1, canVote: true });
       }
     }
     expect((await vote(memberContext.request, target.commentPath.replace(target.postId, other.postId), true)).status()).toBe(404);
@@ -140,9 +147,10 @@ test("votes: forged authority, input bounds, CSRF, self-votes, scoped parents an
     expect((await vote(memberContext.request, target.postPath, false)).status()).toBe(429);
     const page = await memberContext.newPage(); await page.goto(`/en/communities/${id}/posts/${target.postId}`);
     const group = page.locator(`#post-${target.postId}`).getByRole("group", { name: voteText.en.group });
-    await group.getByRole("button", { name: voteText.en.remove, exact: true }).click();
+    await group.getByRole("button", { name: voteText.en.add, exact: true }).click();
     await expect(group).toContainText(voteText.en.rate);
-    await expect(group.getByRole("button", { name: voteText.en.retry, exact: true })).toHaveAttribute("aria-pressed", "true");
+    await expect(group.getByRole("button", { name: voteText.en.retry, exact: true })).toBeVisible();
+    await expect(group.getByRole("button", { name: voteText.en.add, exact: true })).toHaveAttribute("aria-pressed", "true");
   } finally { await memberContext.close(); }
 });
 
@@ -184,7 +192,8 @@ test("votes: a late confirmation cannot change another post after client navigat
     await page.locator(`a[href="/en/communities/${id}/posts/${other.postId}"]`).click(); release();
     const group = page.locator(`#post-${other.postId}`).getByRole("group", { name: voteText.en.group });
     await expect(group.getByRole("button", { name: voteText.en.add, exact: true })).toHaveAttribute("aria-pressed", "false");
-    await expect(group).toContainText(`${voteText.en.count}: 0`);
+    await expect(group.locator(".vote-up-count")).toHaveText(`${voteText.en.upvotes}: 0`);
+    await expect(group.locator(".vote-down-count")).toHaveText(`${voteText.en.downvotes}: 0`);
     await expect(page.locator(`#post-${target.postId}`)).toHaveCount(0);
   } finally { release(); await memberContext.close(); }
 });
