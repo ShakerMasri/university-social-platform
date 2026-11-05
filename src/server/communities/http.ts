@@ -1,5 +1,5 @@
 import "server-only";
-import { reportOperationalFailure } from "../diagnostics.ts";
+import { reportOperationalFailure, type OperationalEvent } from "../diagnostics.ts";
 import { NextRequest, NextResponse } from "next/server";
 import type { PrismaClient } from "../../generated/prisma/client.ts";
 import { identityDatabase, requireLocalIdentity } from "../identity/local.ts";
@@ -11,7 +11,7 @@ export const communityReply = (body: object, status = 200) => NextResponse.json(
   "Cache-Control": "private, no-store", "Referrer-Policy": "no-referrer", "X-Content-Type-Options": "nosniff",
 } });
 export class InputError extends Error {}
-export async function communityHTTP(request: NextRequest, handle: (db: PrismaClient, token: unknown) => Promise<NextResponse>) {
+export async function communityHTTP(request: NextRequest, handle: (db: PrismaClient, token: unknown) => Promise<NextResponse>, failureEvent: OperationalEvent = "communities.http.failed") {
   let enabled = false;
   try {
     const { context } = requireLocalIdentity(request.headers);
@@ -19,7 +19,7 @@ export async function communityHTTP(request: NextRequest, handle: (db: PrismaCli
     if (request.method !== "GET" && request.headers.get("origin") !== context.origin) return communityReply({ ok: false }, 403);
     return await handle(identityDatabase(context), request.cookies.get(sessionCookie)?.value);
   } catch (error) {
-    if (enabled && !(error instanceof CommunityError) && !(error instanceof InputError)) reportOperationalFailure("communities.http.failed");
+    if (enabled && !(error instanceof CommunityError) && !(error instanceof InputError)) reportOperationalFailure(failureEvent);
     return communityReply({ ok: false }, error instanceof CommunityError ? error.status : error instanceof InputError ? 400 : 503);
   }
 }

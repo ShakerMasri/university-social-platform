@@ -1,6 +1,6 @@
 # University Social Learning Platform
 
-A Computer Engineering graduation project for university students and teachers to share discussions, find communities and preserve academic knowledge. Search, messaging and an AI assistant with source citations are planned baseline features.
+A Computer Engineering graduation project for university students and teachers to share discussions, find communities and preserve academic knowledge. Archive search is implemented locally; messaging and an AI assistant with source citations remain planned baseline features.
 
 ## Current progress
 
@@ -15,9 +15,10 @@ A Computer Engineering graduation project for university students and teachers t
 | M3, comments slice | Flat plain-text comments, immediate publication feedback, scrolling post/comment lists and safe retries | Implemented and tested locally |
 | M3, voting slice | Member signed votes on posts/comments/replies, separate up/down totals and safe retries | Implemented and tested locally |
 | M3, replies/notifications slice | Flat reply threads, in-app inbox/read actions and profile preferences | Implemented and tested locally |
+| M4, first archive slice | Permission-aware English/Arabic post/comment search, community/type filters and signed pagination | Implemented and verified locally; not deployed |
 | Local development | Interactive synthetic sign-in through posts with hot reload and persistent data | Implemented and tested locally |
 
-**Nothing is deployed.** Live university email is not connected. Post/comment editing/deletion, direct messages, archive search and AI are still pending. See the [replies and notifications checkpoint](docs/project-brief.md#replies-and-in-app-notifications--local-checkpoint-2026-10-28), [workflow checkpoint](docs/project-brief.md#interactive-development-workflow--2026-10-27), [comments checkpoint](docs/project-brief.md#createread-comments--approved-2026-10-27) and [voting checkpoint](docs/project-brief.md#postcomment-upvotes--approved-2026-10-27) for verification.
+**Nothing is deployed.** Live university email is not connected. Post/comment editing/deletion, direct messages, a personalized study feed and AI are still pending. See the [archive checkpoint](docs/project-brief.md#first-archive-slice--implementation-and-verification), [replies and notifications checkpoint](docs/project-brief.md#replies-and-in-app-notifications--local-checkpoint-2026-10-28), [workflow checkpoint](docs/project-brief.md#interactive-development-workflow--2026-10-27), [comments checkpoint](docs/project-brief.md#createread-comments--approved-2026-10-27) and [voting checkpoint](docs/project-brief.md#postcomment-upvotes--approved-2026-10-27) for verification.
 
 The next main milestone is **M4: study-relevant discovery, searchable archive and direct text messaging**. Live email/recovery are M2 follow-ups; manual accessibility/usability evaluation and real-user lifecycle/release decisions remain open. See the [current M3 completion record](docs/project-brief.md#m3-completion-and-next-milestone--2026-11-03) for scope and evidence.
 
@@ -27,7 +28,7 @@ The replies, UI-foundation and latest discussion-action fixes are merged into `m
 
 Use made-up `@university.test` addresses in a normal and an incognito window. Sign in using **Request a sign-in link → Open local confirmation → Confirm sign-in**, then save a display name. No real email is sent. Test the short [manual checklist](docs/ui-ux-plan.md#manual-testing-checklist) in English/Arabic and on a narrow window. Publish announcements/replies after the recipient joins; earlier events are not backfilled.
 
-Search, direct messages and AI remain pending project features. Screen-reader speech, wider manual cases and participant feedback remain unverified; the large-list disposable fixture is not prepared. The recorded skip-link/reload behavior can traverse browser controls before returning to the page on the fifth physical Tab; its cause is unresolved. Report `steps → expected → actual`, language/browser and whether help was needed. Stop with Ctrl+C; normal shutdown retains test data. Manual evaluation remains open after the merge. Nothing is deployed.
+Direct messages, a personalized study feed and AI remain pending project features. Screen-reader speech, wider manual cases and participant feedback remain unverified; the large-list disposable fixture is not prepared. The recorded skip-link/reload behavior can traverse browser controls before returning to the page on the fifth physical Tab; its cause is unresolved. Report `steps → expected → actual`, language/browser and whether help was needed. Stop with Ctrl+C; normal shutdown retains test data. Manual evaluation remains open after the merge. Nothing is deployed.
 
 ## Run locally
 
@@ -118,7 +119,7 @@ npm.cmd run test:e2e
 
 For a local production preview, run `npm.cmd start` after building. This also leaves M2–M3 disabled. GitHub CI runs installation, lint, typecheck, unit tests, build and ordinary browser tests; database and synthetic M2–M3 tests are separate local checks.
 
-## Test M2–M3 with a local database
+## Test M2–M4 with a local database
 
 You need Docker with a running Linux engine. The scripts use pinned PostgreSQL 18.6 and Prisma 7.10.1; they do not install or start Docker Desktop.
 
@@ -137,7 +138,7 @@ You need Docker with a running Linux engine. The scripts use pinned PostgreSQL 1
 
 3. When finished, optionally run `npm.cmd run db:cleanup`. **This deletes this setup's local development data, container, volume and credentials.** Keep the setup if you need its data.
 
-`db:review` replays migration history in a disposable database and compares it with the schema. `db:migrate` applies reviewed history to this setup's development database. Database tests and the M2–M3 browser runner create and remove their own test databases. Run guarded database/browser commands **sequentially**: they share a local ownership manifest.
+`db:review` replays migration history in a disposable database and compares it with the schema. `db:migrate` applies reviewed history to this setup's development database. Database tests and the M2–M4 browser runner create and remove their own test databases. `test:e2e:identity` runs the empty-directory case, main regressions and archive cases sequentially on separate guarded targets, preserving the empty-state assertion without depending on file order. Run guarded database/browser commands **sequentially**: they share a local ownership manifest.
 
 Comments use the additive `20261027000000_m3_comments` migration. Generate the client with `npm.cmd run db:generate`, review with `npm.cmd run db:review`, then apply locally with `npm.cmd run db:migrate`; `npm run dev` also performs guarded migration preparation on startup. Restart an already-running dev server with `npm.cmd run dev:stop` followed by `npm.cmd run dev` after this schema/client change: the launcher retains its Prisma client in memory. Existing user/community/membership/post data is retained. The runtime role receives only comment SELECT/INSERT privileges. `db:test` verifies populated forward upgrade and reapplication on disposable databases; `test:e2e:identity` includes bilingual comments and access-removal checks. No development-data reset is needed.
 
@@ -145,7 +146,7 @@ Voting originally added `20261027010000_m3_votes`; replies/notifications added `
 
 Use the same generate → review → migrate → restart sequence above. Stop the app and take a verified local backup before migrating data you want to keep. The migration preserves IDs, content, memberships, existing notifications and preferences. Older upvote-only code counts neutral/downvote rows incorrectly and may attempt forbidden deletion: recovery requires a compatible application fix while retaining schema/data, or an explicitly chosen backup restoration with its loss-of-later-writes tradeoff. Do not drop tables or reset data to roll back. No production migration/deployment is authorized.
 
-The browser runner uses `http://127.0.0.1:3100`, synthetic `@university.test` addresses and an in-memory test mailbox. It covers sign-in, profile, logout, communities, posts, comments/replies, voting and notifications, including adversarial access, forged sessions/authority and stored-script checks, then stops its servers.
+The browser runner uses `http://127.0.0.1:3100`, synthetic `@university.test` addresses and an in-memory test mailbox. It covers sign-in, profile, logout, communities, posts, comments/replies, voting, notifications and archive search, including adversarial access, forged sessions/authority and stored-script checks, then stops its servers.
 
 The guarded identity suite also checks real Chromium page zoom at 200% and 400%, including 320 CSS-pixel reflow and form interactions in both languages. It uses the original permission-free extension under `tests/e2e/fixtures/page-zoom` in a disposable browser profile; it does not use or install anything in a personal browser profile. Zoom factor, viewport width and pixel ratio are verified after route changes. This automated check does not replace headed browser, screen-reader or usability evaluation.
 
@@ -163,6 +164,7 @@ Replace `{locale}` with `en` or `ar`:
 | `/{locale}/verify` | Confirm the link |
 | `/{locale}/profile` | Save your own name, set notification preferences and log out |
 | `/{locale}/notifications` | Read your current community notifications and mark them read |
+| `/{locale}/archive` | Search currently readable post/comment text in English and Arabic |
 | `/{locale}/communities` | Discover and create communities |
 | `/{locale}/communities/{id}` | View a community, manage membership and create/read posts |
 | `/{locale}/communities/{id}/posts/{postId}` | Read one permitted post and its comments; eligible members can comment |
@@ -170,6 +172,8 @@ Replace `{locale}` with `en` or `ar`:
 Protected flows require interactive dev, the explicit localhost preview or a synthetic runner. Check both languages, Arabic RTL, keyboard focus, validation messages and mobile widths. `/fr` should return 404; the current generic 404 page is English.
 
 ## Security and release limits
+
+- Archive search requires a verified session, with private post/comment access rechecked before excerpts are returned and whenever a result is opened. Use 2–200 characters and at most eight words; all words must occur in post title/body or one comment/reply. Matching uses literal substrings, Latin case folding and common Arabic vowel/tatweel normalization; no translation, stemming or typo correction. Results show one parent post and a labeled excerpt, newest first, 20 per page. Community/type filters are optional; each community has a scoped archive link. The dropdown shows the first 50 readable communities plus an explicitly selected one. Search has its own durable 30-attempt/15-minute budget and bounded query timeout. No new migration, extension, dependency, academic-year field or retention promise was added. Database tests keep the 10,000-post synthetic archive corpus in a separate disposable target. Current measurements are local samples, not a production scale guarantee.
 
 - Profile access is owner-only. Community/post APIs recheck sessions, membership and creator permissions on the server.
 - Comments are plain text (1–4,000 Unicode code points), oldest first in pages of 20. Publishing requires a verified session, saved profile and current membership, including comments on announcements. Verified nonmembers can read public comments; private comments require current membership. Retries recheck access; changed text under the same request ID conflicts. Comments have their own durable limit of 30 attempts per user per 15 minutes and a 32 KiB request cap. One visible reply level is supported; server-derived thread roots and direct targets must belong to the same post. Notification records are atomic with content writes; notification lists/counts/open/read actions recheck recipient ownership and current membership. No editing, deletion or uploads are included.

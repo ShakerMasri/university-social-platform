@@ -147,3 +147,8 @@ footer { padding-block: 1rem; border-block-start: 1px solid var(--line); font-si
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { scroll-behavior: auto !important; }
 }
+/* Archive uses the existing reading layout and plain-text cards. */
+.archive-form { display: grid; gap: .65rem; margin-block-end: 2rem; }
+.archive-form input, .archive-form select { inline-size: 100%; min-inline-size: 0; max-inline-size: 100%; }
+.archive-result { overflow-wrap: anywhere; }
+.archive-excerpt { white-space: pre-wrap; }

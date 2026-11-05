@@ -5,6 +5,7 @@ import { identityText } from "@/i18n/identity";
 import { communityText } from "@/i18n/communities";
 import { notificationText } from "@/i18n/notifications";
 import { interfaceText } from "@/i18n/interface";
+import { archiveText } from "@/i18n/archive";
 
 export function SiteHeader({ locale, path = "", accountNavigation = false }: { locale: Locale; path?: string; accountNavigation?: boolean }) {
   const text = dictionaries[locale];
@@ -19,6 +20,7 @@ export function SiteHeader({ locale, path = "", accountNavigation = false }: { l
     </div>
     {accountNavigation && <nav aria-label={interfaceText[locale].navigation} className="primary-navigation">
       <Link prefetch={false} href={`/${locale}/communities`} aria-current={path === "communities" ? "page" : path.startsWith("communities/") ? "location" : undefined}>{communityText[locale].title}</Link>
+      <Link prefetch={false} href={`/${locale}/archive`} aria-current={path.split("?")[0] === "archive" ? "page" : undefined}>{archiveText[locale].title}</Link>
       <Link prefetch={false} href={`/${locale}/notifications`} aria-current={path === "notifications" ? "page" : undefined}>{notificationText[locale].title}</Link>
       <Link prefetch={false} href={`/${locale}/profile`} aria-current={path === "profile" ? "page" : undefined}>{identityText[locale].profile}</Link>
     </nav>}
