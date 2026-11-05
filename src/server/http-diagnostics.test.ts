@@ -60,4 +60,10 @@ describe("operational failure boundaries", () => {
     expect((await GET(request(), params)).status).toBe(503);
     expect(errors).not.toHaveBeenCalled();
   });
+  it("identifies archive failures without logging queries, content or provider errors", async () => {
+    const response = await communityHTTP(request(), async () => { throw sensitiveFailure; }, "archive.http.failed");
+    expect(response.status).toBe(503);
+    expect(await response.json()).toEqual({ ok: false });
+    expect(errors.mock.calls).toEqual([[JSON.stringify({ level: "error", event: "archive.http.failed" })]]);
+  });
 });

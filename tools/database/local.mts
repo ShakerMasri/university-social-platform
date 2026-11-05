@@ -277,7 +277,7 @@ async function setup() {
 async function test(m: LocalManifest) {
   verifyResources(m);
   // Two complete-history databases and populated Unicode/M2/community/posts upgrade fixtures.
-  const records: DatabaseRecord[] = [0, 1, 2, 3, 4, 5, 6, 7, 8].map(() => ({
+  const records: DatabaseRecord[] = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9].map(() => ({
     name: `usp_m1b_${m.owner}_test_${randomBytes(6).toString("hex")}`, kind: "test", ready: false,
   }));
   m.databases.push(...records);
@@ -285,11 +285,11 @@ async function test(m: LocalManifest) {
   try {
     for (const [index, record] of records.entries()) {
       await createDatabase(m, record);
-      if (index < 2) await migrate(m, record.name);
+      if (index < 2 || index === 9) await migrate(m, record.name);
     }
     const result = spawnSync(process.execPath, ["node_modules/vitest/vitest.mjs", "run", "--config", "vitest.database.config.mjs"], {
       env: { ...process.env, M1B_TEST_DATABASE: records[0].name, M1B_REPLAY_DATABASE: records[1].name,
-        M1B_UPGRADE_DATABASE: records[2].name, M2_UPGRADE_DATABASE: records[3].name, M3_UPGRADE_DATABASE: records[4].name, M3_POSTS_UPGRADE_DATABASE: records[5].name, M3_COMMENTS_UPGRADE_DATABASE: records[6].name, M3_VOTES_UPGRADE_DATABASE: records[7].name, M3_NOTIFICATIONS_UPGRADE_DATABASE: records[8].name },
+        M1B_UPGRADE_DATABASE: records[2].name, M2_UPGRADE_DATABASE: records[3].name, M3_UPGRADE_DATABASE: records[4].name, M3_POSTS_UPGRADE_DATABASE: records[5].name, M3_COMMENTS_UPGRADE_DATABASE: records[6].name, M3_VOTES_UPGRADE_DATABASE: records[7].name, M3_NOTIFICATIONS_UPGRADE_DATABASE: records[8].name, M4_ARCHIVE_DATABASE: records[9].name },
       encoding: "utf8", windowsHide: true,
     });
     process.stdout.write(result.stdout ?? "");
@@ -336,6 +336,11 @@ async function test(m: LocalManifest) {
 }
 
 async function identityBrowser(m: LocalManifest) {
+  // The empty-discovery checkpoint needs a pristine target even when comments
+  // run before communities. Keep all assertions, with separate fixture scopes.
+  for (const group of ["empty", "main", "archive"] as const) await identityBrowserGroup(m, group);
+}
+async function identityBrowserGroup(m: LocalManifest, group: "empty" | "main" | "archive") {
   verifyResources(m);
   const controlPath = resolve(".cache/m2-browser.json");
   if (existsSync(controlPath)) throw new Error("Existing identity browser control file requires inspection; not overwritten");
@@ -345,7 +350,7 @@ async function identityBrowser(m: LocalManifest) {
     await createDatabase(m, record);
     await migrate(m, record.name);
     const result = spawnSync(process.execPath, ["tools/testing/run-playwright.mts", "test"], {
-      env: { ...process.env, M2_IDENTITY_E2E: "1", M2_BROWSER_DATABASE: record.name },
+      env: { ...process.env, M2_IDENTITY_E2E: "1", M2_BROWSER_GROUP: group, M2_BROWSER_DATABASE: record.name },
       // The opt-in manual helper prints instructions before each Inspector pause.
       // Buffered output would hide them until the session had already ended.
       ...(process.env.USP_MANUAL_REVIEW === "1" && !process.env.CI ? { stdio: "inherit" as const } : {}),

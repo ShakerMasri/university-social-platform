@@ -1,8 +1,15 @@
 import { defineConfig, devices } from "@playwright/test";
+const authenticated = process.env.M2_IDENTITY_E2E === "1";
+const archiveOnly = authenticated && process.env.M2_BROWSER_GROUP === "archive";
+const emptyOnly = authenticated && process.env.M2_BROWSER_GROUP === "empty";
+const emptyDiscovery = /empty community discovery is localized in English and Arabic/;
 
 export default defineConfig({
   testDir: "./tests/e2e",
-  testIgnore: process.env.M2_IDENTITY_E2E === "1" ? ["**/identity-disabled.spec.ts"] : ["**/identity.spec.ts", "**/communities.spec.ts", "**/posts.spec.ts", "**/comments.spec.ts", "**/votes.spec.ts", "**/replies-notifications.spec.ts", "**/ui-layout.spec.ts", "**/ui-zoom.spec.ts", "**/discussion-actions.spec.ts"],
+  testMatch: archiveOnly ? ["**/archive.spec.ts"] : emptyOnly ? ["**/communities.spec.ts"] : undefined,
+  grep: emptyOnly ? emptyDiscovery : undefined,
+  grepInvert: authenticated && !emptyOnly ? emptyDiscovery : undefined,
+  testIgnore: process.env.M2_IDENTITY_E2E === "1" ? ["**/identity-disabled.spec.ts", ...(archiveOnly ? [] : ["**/archive.spec.ts"])] : ["**/identity.spec.ts", "**/communities.spec.ts", "**/posts.spec.ts", "**/comments.spec.ts", "**/votes.spec.ts", "**/replies-notifications.spec.ts", "**/ui-layout.spec.ts", "**/ui-zoom.spec.ts", "**/discussion-actions.spec.ts", "**/archive.spec.ts"],
   forbidOnly: Boolean(process.env.CI),
   retries: 0,
   workers: 1,

@@ -12,6 +12,7 @@ import { MembershipControls } from "../forms";
 import { listPosts } from "@/server/posts/service";
 import { postText } from "@/i18n/posts";
 import { PostsList } from "./posts-list";
+import { archiveText } from "@/i18n/archive";
 export const dynamic = "force-dynamic";
 export default async function CommunityPage({ params, searchParams }: { params: Promise<{ locale: string; id: string }>; searchParams: Promise<{ after?: string; postAfter?: string }> }) {
   const { locale, id } = await params;
@@ -35,6 +36,7 @@ export default async function CommunityPage({ params, searchParams }: { params: 
       <div className="page-heading"><h1><bdi>{community.name}</bdi></h1><p dir="auto" className="community-description">{community.description}</p>
       <p className="card-meta"><span className="badge">{community.visibility === "PUBLIC" ? text.public : text.private}</span>{community.isOwner ? text.owner : community.membership === "MEMBER" ? text.joined : ""}</p></div>
       <p>{text.space}</p>
+      <p><Link prefetch={false} href={`/${locale}/archive?community=${id}`}>{archiveText[locale].scoped}</Link></p>
       {posts && <section aria-labelledby="posts-heading"><h2 id="posts-heading">{postText[locale].title}</h2>
         <PostsList key={`${id}:${postAfter ?? ""}`} locale={locale} communityId={id} initial={posts} />
         <noscript>{posts.next && <p><Link prefetch={false} href={`/${locale}/communities/${id}?postAfter=${posts.next}`}>{postText[locale].next}</Link></p>}</noscript>

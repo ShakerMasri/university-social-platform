@@ -25,6 +25,10 @@ export function authorized<T>(db: PrismaClient, token: unknown, run: (tx: Transa
   });
 }
 export async function mutating<T>(db: PrismaClient, token: unknown, run: (tx: Transaction, userId: string) => Promise<T>, requireProfile = false, budget = "m3-community-write") {
+  await reserveAttempt(db, token, budget, requireProfile);
+  return authorized(db, token, run, requireProfile);
+}
+export async function reserveAttempt(db: PrismaClient, token: unknown, budget: string, requireProfile = false) {
   // Reserve attempts separately: a rejected write cannot roll back its budget.
   // Reuse the existing bounded counter table under a disjoint opaque user key.
   const allowed = await authorized(db, token, async (tx, userId) => {
@@ -38,7 +42,6 @@ export async function mutating<T>(db: PrismaClient, token: unknown, run: (tx: Tr
     return true;
   }, requireProfile);
   if (!allowed) throw new CommunityError(429);
-  return authorized(db, token, run, requireProfile);
 }
 async function lockedCommunity(tx: Transaction, id: string, write: boolean) {
   // Prisma 7 has no row-lock query option. Transaction-scoped advisory locks

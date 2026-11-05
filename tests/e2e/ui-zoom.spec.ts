@@ -6,6 +6,7 @@ import { syntheticTokenFor } from "./synthetic-mail";
 import { readManifest, databaseUrl, assertDatabaseIdentity } from "../../tools/database/targets";
 import { communityText } from "../../src/i18n/communities";
 import { identityText } from "../../src/i18n/identity";
+import { archiveText } from "../../src/i18n/archive";
 
 test.use({ trace: "off", screenshot: "off", video: "off" });
 const origin = "http://127.0.0.1:3100";
@@ -101,7 +102,7 @@ for (const locale of ["en", "ar"] as const) {
         await setBrowserZoom(worker, factor);
         const measurement = await expectZoomMeasurement(page, baseline, factor);
         console.log(`${locale} native zoom ${factor * 100}%: ${JSON.stringify(measurement)}`);
-        for (const path of ["", "signin", "verify", "profile", "communities", `communities/${id}`, `communities/${id}/posts/${postId}`, "notifications"]) {
+        for (const path of ["", "signin", "verify", "profile", "communities", `communities/${id}`, `communities/${id}/posts/${postId}`, "notifications", "archive"]) {
           await page.goto(`/${locale}/${path}`);
           await expect(page.getByRole("heading", { level: 1 })).toBeVisible();
           await expectZoomMeasurement(page, baseline, factor);
@@ -128,6 +129,12 @@ for (const locale of ["en", "ar"] as const) {
         await page.getByRole("button", { name: identityText[locale].save, exact: true }).click();
         await expect(page.locator("#identity-feedback")).toHaveText(identityText[locale].saved);
         await expectZoomMeasurement(page, baseline, factor);
+        await expectPageFits(page);
+        await page.goto(`/${locale}/archive?community=${id}`);
+        await page.getByLabel(archiveText[locale].query, { exact: true }).fill("Concurrency");
+        await page.getByRole("button", { name: archiveText[locale].submit, exact: true }).focus(); await page.keyboard.press("Enter");
+        await expect(page.locator(".archive-result")).toHaveCount(1);
+        await expect(page.getByRole("heading", { name: archiveText[locale].results, exact: true })).toBeFocused();
         await expectPageFits(page);
       }
     } finally { await context.close(); }
