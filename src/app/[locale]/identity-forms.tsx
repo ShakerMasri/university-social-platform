@@ -1,9 +1,10 @@
 "use client";
 
 import Link from "next/link";
-import { Fragment, useEffect, useState, type FormEvent } from "react";
+import { Fragment, useEffect, useRef, useState, type FormEvent } from "react";
 import type { Locale } from "@/i18n/locales";
 import { identityText } from "@/i18n/identity";
+import { peopleText } from "@/i18n/people";
 import { capturePendingConfirmation, clearPendingConfirmation, pendingConfirmationToken } from "./pending-confirmation";
 import { useHydrated } from "@/app/use-hydrated";
 
@@ -17,7 +18,7 @@ async function post(operation: string, data: object) {
 function useFeedback() {
   const [message, setMessage] = useState("");
   const show = (value: string) => { setMessage(value); requestAnimationFrame(() => document.getElementById("identity-feedback")?.focus()); };
-  return { message, show };
+  return { message, show, clear: () => setMessage("") };
 }
 
 function SyntheticEmailHint({ text }: { text: string }) {
@@ -101,18 +102,32 @@ export function ConfirmationForm({ locale }: { locale: Locale }) {
   </>;
 }
 
-export function ProfileForm({ locale, profile }: { locale: Locale; profile: { email: string; displayName: string | null } }) {
+export function ProfileForm({ locale, profile }: { locale: Locale; profile: { email: string; displayName: string | null; directoryVisible: boolean; suggestion: string } }) {
   const hydrated = useHydrated();
   const text = identityText[locale];
-  const [name, setName] = useState(profile.displayName ?? "");
+  const people = peopleText[locale];
+  const [name, setName] = useState(profile.displayName ?? `${people.suggestion} ${profile.suggestion}`);
+  const [visible, setVisible] = useState(profile.directoryVisible);
+  const pending = useRef<AbortController | null>(null);
+  useEffect(() => () => { const request = pending.current; pending.current = null; request?.abort(); }, []);
   const [busy, setBusy] = useState(false);
   const feedback = useFeedback();
   async function submit(event: FormEvent) {
-    event.preventDefault(); setBusy(true);
-    const result = await post("profile", { displayName: name });
+    event.preventDefault(); feedback.clear(); setBusy(true);
+    const controller = new AbortController(); pending.current = controller;
+    const timeout = setTimeout(() => controller.abort(), 15_000);
+    let result = { ok: false, status: 503 };
+    try {
+      const response = await fetch("/api/people/profile", { method: "PUT", headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ displayName: name, directoryVisible: visible }), cache: "no-store", signal: controller.signal });
+      result = { ok: response.ok, status: response.status };
+    } catch { /* Keep the draft for an explicit retry; no persistence is claimed. */ }
+    finally { clearTimeout(timeout); }
+    if (pending.current !== controller) return;
+    pending.current = null;
     setBusy(false);
     if (result.status === 401) window.location.assign(`/${locale}/signin`);
-    else feedback.show(result.ok ? text.saved : result.status === 400 ? text.invalidName : text.failed);
+    else feedback.show(result.ok ? text.saved : result.status === 400 ? text.invalidName : result.status === 429 ? people.rate : text.failed);
   }
   async function endSession() {
     setBusy(true);
@@ -124,8 +139,11 @@ export function ProfileForm({ locale, profile }: { locale: Locale; profile: { em
     <h1>{text.profile}</h1><p>{text.email}: <bdi dir="ltr">{profile.email}</bdi></p><p>{text.private}</p>
     <form onSubmit={submit} aria-busy={busy}>
       <label htmlFor="display-name">{text.name}</label>
-      <input disabled={!hydrated} id="display-name" name="displayName" dir="auto" autoComplete="nickname" value={name} onChange={(event) => setName(event.target.value)} required aria-describedby="name-hint" />
+      <input disabled={busy || !hydrated} id="display-name" name="displayName" dir="auto" autoComplete="nickname" value={name} onChange={(event) => setName(event.target.value)} required aria-describedby="name-hint" />
       <p id="name-hint">{text.nameHint}</p>
+      {profile.displayName === null && <p className="field-hint">{people.suggestionHint}</p>}
+      <label><input type="checkbox" checked={visible} disabled={busy || !hydrated} onChange={event => setVisible(event.target.checked)} aria-describedby="directory-visibility-hint" />{people.visible}</label>
+      <p id="directory-visibility-hint" className="field-hint">{people.visibilityHint}</p>
       <button disabled={busy || !hydrated} type="submit">{busy ? text.busy : text.save}</button>
     </form>
     <p id="identity-feedback" role="status" tabIndex={-1}>{feedback.message}</p>

@@ -44,6 +44,13 @@ export async function verifyDevelopmentLifecycle(page: Page, context: BrowserCon
   const before = page.url();
   const profileBefore = await context.request.get("/api/identity/profile");
   expect(profileBefore.status()).toBe(200);
+  const profileData = await profileBefore.json(), directoryName = profileData.displayName as string;
+  expect(typeof directoryName === "string" && directoryName.length > 0).toBe(true);
+  const directorySave = await context.request.put("/api/people/profile", { data: { displayName: directoryName, directoryVisible: true }, headers: { Origin: new URL(before).origin } });
+  expect(directorySave.status()).toBe(200);
+  const directoryPath = `/api/people?q=${encodeURIComponent(directoryName)}`;
+  const directoryBefore = await context.request.get(directoryPath); expect(directoryBefore.status()).toBe(200);
+  const directoryData = await directoryBefore.json(); expect(directoryData.items.length > 0).toBe(true);
 
   const controlPath = resolve(".cache/m2-preview-check.json");
   async function stop() {
@@ -77,7 +84,9 @@ export async function verifyDevelopmentLifecycle(page: Page, context: BrowserCon
     expect(profileAfter.status()).toBe(200);
     // Boolean assertions keep even synthetic profile/session response data out
     // of failure reports.
-    expect(JSON.stringify(await profileAfter.json()) === JSON.stringify(await profileBefore.json())).toBe(true);
+    expect(JSON.stringify(await profileAfter.json()) === JSON.stringify(profileData)).toBe(true);
+    const directoryAfter = await context.request.get(directoryPath); expect(directoryAfter.status()).toBe(200);
+    expect(JSON.stringify(await directoryAfter.json()) === JSON.stringify(directoryData)).toBe(true);
   } finally {
     try {
       if (replacement && existsSync(controlPath)) await stop();

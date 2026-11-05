@@ -9,7 +9,7 @@ export default defineConfig({
   testMatch: archiveOnly ? ["**/archive.spec.ts"] : emptyOnly ? ["**/communities.spec.ts"] : undefined,
   grep: emptyOnly ? emptyDiscovery : undefined,
   grepInvert: authenticated && !emptyOnly ? emptyDiscovery : undefined,
-  testIgnore: process.env.M2_IDENTITY_E2E === "1" ? ["**/identity-disabled.spec.ts", ...(archiveOnly ? [] : ["**/archive.spec.ts"])] : ["**/identity.spec.ts", "**/communities.spec.ts", "**/posts.spec.ts", "**/comments.spec.ts", "**/votes.spec.ts", "**/replies-notifications.spec.ts", "**/ui-layout.spec.ts", "**/ui-zoom.spec.ts", "**/discussion-actions.spec.ts", "**/archive.spec.ts"],
+  testIgnore: process.env.M2_IDENTITY_E2E === "1" ? ["**/identity-disabled.spec.ts", ...(archiveOnly ? [] : ["**/archive.spec.ts"])] : ["**/identity.spec.ts", "**/communities.spec.ts", "**/posts.spec.ts", "**/comments.spec.ts", "**/votes.spec.ts", "**/replies-notifications.spec.ts", "**/ui-layout.spec.ts", "**/ui-zoom.spec.ts", "**/discussion-actions.spec.ts", "**/archive.spec.ts", "**/people.spec.ts"],
   forbidOnly: Boolean(process.env.CI),
   retries: 0,
   workers: 1,

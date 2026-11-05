@@ -14,6 +14,11 @@ test("ordinary startup leaves synthetic identity disabled", async ({ request, pa
   await expect(page.getByRole("textbox")).toHaveCount(0);
   expect((await request.get("/api/communities")).status()).toBe(503);
   expect((await request.get("/api/archive?q=study")).status()).toBe(503);
+  expect((await request.get("/api/people?q=Member")).status()).toBe(503);
+  expect((await request.put("/api/people/profile", { data: { displayName: "Member", directoryVisible: true }, headers: { Origin: "http://127.0.0.1:3100" } })).status()).toBe(503);
+  await page.goto("/en/people");
+  await expect(page.getByRole("main").getByRole("alert")).toBeVisible();
+  await expect(page.getByRole("textbox")).toHaveCount(0);
   await page.goto("/en/archive");
   await expect(page.getByRole("main").getByRole("alert")).toBeVisible();
   await expect(page.getByRole("textbox")).toHaveCount(0);

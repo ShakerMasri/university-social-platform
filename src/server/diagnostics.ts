@@ -8,7 +8,9 @@ export type OperationalEvent =
   | "comments.page.failed"
   | "notifications.page.failed"
   | "archive.page.failed"
-  | "archive.http.failed";
+  | "archive.http.failed"
+  | "profiles.http.failed"
+  | "profiles.page.failed";
 
 // Fixed event names identify the failing boundary. Never accept an Error,
 // request, URL, headers, query, user identifier or provider-supplied message.

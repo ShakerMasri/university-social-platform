@@ -2,6 +2,8 @@ import "server-only";
 import { reportOperationalFailure } from "../diagnostics.ts";
 import type { Prisma, PrismaClient } from "../../generated/prisma/client.ts";
 import { validateDisplayName } from "../database/validation.ts";
+import { lockDirectoryProfile } from "../profiles/locking.ts";
+import { consumeUserAttempt } from "./attempt-budget.ts";
 import { challengeLifetime, sessionLifetime, digest, eligibleEmail, ipLimit, ipWindow, keyedDigest, newToken, tokenValid } from "./policy.ts";
 
 type Transaction = Prisma.TransactionClient;
@@ -154,19 +156,39 @@ export function ownProfile(db: PrismaClient, token: unknown) {
 }
 
 class ProfileSessionExpired extends Error {}
+export class ProfileSaveRateLimited extends Error {
+  readonly status = 429;
+  constructor() { super("Profile save unavailable"); }
+}
 
-export function updateOwnProfile(db: PrismaClient, token: unknown, name: unknown) {
+export function updateOwnProfile(db: PrismaClient, token: unknown, name: unknown, directoryVisible?: boolean) {
   const displayName = validateDisplayName(name);
-  return db.$transaction(async (tx) => {
+  if (directoryVisible !== undefined && typeof directoryVisible !== "boolean") throw new Error("Invalid profile visibility");
+  // Every public profile-save path reaches this reservation exactly once.
+  // Commit it independently so a later rejected/failed write cannot erase it.
+  const reservation = db.$transaction(async (tx) => {
     const access = await sessionInTransaction(tx, token);
-    if (!access) return false;
-    const userId = access.session.userId; // Ownership comes only from the live session.
-    await tx.profile.upsert({ where: { userId }, create: { userId, displayName }, update: { displayName } });
-    // The session row stays locked against revocation, but time can advance
-    // during the profile write's lock wait. Throw to roll back; returning false
-    // here would commit the unauthorized write.
+    if (!access) return null;
+    const allowed = await consumeUserAttempt(tx, access.session.userId, "m4-profile-save");
     if (access.session.expiresAt <= await time(tx)) throw new ProfileSessionExpired();
-    return true;
+    return allowed;
+  });
+  return reservation.then((allowed) => {
+    if (allowed === null) return false;
+    if (!allowed) throw new ProfileSaveRateLimited();
+    return db.$transaction(async (tx) => {
+      const access = await sessionInTransaction(tx, token);
+      if (!access) return false;
+      const userId = access.session.userId; // Ownership comes only from the live session.
+      await lockDirectoryProfile(tx, userId, true);
+      const visibility = directoryVisible === undefined ? {} : { directoryVisible };
+      await tx.profile.upsert({ where: { userId }, create: { userId, displayName, ...visibility }, update: { displayName, ...visibility } });
+      // The session row stays locked against revocation, but time can advance
+      // during the profile write's lock wait. Throw to roll back; returning false
+      // here would commit the unauthorized write.
+      if (access.session.expiresAt <= await time(tx)) throw new ProfileSessionExpired();
+      return true;
+    });
   }).catch((error: unknown) => {
     if (error instanceof ProfileSessionExpired) return false;
     throw error; // Database/commit failures must still reach the safe 503 boundary.

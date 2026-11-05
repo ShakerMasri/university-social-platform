@@ -36,6 +36,8 @@ model User {
 model Profile {
   userId      String   @id @db.Uuid
   displayName String   @db.VarChar(60)
+  directoryId String   @unique @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  directoryVisible Boolean @default(false)
   createdAt   DateTime @default(now()) @db.Timestamptz(3)
   updatedAt   DateTime @updatedAt @db.Timestamptz(3)
   user        User     @relation(fields: [userId], references: [id], onDelete: Restrict, onUpdate: Restrict)

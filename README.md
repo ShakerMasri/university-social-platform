@@ -16,9 +16,10 @@ A Computer Engineering graduation project for university students and teachers t
 | M3, voting slice | Member signed votes on posts/comments/replies, separate up/down totals and safe retries | Implemented and tested locally |
 | M3, replies/notifications slice | Flat reply threads, in-app inbox/read actions and profile preferences | Implemented and tested locally |
 | M4, first archive slice | Permission-aware English/Arabic post/comment search, community/type filters and signed pagination | Implemented and verified locally; not deployed |
+| M4, profiles and People | Editable default names, confirmed directory visibility and verified-user profile search across communities | Implemented locally; verification recorded in the project brief; not deployed |
 | Local development | Interactive synthetic sign-in through posts with hot reload and persistent data | Implemented and tested locally |
 
-**Nothing is deployed.** Live university email is not connected. Post/comment editing/deletion, direct messages, a personalized study feed and AI are still pending. See the [archive checkpoint](docs/project-brief.md#first-archive-slice--implementation-and-verification), [replies and notifications checkpoint](docs/project-brief.md#replies-and-in-app-notifications--local-checkpoint-2026-10-28), [workflow checkpoint](docs/project-brief.md#interactive-development-workflow--2026-10-27), [comments checkpoint](docs/project-brief.md#createread-comments--approved-2026-10-27) and [voting checkpoint](docs/project-brief.md#postcomment-upvotes--approved-2026-10-27) for verification.
+**Nothing is deployed.** Live university email is not connected. Post/comment editing/deletion, direct messages, a personalized study feed and AI are still pending. See the [profiles/People checkpoint](docs/project-brief.md#profiles-and-people-discovery--planned-before-messaging), [archive checkpoint](docs/project-brief.md#first-archive-slice--implementation-and-verification), [replies and notifications checkpoint](docs/project-brief.md#replies-and-in-app-notifications--local-checkpoint-2026-10-28), [workflow checkpoint](docs/project-brief.md#interactive-development-workflow--2026-10-27), [comments checkpoint](docs/project-brief.md#createread-comments--approved-2026-10-27) and [voting checkpoint](docs/project-brief.md#postcomment-upvotes--approved-2026-10-27) for verification.
 
 The next main milestone is **M4: study-relevant discovery, searchable archive and direct text messaging**. Live email/recovery are M2 follow-ups; manual accessibility/usability evaluation and real-user lifecycle/release decisions remain open. See the [current M3 completion record](docs/project-brief.md#m3-completion-and-next-milestone--2026-11-03) for scope and evidence.
 
@@ -59,6 +60,10 @@ Open [English sign-in](http://localhost:3000/en/signin) or [Arabic sign-in](http
 4. Use another browser/incognito window with `bob@university.test` for a separate account.
 
 Posts and comments load more as you scroll, with a **Load more** button for keyboard access and retry. Confirmed comments appear beside the composer immediately, including in long threads; their **Just published** entries join the ordinary list as scrolling reaches them. Comments read oldest first; posts read newest first. Dedicated “For you” and “Your communities” feeds remain a discovery-design decision.
+
+Your profile suggests an editable **Member** / **عضو** name if you have not saved one. The suggestion contains no part of your email and creates no profile until saved. Existing names are preserved. To join the People directory, select **Let verified signed-in users find and open my profile** and save. This option starts off for every existing/new profile. Turn it off and save to hide the directory profile; names already shown on permitted posts/comments remain visible there. Your email stays private.
+
+Open **People** to search confirmed display names in either English or Arabic, including accounts with no shared community. Enter 2–60 characters; matching ignores Latin case and the archive's common Arabic marks/tatweel, using literal contiguous text. Names may be shared by several people; each profile has its own stable destination. Results have explicit next/retry buttons, with no email lookup or member lists. Hiding a profile affects fresh search/direct reads but cannot recall text already delivered to a browser. There is no messaging action in this checkpoint. Profile search/reads are limited to 30 requests per 15 minutes per account; profile saves have a separate 30-request budget.
 
 Current members can use the **Upvote** and **Downvote** arrow icons on other people's posts, comments and replies. Each arrow has its own total; the selected arrow is filled and the other is outlined. Switching replaces your vote; clicking the active direction clears it. Pressed state and totals update after confirmation; **Retry vote** repeats the same choice after a lost response. A saved profile is not required for voting; authors cannot vote on their own content. Voter identities are not shown, and votes do not change list order or establish correctness. Totals and inbox contents refresh on reads/actions; realtime updates are not included.
 
@@ -146,6 +151,8 @@ Voting originally added `20261027010000_m3_votes`; replies/notifications added `
 
 Use the same generate → review → migrate → restart sequence above. Stop the app and take a verified local backup before migrating data you want to keep. The migration preserves IDs, content, memberships, existing notifications and preferences. Older upvote-only code counts neutral/downvote rows incorrectly and may attempt forbidden deletion: recovery requires a compatible application fix while retaining schema/data, or an explicitly chosen backup restoration with its loss-of-later-writes tradeoff. Do not drop tables or reset data to roll back. No production migration/deployment is authorized.
 
+People adds `20261105000000_m4_people`: an independent random directory UUID and `directoryVisible = false` on each profile. It preserves names/timestamps/attribution and enrolls nobody automatically. Follow the same generate → review → migrate → restart sequence, taking a verified backup before applying to retained data. `db:test` adds a disposable populated-upgrade fixture and checks profile preservation during migration reapplication. Tests do not migrate development or the two retained targets. The new client/application expects the added columns; recovery should disable the feature using compatible code while retaining schema/data, rather than dropping columns or resetting profiles. `npm run dev` prepares pending local migrations before startup; an already-running app must be restarted after migration/client generation. No staging/production change is included.
+
 The browser runner uses `http://127.0.0.1:3100`, synthetic `@university.test` addresses and an in-memory test mailbox. It covers sign-in, profile, logout, communities, posts, comments/replies, voting, notifications and archive search, including adversarial access, forged sessions/authority and stored-script checks, then stops its servers.
 
 The guarded identity suite also checks real Chromium page zoom at 200% and 400%, including 320 CSS-pixel reflow and form interactions in both languages. It uses the original permission-free extension under `tests/e2e/fixtures/page-zoom` in a disposable browser profile; it does not use or install anything in a personal browser profile. Zoom factor, viewport width and pixel ratio are verified after route changes. This automated check does not replace headed browser, screen-reader or usability evaluation.
@@ -160,6 +167,8 @@ Replace `{locale}` with `en` or `ar`:
 | --- | --- |
 | `/` | Redirect to `/en` |
 | `/{locale}` | Home and language switching |
+| `/{locale}/people` | Verified-user search of confirmed display names |
+| `/{locale}/people/{id}` | Minimal currently discoverable profile, using its directory ID |
 | `/{locale}/signin` | Request a sign-in link |
 | `/{locale}/verify` | Confirm the link |
 | `/{locale}/profile` | Save your own name, set notification preferences and log out |

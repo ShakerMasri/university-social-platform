@@ -167,6 +167,8 @@ async function migrate(m: LocalManifest, name: string) {
     GRANT INSERT (id, "userId", "emailKey", "tokenDigest", "createdAt", "expiresAt") ON "EmailOwnershipChallenge" TO ${identifier(m.runtimeRole)};
     GRANT UPDATE ("emailVerifiedAt", "updatedAt") ON "User" TO ${identifier(m.runtimeRole)};
     GRANT UPDATE ("displayName", "updatedAt") ON "Profile" TO ${identifier(m.runtimeRole)};
+    GRANT INSERT ("directoryVisible") ON "Profile" TO ${identifier(m.runtimeRole)};
+    GRANT UPDATE ("directoryVisible") ON "Profile" TO ${identifier(m.runtimeRole)};
     GRANT UPDATE ("consumedAt", "revokedAt") ON "EmailOwnershipChallenge" TO ${identifier(m.runtimeRole)};
     GRANT INSERT ("browserDigest") ON "EmailOwnershipChallenge" TO ${identifier(m.runtimeRole)};
     GRANT SELECT ON "Session", "IdentityRateLimit" TO ${identifier(m.runtimeRole)};
@@ -277,7 +279,7 @@ async function setup() {
 async function test(m: LocalManifest) {
   verifyResources(m);
   // Two complete-history databases and populated Unicode/M2/community/posts upgrade fixtures.
-  const records: DatabaseRecord[] = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9].map(() => ({
+  const records: DatabaseRecord[] = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map(() => ({
     name: `usp_m1b_${m.owner}_test_${randomBytes(6).toString("hex")}`, kind: "test", ready: false,
   }));
   m.databases.push(...records);
@@ -289,7 +291,7 @@ async function test(m: LocalManifest) {
     }
     const result = spawnSync(process.execPath, ["node_modules/vitest/vitest.mjs", "run", "--config", "vitest.database.config.mjs"], {
       env: { ...process.env, M1B_TEST_DATABASE: records[0].name, M1B_REPLAY_DATABASE: records[1].name,
-        M1B_UPGRADE_DATABASE: records[2].name, M2_UPGRADE_DATABASE: records[3].name, M3_UPGRADE_DATABASE: records[4].name, M3_POSTS_UPGRADE_DATABASE: records[5].name, M3_COMMENTS_UPGRADE_DATABASE: records[6].name, M3_VOTES_UPGRADE_DATABASE: records[7].name, M3_NOTIFICATIONS_UPGRADE_DATABASE: records[8].name, M4_ARCHIVE_DATABASE: records[9].name },
+        M1B_UPGRADE_DATABASE: records[2].name, M2_UPGRADE_DATABASE: records[3].name, M3_UPGRADE_DATABASE: records[4].name, M3_POSTS_UPGRADE_DATABASE: records[5].name, M3_COMMENTS_UPGRADE_DATABASE: records[6].name, M3_VOTES_UPGRADE_DATABASE: records[7].name, M3_NOTIFICATIONS_UPGRADE_DATABASE: records[8].name, M4_ARCHIVE_DATABASE: records[9].name, M4_PEOPLE_UPGRADE_DATABASE: records[10].name },
       encoding: "utf8", windowsHide: true,
     });
     process.stdout.write(result.stdout ?? "");
@@ -302,6 +304,7 @@ async function test(m: LocalManifest) {
     await client.connect();
     try {
       const before = await client.query('SELECT id, email, "emailKey" FROM "User" ORDER BY id');
+      const profilesBefore = await client.query('SELECT * FROM "Profile" ORDER BY "userId"');
       const communityBefore = await client.query('SELECT * FROM "Community" ORDER BY id');
       const postBefore = await client.query('SELECT * FROM "Post" ORDER BY id');
       const commentBefore = await client.query('SELECT * FROM "Comment" ORDER BY id');
@@ -312,6 +315,7 @@ async function test(m: LocalManifest) {
       const membershipBefore = await client.query('SELECT * FROM "CommunityMembership" ORDER BY "communityId", "userId"');
       await migrate(m, records[0].name);
       const after = await client.query('SELECT id, email, "emailKey" FROM "User" ORDER BY id');
+      const profilesAfter = await client.query('SELECT * FROM "Profile" ORDER BY "userId"');
       const communityAfter = await client.query('SELECT * FROM "Community" ORDER BY id');
       const postAfter = await client.query('SELECT * FROM "Post" ORDER BY id');
       const commentAfter = await client.query('SELECT * FROM "Comment" ORDER BY id');
@@ -322,8 +326,8 @@ async function test(m: LocalManifest) {
       const membershipAfter = await client.query('SELECT * FROM "CommunityMembership" ORDER BY "communityId", "userId"');
       if (!before.rows.length || !communityBefore.rows.length || !membershipBefore.rows.length || !postBefore.rows.length ||
           !commentBefore.rows.length || !postVotesBefore.rows.length || !commentVotesBefore.rows.length ||
-          JSON.stringify([before.rows, communityBefore.rows, membershipBefore.rows, postBefore.rows, commentBefore.rows, postVotesBefore.rows, commentVotesBefore.rows, notificationsBefore.rows, preferencesBefore.rows]) !==
-          JSON.stringify([after.rows, communityAfter.rows, membershipAfter.rows, postAfter.rows, commentAfter.rows, postVotesAfter.rows, commentVotesAfter.rows, notificationsAfter.rows, preferencesAfter.rows])) {
+          JSON.stringify([before.rows, profilesBefore.rows, communityBefore.rows, membershipBefore.rows, postBefore.rows, commentBefore.rows, postVotesBefore.rows, commentVotesBefore.rows, notificationsBefore.rows, preferencesBefore.rows]) !==
+          JSON.stringify([after.rows, profilesAfter.rows, communityAfter.rows, membershipAfter.rows, postAfter.rows, commentAfter.rows, postVotesAfter.rows, commentVotesAfter.rows, notificationsAfter.rows, preferencesAfter.rows])) {
         throw new Error("Migration reapplication changed synthetic data");
       }
       console.log("Migration reapplication preserved populated user, community, membership, post, comment and vote records");

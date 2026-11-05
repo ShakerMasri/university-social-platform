@@ -3,7 +3,7 @@ import { reportOperationalFailure } from "@/server/diagnostics";
 import { isLocale } from "@/i18n/locales";
 import { identityDatabase, requireLocalIdentity } from "@/server/identity/local";
 import { cookieOptions, newToken, pendingCookie, sessionCookie, syntheticDomain, tokenValid } from "@/server/identity/policy";
-import { allowIP, confirmSignIn, logout, ownProfile, requestSignIn, updateOwnProfile } from "@/server/identity/service";
+import { allowIP, confirmSignIn, logout, ownProfile, ProfileSaveRateLimited, requestSignIn, updateOwnProfile } from "@/server/identity/service";
 import { normalizeEmail, validateDisplayName } from "@/server/database/validation";
 
 export const runtime = "nodejs";
@@ -99,8 +99,13 @@ export async function POST(request: NextRequest, { params }: Params) {
     const token = request.cookies.get(sessionCookie)?.value;
     if (operation === "profile") {
       try { validateDisplayName(body.displayName); } catch { return reply({ ok: false }, 400); }
-      const success = await updateOwnProfile(db, token, body.displayName);
-      return reply({ ok: success }, success ? 200 : 401);
+      try {
+        const success = await updateOwnProfile(db, token, body.displayName);
+        return reply({ ok: success }, success ? 200 : 401);
+      } catch (error) {
+        if (error instanceof ProfileSaveRateLimited) return reply({ ok: false }, 429);
+        throw error;
+      }
     }
     // False means the database authoritatively found no eligible live session.
     // Logout is idempotent in that case. An access/revocation/commit exception

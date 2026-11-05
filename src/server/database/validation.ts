@@ -27,7 +27,7 @@ export function normalizeEmail(value: unknown) {
 
 export function validateDisplayName(value: unknown): string {
   const displayName = text(value);
-  if (!displayName || [...displayName].length > DISPLAY_NAME_MAX_LENGTH) {
+  if (!displayName || [...displayName].length > DISPLAY_NAME_MAX_LENGTH || /[\p{Cc}\p{Cf}]/u.test(displayName)) {
     throw new Error("Invalid display name");
   }
   return displayName;

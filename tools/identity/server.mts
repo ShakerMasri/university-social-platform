@@ -40,7 +40,7 @@ const handler: import("node:http").RequestListener = async (request, response) =
     }
     request.headers["x-usp-peer"] = ip;
     request.headers["x-usp-peer-signature"] = keyedDigest(context.peerKey, ip);
-    if (request.url?.includes("/identity/") || request.url?.includes("/communities") || /\/(profile|verify|signin)(?:[?#]|$)/.test(request.url ?? "")) {
+    if (request.url?.includes("/identity/") || request.url?.includes("/communities") || request.url?.includes("/people") || /\/(profile|verify|signin)(?:[?#]|$)/.test(request.url ?? "")) {
       response.setHeader("Cache-Control", "private, no-store");
       response.setHeader("Referrer-Policy", "no-referrer");
     }

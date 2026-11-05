@@ -7,6 +7,7 @@ import { readManifest, databaseUrl, assertDatabaseIdentity } from "../../tools/d
 import { communityText } from "../../src/i18n/communities";
 import { identityText } from "../../src/i18n/identity";
 import { archiveText } from "../../src/i18n/archive";
+import { peopleText } from "../../src/i18n/people";
 
 test.use({ trace: "off", screenshot: "off", video: "off" });
 const origin = "http://127.0.0.1:3100";
@@ -92,6 +93,10 @@ for (const locale of ["en", "ar"] as const) {
       const token = await syntheticTokenFor(email);
       await post(context, "/api/identity/confirm", { token, locale }, 200);
       await post(context, "/api/identity/profile", { displayName: "طالب Zoom participant" }, 200);
+      expect((await context.request.put("/api/people/profile", { data: { displayName: `Zoom ${email.slice(5, 13)}`, directoryVisible: true }, headers: { Origin: origin } })).status()).toBe(200);
+      const directory = await context.request.get(`/api/people?q=${email.slice(5, 13)}`);
+      expect(directory.status()).toBe(200);
+      const directoryId = (await directory.json()).items[0].id as string;
       const { id } = await post(context, "/api/communities", { name: "Zoom مجتمع دراسة", description: "Academic learning · تعلم مشترك", visibility: "PUBLIC" });
       const { id: postId } = await post(context, `/api/communities/${id}/posts`, { requestId: randomUUID(), type: "RESOURCE", title: "التزامن Concurrency discussion", body: "MixedIdentifier".repeat(30), resourceUrl: "https://example.com/" + "reference".repeat(20) });
       await post(context, `/api/communities/${id}/posts/${postId}/comments`, { requestId: randomUUID(), body: "تعليق طويل · A thoughtful bilingual comment" });
@@ -102,7 +107,7 @@ for (const locale of ["en", "ar"] as const) {
         await setBrowserZoom(worker, factor);
         const measurement = await expectZoomMeasurement(page, baseline, factor);
         console.log(`${locale} native zoom ${factor * 100}%: ${JSON.stringify(measurement)}`);
-        for (const path of ["", "signin", "verify", "profile", "communities", `communities/${id}`, `communities/${id}/posts/${postId}`, "notifications", "archive"]) {
+        for (const path of ["", "signin", "verify", "profile", "communities", `communities/${id}`, `communities/${id}/posts/${postId}`, "notifications", "archive", "people", `people/${directoryId}`]) {
           await page.goto(`/${locale}/${path}`);
           await expect(page.getByRole("heading", { level: 1 })).toBeVisible();
           await expectZoomMeasurement(page, baseline, factor);
@@ -136,6 +141,12 @@ for (const locale of ["en", "ar"] as const) {
         await expect(page.locator(".archive-result")).toHaveCount(1);
         await expect(page.getByRole("heading", { name: archiveText[locale].results, exact: true })).toBeFocused();
         await expectPageFits(page);
+        await page.goto(`/${locale}/people`);
+        await page.getByLabel(peopleText[locale].query, { exact: true }).fill("Zoom saved");
+        await page.getByRole("button", { name: peopleText[locale].submit, exact: true }).focus(); await page.keyboard.press("Enter");
+        await expect(page.locator(".people-result").first()).toBeVisible();
+        await expect(page.getByRole("heading", { name: peopleText[locale].results, exact: true })).toBeFocused();
+        await expectZoomMeasurement(page, baseline, factor); await expectPageFits(page);
       }
     } finally { await context.close(); }
   });

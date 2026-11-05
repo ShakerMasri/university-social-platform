@@ -256,7 +256,8 @@ for (const locale of ["en", "ar"] as const) {
     await signIn(context);
     await page.goto(`/${locale}/profile`);
     const name = page.getByLabel(identity.name, { exact: true });
-    await expect(name).toHaveValue("");
+    const suggestion = await name.inputValue();
+    expect(suggestion).toMatch(locale === "ar" ? /^عضو [0-9A-F]{10}$/ : /^Member [0-9A-F]{10}$/);
     await expect(page.locator("html")).toHaveAttribute("lang", locale);
     await expect(page.locator("html")).toHaveAttribute("dir", locale === "ar" ? "rtl" : "ltr");
     // The marker survives client navigation/save, but would disappear on a reload.
@@ -274,18 +275,18 @@ for (const locale of ["en", "ar"] as const) {
     const profile = page.getByRole("link", { name: text.profile, exact: true });
     await profile.focus(); await expect(profile).toBeFocused(); await page.keyboard.press("Enter");
     await expect(page).toHaveURL(`${origin}/${locale}/profile`);
-    await expect(name).toHaveValue("");
+    await expect(name).toHaveValue(suggestion);
     const save = page.getByRole("button", { name: identity.save, exact: true }), feedback = page.locator("#identity-feedback");
     await name.fill(" "); await save.focus(); await page.keyboard.press("Enter");
     await expect(feedback).toHaveText(identity.invalidName); await expect(feedback).toBeFocused();
     await expect(communities).toBeVisible();
     await name.fill("أحمد Onboarding 😀");
-    await page.route("**/api/identity/profile", (route) => route.fulfill({ status: 503, contentType: "application/json", body: '{"ok":false}' }));
+    await page.route("**/api/people/profile", (route) => route.fulfill({ status: 503, contentType: "application/json", body: '{"ok":false}' }));
     await save.focus(); await page.keyboard.press("Enter");
     await expect(feedback).toHaveText(identity.failed); await expect(feedback).toBeFocused();
     expect(await (await context.request.get("/api/communities")).json()).toMatchObject({ canCreate: false });
     await expect(communities).toBeVisible();
-    await page.unroute("**/api/identity/profile");
+    await page.unroute("**/api/people/profile");
     await save.focus(); await page.keyboard.press("Enter");
     await expect(feedback).toHaveText(identity.saved); await expect(feedback).toBeFocused();
     await expect(communities).toBeVisible();
