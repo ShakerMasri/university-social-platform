@@ -167,8 +167,10 @@ async function migrate(m: LocalManifest, name: string) {
     GRANT INSERT (id, "userId", "emailKey", "tokenDigest", "createdAt", "expiresAt") ON "EmailOwnershipChallenge" TO ${identifier(m.runtimeRole)};
     GRANT UPDATE ("emailVerifiedAt", "updatedAt") ON "User" TO ${identifier(m.runtimeRole)};
     GRANT UPDATE ("displayName", "updatedAt") ON "Profile" TO ${identifier(m.runtimeRole)};
+    -- Prisma materializes @default(false) in the upsert INSERT, including its
+    -- conflict/update path. Keep that INSERT privilege; never update the flag.
     GRANT INSERT ("directoryVisible") ON "Profile" TO ${identifier(m.runtimeRole)};
-    GRANT UPDATE ("directoryVisible") ON "Profile" TO ${identifier(m.runtimeRole)};
+    REVOKE UPDATE ("directoryVisible") ON "Profile" FROM ${identifier(m.runtimeRole)};
     GRANT UPDATE ("consumedAt", "revokedAt") ON "EmailOwnershipChallenge" TO ${identifier(m.runtimeRole)};
     GRANT INSERT ("browserDigest") ON "EmailOwnershipChallenge" TO ${identifier(m.runtimeRole)};
     GRANT SELECT ON "Session", "IdentityRateLimit" TO ${identifier(m.runtimeRole)};

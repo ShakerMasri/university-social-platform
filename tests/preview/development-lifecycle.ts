@@ -46,7 +46,7 @@ export async function verifyDevelopmentLifecycle(page: Page, context: BrowserCon
   expect(profileBefore.status()).toBe(200);
   const profileData = await profileBefore.json(), directoryName = profileData.displayName as string;
   expect(typeof directoryName === "string" && directoryName.length > 0).toBe(true);
-  const directorySave = await context.request.put("/api/people/profile", { data: { displayName: directoryName, directoryVisible: true }, headers: { Origin: new URL(before).origin } });
+  const directorySave = await context.request.put("/api/people/profile", { data: { displayName: directoryName }, headers: { Origin: new URL(before).origin } });
   expect(directorySave.status()).toBe(200);
   const directoryPath = `/api/people?q=${encodeURIComponent(directoryName)}`;
   const directoryBefore = await context.request.get(directoryPath); expect(directoryBefore.status()).toBe(200);

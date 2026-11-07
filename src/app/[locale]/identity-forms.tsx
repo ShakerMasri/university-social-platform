@@ -102,12 +102,11 @@ export function ConfirmationForm({ locale }: { locale: Locale }) {
   </>;
 }
 
-export function ProfileForm({ locale, profile }: { locale: Locale; profile: { email: string; displayName: string | null; directoryVisible: boolean; suggestion: string } }) {
+export function ProfileForm({ locale, profile }: { locale: Locale; profile: { email: string; displayName: string | null; suggestion: string } }) {
   const hydrated = useHydrated();
   const text = identityText[locale];
   const people = peopleText[locale];
   const [name, setName] = useState(profile.displayName ?? `${people.suggestion} ${profile.suggestion}`);
-  const [visible, setVisible] = useState(profile.directoryVisible);
   const pending = useRef<AbortController | null>(null);
   useEffect(() => () => { const request = pending.current; pending.current = null; request?.abort(); }, []);
   const [busy, setBusy] = useState(false);
@@ -119,7 +118,7 @@ export function ProfileForm({ locale, profile }: { locale: Locale; profile: { em
     let result = { ok: false, status: 503 };
     try {
       const response = await fetch("/api/people/profile", { method: "PUT", headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ displayName: name, directoryVisible: visible }), cache: "no-store", signal: controller.signal });
+        body: JSON.stringify({ displayName: name }), cache: "no-store", signal: controller.signal });
       result = { ok: response.ok, status: response.status };
     } catch { /* Keep the draft for an explicit retry; no persistence is claimed. */ }
     finally { clearTimeout(timeout); }
@@ -142,8 +141,7 @@ export function ProfileForm({ locale, profile }: { locale: Locale; profile: { em
       <input disabled={busy || !hydrated} id="display-name" name="displayName" dir="auto" autoComplete="nickname" value={name} onChange={(event) => setName(event.target.value)} required aria-describedby="name-hint" />
       <p id="name-hint">{text.nameHint}</p>
       {profile.displayName === null && <p className="field-hint">{people.suggestionHint}</p>}
-      <label><input type="checkbox" checked={visible} disabled={busy || !hydrated} onChange={event => setVisible(event.target.checked)} aria-describedby="directory-visibility-hint" />{people.visible}</label>
-      <p id="directory-visibility-hint" className="field-hint">{people.visibilityHint}</p>
+      <p className="field-hint">{people.directoryHint}</p>
       <button disabled={busy || !hydrated} type="submit">{busy ? text.busy : text.save}</button>
     </form>
     <p id="identity-feedback" role="status" tabIndex={-1}>{feedback.message}</p>

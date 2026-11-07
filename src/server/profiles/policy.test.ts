@@ -19,23 +19,23 @@ describe("profile discovery boundaries", () => {
       expect(() => peopleAnchor({ query, after: cursor }, actor, key)).toThrow();
     }
   });
-  it("uses the Unicode-consistent v3 matching contract and rejects v1/v2 cursors", () => {
+  it("uses the all-saved-profiles v4 contract and rejects prior opt-in cursors", () => {
     const input = peopleInput(new URLSearchParams({ q: "a²a" }));
     const after = peopleCursor(id, input, id, key);
-    expect.soft(after).toBe(`${id}.${keyedDigest(key, JSON.stringify(["m4-people-v3", id, input.query, id]))}`);
+    expect.soft(after).toBe(`${id}.${keyedDigest(key, JSON.stringify(["m4-people-v4", id, input.query, id]))}`);
     expect(peopleAnchor({ ...input, after }, id, key)).toBe(id);
-    for (const version of ["m4-people-v1", "m4-people-v2"]) {
+    for (const version of ["m4-people-v1", "m4-people-v2", "m4-people-v3"]) {
       const old = `${id}.${keyedDigest(key, JSON.stringify([version, id, input.query, id]))}`;
       expect.soft(() => peopleAnchor({ ...input, after: old }, id, key)).toThrow();
     }
     expect(() => peopleAnchor({ ...input, after }, other, key)).toThrow();
     expect(() => peopleAnchor({ query: "a³a", after }, id, key)).toThrow();
   });
-  it("requires explicit boolean visibility and a valid display name, never ownership fields", () => {
-    expect(directoryProfileInput({ displayName: " عضو علي 😀 ", directoryVisible: true })).toEqual({ displayName: "عضو علي 😀", directoryVisible: true });
-    for (const input of [{ displayName: "Ali" }, { displayName: "Ali", directoryVisible: "true" }, { displayName: "", directoryVisible: true },
-      { displayName: "Ali", directoryVisible: false, userId: other }, { displayName: "Ali\n", directoryVisible: true, directoryId: id },
-      { displayName: "A\u202eB", directoryVisible: true }, { displayName: "ab\ud800", directoryVisible: true }]) expect(() => directoryProfileInput(input)).toThrow();
+  it("accepts only a valid display name, rejecting visibility and ownership fields", () => {
+    expect(directoryProfileInput({ displayName: " عضو علي 😀 " })).toEqual({ displayName: "عضو علي 😀" });
+    for (const input of [{ displayName: "Ali", directoryVisible: true }, { displayName: "Ali", directoryVisible: false }, { displayName: "" },
+      { displayName: "Ali", userId: other }, { displayName: "Ali\n", directoryId: id },
+      { displayName: "A\u202eB" }, { displayName: "ab\ud800" }]) expect(() => directoryProfileInput(input)).toThrow();
     expect(profileSuggestion(id)).toMatch(/^[0-9A-F]{10}$/);
     expect(profileSuggestion(id)).toBe(profileSuggestion(id.toUpperCase()));
     expect(profileSuggestion(id)).not.toBe(profileSuggestion(other));

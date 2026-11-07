@@ -37,6 +37,8 @@ model Profile {
   userId      String   @id @db.Uuid
   displayName String   @db.VarChar(60)
   directoryId String   @unique @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  // Historical opt-in value, retained without data loss. Current directory
+  // policy lists every saved verified profile without consulting this flag.
   directoryVisible Boolean @default(false)
   createdAt   DateTime @default(now()) @db.Timestamptz(3)
   updatedAt   DateTime @updatedAt @db.Timestamptz(3)

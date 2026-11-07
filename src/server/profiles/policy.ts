@@ -10,9 +10,9 @@ export function profileSuggestion(userId: string) {
   return digest(`profile-label:${communityId(userId)}`).slice(0, 10).toUpperCase();
 }
 export function directoryProfileInput(value: Record<string, unknown>) {
-  if (Object.keys(value).some(key => !["displayName", "directoryVisible"].includes(key)) || typeof value.directoryVisible !== "boolean") throw new Error("Invalid profile input");
+  if (Object.keys(value).some(key => key !== "displayName")) throw new Error("Invalid profile input");
   const displayName = validateDisplayName(value.displayName);
-  return { displayName, directoryVisible: value.directoryVisible };
+  return { displayName };
 }
 export function peopleInput(parameters: URLSearchParams): PeopleInput {
   const keys = [...parameters.keys()], raw = parameters.get("q");
@@ -27,7 +27,7 @@ export function peopleInput(parameters: URLSearchParams): PeopleInput {
 }
 export function peopleCursor(id: string, input: PeopleInput, actorId: string, key: string) {
   if (!/^[0-9a-f]{64}$/.test(key)) throw new Error("People signing unavailable");
-  const scope = JSON.stringify(["m4-people-v3", actorId, input.query, communityId(id)]);
+  const scope = JSON.stringify(["m4-people-v4", actorId, input.query, communityId(id)]);
   return `${id}.${keyedDigest(key, scope)}`;
 }
 export function peopleAnchor(input: PeopleInput, actorId: string, key: string) {

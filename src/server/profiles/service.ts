@@ -11,15 +11,15 @@ import { directoryProfileInput, peopleAnchor, peopleCursor, peoplePageSize, prof
 export function ownDirectoryProfile(db: PrismaClient, token: unknown) {
   return authorized(db, token, async (tx, userId) => {
     const user = await tx.user.findUniqueOrThrow({ where: { id: userId }, select: { email: true,
-      profile: { select: { displayName: true, directoryVisible: true } } } });
+      profile: { select: { displayName: true } } } });
     return { email: user.email, displayName: user.profile?.displayName ?? null,
-      directoryVisible: user.profile?.directoryVisible ?? false, suggestion: profileSuggestion(userId) };
+      suggestion: profileSuggestion(userId) };
   });
 }
 export async function saveDirectoryProfile(db: PrismaClient, token: unknown, value: Record<string, unknown>) {
   const input = directoryProfileInput(value);
   try {
-    if (!await updateOwnProfile(db, token, input.displayName, input.directoryVisible)) throw new CommunityError(401);
+    if (!await updateOwnProfile(db, token, input.displayName)) throw new CommunityError(401);
   } catch (error) {
     if (error instanceof ProfileSaveRateLimited) throw new CommunityError(429);
     throw error;
@@ -35,7 +35,7 @@ function readable(input?: PeopleInput) {
     return pattern ? Prisma.sql`(strpos(${name}, ${term}) > 0 OR ${words} ~ ${pattern})` : Prisma.sql`strpos(${name}, ${term}) > 0`;
   }) : [];
   const match = terms.length ? Prisma.sql`AND (${Prisma.join(terms, " AND ")})` : Prisma.empty;
-  return Prisma.sql`p."directoryVisible" AND u."emailVerifiedAt" IS NOT NULL ${match}`;
+  return Prisma.sql`u."emailVerifiedAt" IS NOT NULL ${match}`;
 }
 export function peopleCandidateQuery(input: PeopleInput, after?: string) {
   return Prisma.sql`SELECT p."userId", p."directoryId" AS id FROM "Profile" p JOIN "User" u ON u.id = p."userId"
@@ -55,7 +55,7 @@ export async function searchPeople(db: PrismaClient, token: unknown, input: Peop
     for (const userId of [...new Set([...candidates.map(row => row.userId), ...(anchor ? [anchor.userId] : [])])].sort()) await lockDirectoryProfile(tx, userId);
     if (after && !(await tx.$queryRaw<{ id: string }[]>(Prisma.sql`SELECT p."directoryId" AS id FROM "Profile" p JOIN "User" u ON u.id = p."userId"
       WHERE p."directoryId" = ${after}::uuid AND ${readable(input)}`)).length) throw new CommunityError(404);
-    // Recheck visibility AND matching after locks, including the lookahead.
+    // Recheck account verification AND matching after locks, including lookahead.
     const rows = candidates.length ? await tx.$queryRaw<{ id: string; displayName: string }[]>(Prisma.sql`
       SELECT p."directoryId" AS id, p."displayName" FROM "Profile" p JOIN "User" u ON u.id = p."userId"
       WHERE p."directoryId" IN (${Prisma.join(candidates.map(row => Prisma.sql`${row.id}::uuid`))}) AND ${readable(input)} ORDER BY p."directoryId"`) : [];
@@ -71,7 +71,7 @@ export async function readDirectoryProfile(db: PrismaClient, token: unknown, val
     const candidate = await tx.profile.findUnique({ where: { directoryId: id }, select: { userId: true } });
     if (!candidate) throw new CommunityError(404);
     await lockDirectoryProfile(tx, candidate.userId);
-    const row = await tx.profile.findFirst({ where: { directoryId: id, directoryVisible: true, user: { emailVerifiedAt: { not: null } } },
+    const row = await tx.profile.findFirst({ where: { directoryId: id, user: { emailVerifiedAt: { not: null } } },
       select: { directoryId: true, displayName: true } });
     if (!row) throw new CommunityError(404);
     return { id: row.directoryId, displayName: row.displayName };

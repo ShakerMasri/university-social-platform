@@ -30,7 +30,7 @@ async function actor() {
   return { token: session.token, id: (await db.user.findUniqueOrThrow({ where: { emailKey: email } })).id };
 }
 const deny = (result: Promise<unknown>, status: number) => expect(result).rejects.toMatchObject({ status });
-const save = (user: { token: string }, displayName: string, directoryVisible = true) => saveDirectoryProfile(db, user.token, { displayName, directoryVisible });
+const save = (user: { token: string }, displayName: string) => saveDirectoryProfile(db, user.token, { displayName });
 const search = (user: { token: string }, q: string, after?: string) => searchPeople(db, user.token, peopleInput(new URLSearchParams({ q, ...(after ? { after } : {}) })), key);
 async function blocker(userId: string) {
   const client = new Client({ connectionString: databaseUrl(manifest, name!, "migration") }); await client.connect();
@@ -48,14 +48,14 @@ async function waitForBlock(client: Client) {
 }
 describe("permission-aware people discovery", () => {
   it("P3 regression: Unicode-number substitutions match through actual search and the fuzzy clause itself", async () => {
-    const owner = await actor(), reader = await actor(), hidden = await actor(), unverified = await actor(), marker = randomUUID().slice(0, 8);
+    const owner = await actor(), reader = await actor(), unverified = await actor(), marker = randomUUID().slice(0, 8);
     await save(owner, `${marker} a³a`);
-    await save(hidden, `${marker} a³a`, false); await save(unverified, `${marker} a³a`);
+    await save(unverified, `${marker} a³a`); // The other account has no saved profile.
     await migration.query('UPDATE "User" SET "emailVerifiedAt"=NULL WHERE id=$1', [unverified.id]);
     expect((await search(reader, `${marker} a²a`)).items.map(row => row.displayName)).toEqual([`${marker} a³a`]);
     const rows = await db.$queryRaw<{ matches: boolean }[]>`SELECT regexp_replace(${"a³a"}::text COLLATE "C", ${peopleWordSeparatorPattern}, ' ', 'g') ~ ${peopleTypoPattern("a²a")} AS matches`;
     expect(rows[0].matches).toBe(true); // No literal fallback can hide a fuzzy failure.
-    await save(owner, `${marker} a³a`, false);
+    await migration.query('UPDATE "User" SET "emailVerifiedAt"=NULL WHERE id=$1', [owner.id]);
     expect((await search(reader, `${marker} a²a`)).items).toEqual([]);
   });
   it("P3 regression: Unicode numbers cannot split a word and create a false fuzzy match", async () => {
@@ -95,7 +95,7 @@ describe("permission-aware people discovery", () => {
     expect(counter.hits).toBe(30);
     const before = await db.profile.findUniqueOrThrow({ where: { userId: owner.id } });
     await deny(updateOwnProfile(db, owner.token, "Legacy beyond limit"), 429);
-    await deny(save({ token: secondToken }, "People beyond limit", false), 429);
+    await deny(save({ token: secondToken }, "People beyond limit"), 429);
     expect(await db.profile.findUniqueOrThrow({ where: { userId: owner.id } })).toEqual(before);
     expect((await search(owner, "Shared budget")).items.some(item => item.id === before.directoryId)).toBe(true);
     expect((await db.identityRateLimit.findUniqueOrThrow({ where: { keyDigest: digest(`m4-profile-save:${owner.id}`) } })).hits).toBe(30);
@@ -110,7 +110,7 @@ describe("permission-aware people discovery", () => {
     try {
       await locker.query("BEGIN");
       await locker.query('SELECT "keyDigest" FROM "IdentityRateLimit" WHERE "keyDigest"=$1 FOR UPDATE', [digest(`m4-profile-save:${owner.id}`)]);
-      outcomes = [updateOwnProfile(clients[0], owner.token, "Legacy wins"), saveDirectoryProfile(clients[1], secondToken, { displayName: "People wins", directoryVisible: true })]
+      outcomes = [updateOwnProfile(clients[0], owner.token, "Legacy wins"), saveDirectoryProfile(clients[1], secondToken, { displayName: "People wins" })]
         .map(attempt => attempt.then(value => ({ accepted: value !== false }), error => ({ accepted: false, status: error.status as number })));
       let waiting = 0;
       for (let i = 0; i < 120; i++) {
@@ -127,7 +127,7 @@ describe("permission-aware people discovery", () => {
       expect(results.filter(result => result.status === 429)).toHaveLength(1);
       expect((await db.identityRateLimit.findUniqueOrThrow({ where: { keyDigest: digest(`m4-profile-save:${owner.id}`) } })).hits).toBe(30);
       const stored = await db.profile.findUniqueOrThrow({ where: { userId: owner.id } });
-      expect(["Legacy wins", "People wins"]).toContain(stored.displayName); expect(stored.directoryVisible).toBe(true);
+      expect(["Legacy wins", "People wins"]).toContain(stored.displayName); expect(stored.directoryVisible).toBe(false);
     } finally { await locker.query("ROLLBACK"); await Promise.all(outcomes); await locker.end(); await Promise.all(clients.map(client => client.$disconnect())); }
   });
   it("review regression: direct legacy writer rejects invalid directory names without changing persistence or projection", async () => {
@@ -137,32 +137,31 @@ describe("permission-aware people discovery", () => {
     for (const control of ["\t", "\n", "\u007f", "\u202e", "\u2066", "\u200b"]) {
       const rejected = await Promise.resolve().then(() => updateOwnProfile(db, owner.token, `${marker} A${control}B`)).then(() => false, () => true);
       expect(rejected).toBe(true);
-      await expect(save(owner, `${marker} A${control}B`, false)).rejects.toThrow();
+      await expect(save(owner, `${marker} A${control}B`)).rejects.toThrow();
     }
     expect(await db.profile.findUniqueOrThrow({ where: { userId: owner.id } })).toEqual(before);
     expect((await search(reader, marker)).items).toEqual([{ id: before.directoryId, displayName: before.displayName }]);
     expect(await readDirectoryProfile(db, reader.token, before.directoryId)).toEqual({ id: before.directoryId, displayName: before.displayName });
     expect((await db.identityRateLimit.findUniqueOrThrow({ where: { keyDigest: digest(`m4-profile-save:${owner.id}`) } })).hits).toBe(1);
   });
-  it("keeps unsaved/existing profiles hidden until explicit confirmation, preserving names and stable destinations", async () => {
+  it("lists every saved verified profile regardless of legacy opt-in and never creates profiles on read", async () => {
     const owner = await actor(), reader = await actor(), marker = `Name${randomUUID()}`;
     const first = await ownDirectoryProfile(db, owner.token), second = await ownDirectoryProfile(db, owner.token);
-    expect(first.displayName).toBeNull(); expect(first.directoryVisible).toBe(false); expect(first.suggestion).toBe(second.suggestion);
+    expect(first.displayName).toBeNull(); expect(first.suggestion).toBe(second.suggestion);
+    expect(first).not.toHaveProperty("directoryVisible");
     expect(await db.profile.count({ where: { userId: owner.id } })).toBe(0);
     await updateOwnProfile(db, owner.token, marker);
-    expect((await search(reader, marker)).items).toEqual([]);
-    await save(owner, marker);
     const profile = (await search(reader, marker)).items[0];
     expect(Object.keys(profile).sort()).toEqual(["displayName", "id"]); expect(profile.id).not.toBe(owner.id);
     expect(await readDirectoryProfile(db, reader.token, profile.id)).toEqual(profile);
-    await save(owner, marker, false); await deny(readDirectoryProfile(db, reader.token, profile.id), 404);
-    expect((await search(reader, marker)).items).toEqual([]);
+    expect((await db.profile.findUniqueOrThrow({ where: { userId: owner.id } })).directoryVisible).toBe(false);
+    await expect(saveDirectoryProfile(db, owner.token, { displayName: marker, directoryVisible: false })).rejects.toThrow("Invalid profile input");
     await save(owner, marker); expect((await search(reader, marker)).items[0]).toEqual(profile);
-    await updateOwnProfile(db, owner.token, `${marker}X`); // legacy writes keep the explicit visibility choice
+    await updateOwnProfile(db, owner.token, `${marker}X`);
     expect((await readDirectoryProfile(db, reader.token, profile.id)).displayName).toBe(`${marker}X`);
     expect(await db.communityMembership.count({ where: { userId: { in: [owner.id, reader.id] } } })).toBe(0);
   });
-  it("matches Arabic/English and literal punctuation, excluding hidden and unverified users before projection", async () => {
+  it("matches Arabic/English and literal punctuation, excluding unverified users before projection", async () => {
     const owner = await actor(), reader = await actor(), marker = randomUUID().slice(0, 8);
     await save(owner, `أَحْـمَد ALI ${marker} C%_++`);
     expect((await search(reader, `أحمد ali ${marker}`)).items).toHaveLength(1);
@@ -174,9 +173,9 @@ describe("permission-aware people discovery", () => {
     await logout(db, reader.token); await deny(search(reader, marker), 401);
   });
   it("suggests visible names for one-edit English/Arabic typos and reordered name parts without treating symbols as operators", async () => {
-    const owner = await actor(), hidden = await actor(), unverified = await actor(), reader = await actor(), marker = randomUUID().slice(0, 8);
+    const owner = await actor(), unverified = await actor(), reader = await actor(), marker = randomUUID().slice(0, 8);
     const displayName = `${marker} أحمد Ahmed Mahmoud 😀 C%_++`;
-    await save(owner, displayName); await save(hidden, displayName, false); await save(unverified, displayName);
+    await save(owner, displayName); await save(unverified, displayName);
     await migration.query('UPDATE "User" SET "emailVerifiedAt"=NULL WHERE id=$1', [unverified.id]);
     const expected = { id: (await db.profile.findUniqueOrThrow({ where: { userId: owner.id } })).directoryId, displayName };
     for (const typo of ["Ahmde", "Ahmd", "Ahmmed", "Ahmet", "أحدم", "أحد", "أحممد", "أحكد"]) {
@@ -187,11 +186,11 @@ describe("permission-aware people discovery", () => {
     for (const unmatched of ["ax", "zebra", "Axxed", "c++", ".*", "(Ahmed|.*)", "😀😁"]) {
       expect((await search(reader, `${marker} ${unmatched}`)).items).toEqual([]);
     }
-    await save(owner, displayName, false);
+    await migration.query('UPDATE "User" SET "emailVerifiedAt"=NULL WHERE id=$1', [owner.id]);
     expect((await search(reader, `${marker} Ahmde`)).items).toEqual([]);
     await deny(readDirectoryProfile(db, reader.token, expected.id), 404);
   });
-  it("paginates duplicate names and rejects cross-user/query cursors and hidden or renamed anchors", async () => {
+  it("paginates duplicate names and rejects cross-user/query cursors and unverified or renamed anchors", async () => {
     const owner = await actor(), reader = await actor(), other = await actor(), marker = `Page${randomUUID()}`;
     const ids = Array.from({ length: 23 }, () => randomUUID()).sort();
     for (const id of ids) {
@@ -208,15 +207,16 @@ describe("permission-aware people discovery", () => {
     await expect(search(other, marker, first.next!)).rejects.toThrow("Restart people search");
     await expect(search(reader, "Changed", first.next!)).rejects.toThrow("Restart people search");
     const anchorId = first.items.at(-1)!.id;
-    await migration.query('UPDATE "Profile" SET "directoryVisible"=false WHERE "directoryId"=$1', [anchorId]);
+    await migration.query('UPDATE "User" SET "emailVerifiedAt"=NULL WHERE id=(SELECT "userId" FROM "Profile" WHERE "directoryId"=$1)', [anchorId]);
     await deny(search(reader, marker, first.next!), 404);
     await deny(search(reader, `${marker} a²a`, unicodeFirst.next!), 404);
-    await migration.query('UPDATE "Profile" SET "directoryVisible"=true,"displayName"=\'Changed\' WHERE "directoryId"=$1', [anchorId]);
+    await migration.query('UPDATE "User" SET "emailVerifiedAt"=now() WHERE id=(SELECT "userId" FROM "Profile" WHERE "directoryId"=$1)', [anchorId]);
+    await migration.query('UPDATE "Profile" SET "displayName"=\'Changed\' WHERE "directoryId"=$1', [anchorId]);
     await deny(search(reader, marker, first.next!), 404);
     await deny(search(reader, `${marker} a²a`, unicodeFirst.next!), 404);
     await save(owner, "Unrelated");
   });
-  it("rechecks hidden detail and search candidates after actual lock waits", async () => {
+  it("rechecks verification for detail and search candidates after actual lock waits", async () => {
     for (const detail of [false, true]) {
       const owner = await actor(), reader = await actor(), marker = `Race${randomUUID()}`; await save(owner, `${marker} Ahmed a³a`);
       const profile = await db.profile.findUniqueOrThrow({ where: { userId: owner.id } });
@@ -225,14 +225,14 @@ describe("permission-aware people discovery", () => {
       const outcome = pending.then(value => ({ value, status: 200 }), error => ({ value: null, status: error.status as number }));
       try {
         await waitForBlock(lock);
-        await lock.query('UPDATE "Profile" SET "directoryVisible"=false WHERE "userId"=$1', [owner.id]);
+        await lock.query('UPDATE "User" SET "emailVerifiedAt"=NULL WHERE id=$1', [owner.id]);
         await lock.query("COMMIT"); const result = await outcome;
         if (detail) expect(result.status).toBe(404);
         else expect(result.value).toEqual({ items: [], next: null });
       } finally { await lock.query("ROLLBACK"); await lock.end(); await outcome; }
     }
   });
-  it("does not derive a next cursor from a lookahead hidden while waiting", async () => {
+  it("does not derive a next cursor from a lookahead losing verification while waiting", async () => {
     const owner = await actor(), reader = await actor(), marker = `Look${randomUUID()}`; await save(owner, marker);
     await migration.query('UPDATE "Profile" SET "directoryId"=\'ffffffff-ffff-ffff-ffff-ffffffffffff\' WHERE "userId"=$1', [owner.id]);
     for (let i = 0; i < 20; i++) {
@@ -243,17 +243,17 @@ describe("permission-aware people discovery", () => {
     const lock = await blocker(owner.id), attempt = search(reader, marker);
     const outcome = attempt.then(value => ({ value }), () => ({ value: null }));
     try {
-      await waitForBlock(lock); await lock.query('UPDATE "Profile" SET "directoryVisible"=false WHERE "userId"=$1', [owner.id]);
+      await waitForBlock(lock); await lock.query('UPDATE "User" SET "emailVerifiedAt"=NULL WHERE id=$1', [owner.id]);
       await lock.query("COMMIT"); const result = (await outcome).value;
       expect(result?.items).toHaveLength(20); expect(result?.next).toBeNull();
       expect(result?.items.some(item => item.id === "ffffffff-ffff-ffff-ffff-ffffffffffff")).toBe(false);
     } finally { await lock.query("ROLLBACK"); await lock.end(); await outcome; }
   });
-  it("rolls back name and visibility when the actor expires while waiting for the profile lock", async () => {
-    const owner = await actor(); await save(owner, "Before", false);
+  it("rolls back name when the actor expires while waiting for the profile lock", async () => {
+    const owner = await actor(); await save(owner, "Before");
     const before = await db.profile.findUniqueOrThrow({ where: { userId: owner.id } });
     await migration.query('UPDATE "Session" SET "expiresAt"=clock_timestamp()+interval \'1.5 seconds\' WHERE "tokenDigest"=$1', [digest(owner.token)]);
-    const lock = await blocker(owner.id), attempt = save(owner, "After", true);
+    const lock = await blocker(owner.id), attempt = save(owner, "After");
     const outcome = attempt.then(() => 200, error => error.status as number);
     try {
       await waitForBlock(lock);
@@ -265,21 +265,26 @@ describe("permission-aware people discovery", () => {
       expect(await db.profile.findUniqueOrThrow({ where: { userId: owner.id } })).toEqual(before);
     } finally { await lock.query("ROLLBACK"); await lock.end(); await outcome; }
   });
-  it("persists denied read budgets and leaves the separate visibility-save budget available", async () => {
+  it("persists denied read budgets and leaves the separate profile-save budget available", async () => {
     const owner = await actor();
     const results = await Promise.all(Array.from({ length: 32 }, () => readDirectoryProfile(db, owner.token, randomUUID()).then(() => 200, error => error.status as number)));
     expect(results.filter(status => status === 404)).toHaveLength(30); expect(results.filter(status => status === 429)).toHaveLength(2);
-    await save(owner, "Can hide", false);
-    expect((await ownDirectoryProfile(db, owner.token)).directoryVisible).toBe(false);
+    await save(owner, "Saved name");
+    expect((await ownDirectoryProfile(db, owner.token)).displayName).toBe("Saved name");
   });
   it("restricts runtime grants, enforces independent profile IDs and preserves persisted labels across connections", async () => {
-    const owner = await actor(); await save(owner, "Member stable", true);
+    const owner = await actor(); await save(owner, "Member stable");
     const profile = await db.profile.findUniqueOrThrow({ where: { userId: owner.id } });
     const runtime = new Client({ connectionString: databaseUrl(manifest, name!, "runtime") }); await runtime.connect();
     try {
-      for (const sql of ['UPDATE "Profile" SET "directoryId"=gen_random_uuid()', 'UPDATE "Profile" SET "userId"=gen_random_uuid()', 'DELETE FROM "Profile"']) await expect(runtime.query(sql)).rejects.toMatchObject({ code: "42501" });
+      for (const sql of ['UPDATE "Profile" SET "directoryId"=gen_random_uuid()', 'UPDATE "Profile" SET "userId"=gen_random_uuid()', 'UPDATE "Profile" SET "directoryVisible"=true', 'DELETE FROM "Profile"']) await expect(runtime.query(sql)).rejects.toMatchObject({ code: "42501" });
       const persisted = (await runtime.query('SELECT "displayName","directoryVisible","directoryId" FROM "Profile" WHERE "userId"=$1', [owner.id])).rows[0];
-      expect(persisted).toEqual({ displayName: profile.displayName, directoryVisible: true, directoryId: profile.directoryId });
+      expect(persisted).toEqual({ displayName: profile.displayName, directoryVisible: false, directoryId: profile.directoryId });
+      // Prisma inserts its false default even on conflict. Renaming must still
+      // work without UPDATE permission on the legacy flag or changing its value.
+      await migration.query('UPDATE "Profile" SET "directoryVisible"=true WHERE "userId"=$1', [owner.id]);
+      await save(owner, "Renamed stable");
+      expect(await db.profile.findUniqueOrThrow({ where: { userId: owner.id } })).toMatchObject({ displayName: "Renamed stable", directoryVisible: true, directoryId: profile.directoryId });
       const other = await actor(); await updateOwnProfile(db, other.token, "Other");
       await expect(migration.query('UPDATE "Profile" SET "directoryId"=$1 WHERE "userId"=$2', [profile.directoryId, other.id])).rejects.toMatchObject({ code: "23505" });
     } finally { await runtime.end(); }

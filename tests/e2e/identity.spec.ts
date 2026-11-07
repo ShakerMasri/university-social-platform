@@ -266,6 +266,100 @@ test("generic request responses, CSRF, immutable email and synthetic-only operat
   expect(oversized.status()).toBe(400);
 });
 
+for (const locale of ["en", "ar"] as const) {
+  test(`${locale}: homepage follows real profileless, saved and logged-out sessions across navigation`, async ({ page, context, browser }) => {
+    const text = identityText[locale], email = address();
+    await page.setViewportSize({ width: 320, height: 800 });
+    const response = await page.goto(`/${locale}`);
+    expect(response?.headers()["cache-control"]).toContain("no-store");
+    const signIn = page.getByRole("main").getByRole("link", { name: text.signIn, exact: true });
+    await expect(signIn).toBeVisible();
+    await signIn.focus(); await page.keyboard.press("Enter");
+    await expect(page.getByLabel(text.email)).toBeVisible();
+    expect((await post(context.request, "request", { email, locale })).status()).toBe(202);
+    await openLink(page, locale, await tokenFor(email));
+    await page.getByRole("button", { name: text.confirm }).click();
+    await expect(page.getByLabel(text.name)).toBeVisible();
+    const home = () => page.getByRole("link", { name: text.home, exact: true });
+    await home().click();
+    await expect(page.getByRole("main").getByRole("link", { name: text.signIn, exact: true })).toHaveCount(0);
+    await expect(page.getByRole("banner").getByRole("link", { name: text.profile, exact: true })).toBeVisible();
+    await expect(page.getByRole("main").getByRole("link")).toHaveAttribute("href", `/${locale}/communities`);
+    // Home reads must neither create a profile nor enroll an account in People.
+    expect((await fixtureSQL('SELECT EXISTS (SELECT 1 FROM "Profile" p JOIN "User" u ON u.id = p."userId" WHERE u.email = $1) AS present', [email]))[0].present).toBe(false);
+    expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true);
+    const otherLocale = locale === "en" ? "ar" : "en";
+    await page.getByRole("link", { name: locale === "en" ? "العربية" : "English", exact: true }).click();
+    await expect(page).toHaveURL(new RegExp(`/${otherLocale}$`));
+    await expect(page.locator("html")).toHaveAttribute("dir", otherLocale === "ar" ? "rtl" : "ltr");
+    await expect(page.getByRole("banner").getByRole("link", { name: identityText[otherLocale].profile, exact: true })).toBeVisible();
+    await page.goBack();
+    await expect(page).toHaveURL(new RegExp(`/${locale}$`));
+    await page.getByRole("banner").getByRole("link", { name: text.profile, exact: true }).click();
+    await page.getByLabel(text.name).fill("Homepage عضو");
+    await page.getByRole("button", { name: text.save }).click();
+    await expect(page.locator("#identity-feedback")).toHaveText(text.saved);
+    await home().click();
+    await page.reload();
+    await expect(page.getByRole("banner").getByRole("link", { name: text.profile, exact: true })).toBeVisible();
+    const anonymous = await browser.newContext({ baseURL: origin });
+    try {
+      const other = await anonymous.newPage(); await other.goto(`/${locale}`);
+      await expect(other.getByRole("link", { name: text.signIn, exact: true })).toBeVisible();
+      await expect(other.getByRole("link", { name: text.profile, exact: true })).toHaveCount(0);
+    } finally { await anonymous.close(); }
+    const logoutTab = await context.newPage();
+    try {
+      await logoutTab.goto(`/${locale}/profile`);
+      await logoutTab.getByRole("button", { name: text.logout }).click();
+      await expect(logoutTab.getByLabel(text.email)).toBeVisible();
+    } finally { await logoutTab.close(); }
+    await page.bringToFront();
+    // Explicitly exercise the focus handler even in headless environments.
+    await page.evaluate(() => window.dispatchEvent(new Event("focus")));
+    await expect(page.getByRole("link", { name: text.signIn, exact: true })).toBeVisible();
+    await page.getByRole("link", { name: text.signIn, exact: true }).click();
+    await expect(page.getByLabel(text.email)).toBeVisible();
+    await page.goBack();
+    await expect(page).toHaveURL(new RegExp(`/${locale}$`));
+    await expect(page.getByRole("link", { name: text.signIn, exact: true })).toBeVisible();
+    await expect(page.getByRole("link", { name: text.profile, exact: true })).toHaveCount(0);
+    await page.reload();
+    await expect(page.getByRole("link", { name: text.signIn, exact: true })).toBeVisible();
+  });
+
+  for (const state of ["expired", "revoked"] as const) test(`${locale}: homepage rechecks ${state} sessions on history restoration and reload`, async ({ page, context }) => {
+    const text = identityText[locale], { cookie } = await savedProfile(page, context, locale);
+    await page.getByRole("link", { name: text.home, exact: true }).click();
+    await expect(page.getByRole("banner").getByRole("link", { name: text.profile, exact: true })).toBeVisible();
+    await page.getByRole("banner").getByRole("link", { name: text.profile, exact: true }).click();
+    if (state === "expired") await fixtureSQL('UPDATE "Session" SET "createdAt" = now() - interval \'8 days\', "expiresAt" = now() - interval \'1 day\' WHERE "tokenDigest" = $1', [digest(cookie.value)]);
+    else await fixtureSQL('UPDATE "Session" SET "revokedAt" = clock_timestamp() WHERE "tokenDigest" = $1', [digest(cookie.value)]);
+    await page.goBack();
+    await expect(page.getByRole("link", { name: text.signIn, exact: true })).toBeVisible();
+    await expect(page.getByRole("link", { name: text.profile, exact: true })).toHaveCount(0);
+    await page.reload();
+    await expect(page.getByRole("link", { name: text.signIn, exact: true })).toBeVisible();
+    expect((await context.cookies()).some(item => item.name === sessionCookie && item.value === cookie.value)).toBe(true);
+  });
+
+  test(`${locale}: homepage retains cookies during a genuine database failure and recovers on retry`, async ({ page, context }) => {
+    const text = identityText[locale], { cookie } = await savedProfile(page, context, locale);
+    const role = readManifest().runtimeRole;
+    await fixtureSQL(`REVOKE SELECT ON "Session" FROM "${role}"`);
+    try {
+      const response = await page.goto(`/${locale}`);
+      expect(response?.headers()["set-cookie"] === undefined).toBe(true);
+      await expect(page.getByRole("main").getByRole("alert")).toHaveText(text.homeUnavailable);
+      await expect(page.getByRole("link", { name: text.signIn, exact: true })).toHaveCount(0);
+      await expect(page.getByRole("link", { name: text.profile, exact: true })).toHaveCount(0);
+      expect((await context.cookies()).some(item => item.name === sessionCookie && item.value === cookie.value)).toBe(true);
+    } finally { await fixtureSQL(`GRANT SELECT ON "Session" TO "${role}"`); }
+    await page.getByRole("link", { name: text.retryHome, exact: true }).focus(); await page.keyboard.press("Enter");
+    await expect(page.getByRole("banner").getByRole("link", { name: text.profile, exact: true })).toBeVisible();
+  });
+}
+
 test("actual peer IP limits resist forged forwarding headers", async ({ request }) => {
   // Fixture time moves only inside this run's owned disposable database.
   await fixtureSQL('UPDATE "IdentityRateLimit" SET "startedAt" = now() - interval \'16 minutes\'');

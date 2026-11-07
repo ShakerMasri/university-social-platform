@@ -161,9 +161,8 @@ export class ProfileSaveRateLimited extends Error {
   constructor() { super("Profile save unavailable"); }
 }
 
-export function updateOwnProfile(db: PrismaClient, token: unknown, name: unknown, directoryVisible?: boolean) {
+export function updateOwnProfile(db: PrismaClient, token: unknown, name: unknown) {
   const displayName = validateDisplayName(name);
-  if (directoryVisible !== undefined && typeof directoryVisible !== "boolean") throw new Error("Invalid profile visibility");
   // Every public profile-save path reaches this reservation exactly once.
   // Commit it independently so a later rejected/failed write cannot erase it.
   const reservation = db.$transaction(async (tx) => {
@@ -181,8 +180,7 @@ export function updateOwnProfile(db: PrismaClient, token: unknown, name: unknown
       if (!access) return false;
       const userId = access.session.userId; // Ownership comes only from the live session.
       await lockDirectoryProfile(tx, userId, true);
-      const visibility = directoryVisible === undefined ? {} : { directoryVisible };
-      await tx.profile.upsert({ where: { userId }, create: { userId, displayName, ...visibility }, update: { displayName, ...visibility } });
+      await tx.profile.upsert({ where: { userId }, create: { userId, displayName }, update: { displayName } });
       // The session row stays locked against revocation, but time can advance
       // during the profile write's lock wait. Throw to roll back; returning false
       // here would commit the unauthorized write.

@@ -93,7 +93,7 @@ for (const locale of ["en", "ar"] as const) {
       const token = await syntheticTokenFor(email);
       await post(context, "/api/identity/confirm", { token, locale }, 200);
       await post(context, "/api/identity/profile", { displayName: "طالب Zoom participant" }, 200);
-      expect((await context.request.put("/api/people/profile", { data: { displayName: `Zoom ${email.slice(5, 13)}`, directoryVisible: true }, headers: { Origin: origin } })).status()).toBe(200);
+      expect((await context.request.put("/api/people/profile", { data: { displayName: `Zoom ${email.slice(5, 13)}` }, headers: { Origin: origin } })).status()).toBe(200);
       const directory = await context.request.get(`/api/people?q=${email.slice(5, 13)}`);
       expect(directory.status()).toBe(200);
       const directoryId = (await directory.json()).items[0].id as string;

@@ -1,7 +1,7 @@
 import "server-only";
 import type { Prisma } from "../../generated/prisma/client.ts";
 
-// All name/visibility writes, including legacy own-profile saves, participate.
+// All name writes, including legacy own-profile saves, participate.
 // Readers lock bounded candidate user IDs in sorted order before projection.
 export async function lockDirectoryProfile(tx: Prisma.TransactionClient, userId: string, write = false) {
   const key = `profile-directory:${userId}`;

@@ -25,8 +25,8 @@ async function signIn(context: BrowserContext) {
   expect((await context.request.post("/api/identity/confirm", { data: { token, locale: "en" }, headers: { Origin: origin } })).status()).toBe(200);
   return fixture(async client => (await client.query<{ id: string }>('SELECT id FROM "User" WHERE email=$1', [email])).rows[0].id);
 }
-async function save(context: BrowserContext, displayName: string, directoryVisible = true) {
-  const response = await context.request.put("/api/people/profile", { data: { displayName, directoryVisible }, headers: { Origin: origin } });
+async function save(context: BrowserContext, displayName: string) {
+  const response = await context.request.put("/api/people/profile", { data: { displayName }, headers: { Origin: origin } });
   expect(response.status()).toBe(200);
 }
 async function search(page: Page, locale: "en" | "ar", query: string) {
@@ -43,12 +43,12 @@ async function fits(page: Page) {
 }
 type PeopleBrowser = Window & { next: { router: { refresh(): void } }; peopleHold: { reached: boolean; release(): void } };
 for (const locale of ["en", "ar"] as const) {
-  test(`${locale}: Unicode-number typos respect whole words, partial matching and visibility`, async ({ context, page, browser }) => {
+  test(`${locale}: Unicode-number typos respect whole words, partial matching and saved profiles`, async ({ context, page, browser }) => {
     const owner = await browser.newContext(), hidden = await browser.newContext(), marker = randomUUID().slice(0, 8);
     const displayName = `${marker} a³a`;
     try {
       await signIn(context); await signIn(owner); await signIn(hidden);
-      await save(owner, displayName); await save(hidden, displayName, false);
+      await save(owner, displayName); // The other account has no saved profile.
       await page.goto(`/${locale}/people`); await search(page, locale, `${marker} a²a`);
       await expect(page.locator(".people-result")).toHaveCount(1);
       const link = page.getByRole("link", { name: displayName, exact: true }), destination = await link.getAttribute("href");
@@ -59,17 +59,18 @@ for (const locale of ["en", "ar"] as const) {
       await expect(page.getByText(peopleText[locale].empty, { exact: true })).toBeVisible();
       await search(page, locale, `${marker} ²z`);
       await expect(page.locator(".people-result")).toHaveCount(1);
-      await save(owner, displayName, false); await search(page, locale, `${marker} a²a`);
+      await fixture(client => client.query('UPDATE "User" SET "emailVerifiedAt"=NULL WHERE id=(SELECT "userId" FROM "Profile" WHERE "directoryId"=$1)', [destination!.split("/").at(-1)]));
+      await search(page, locale, `${marker} ²z`);
       await expect(page.locator(".people-result")).toHaveCount(0);
       expect((await context.request.get(`/api/people/${destination!.split("/").at(-1)}`)).status()).toBe(404);
     } finally { await owner.close(); await hidden.close(); }
   });
-  test(`${locale}: suggests visible profiles for typos and separate name parts, explains empty results and keeps hidden profiles private`, async ({ context, page, browser }) => {
+  test(`${locale}: suggests saved profiles for typos and separate name parts and excludes unverified accounts`, async ({ context, page, browser }) => {
     const owner = await browser.newContext(), hidden = await browser.newContext(), marker = randomUUID().slice(0, 8);
     const displayName = `${marker} أَحْـمَد Ahmed Mahmoud`;
     try {
       await signIn(context); await signIn(owner); await signIn(hidden);
-      await save(owner, displayName); await save(hidden, displayName, false);
+      await save(owner, displayName); // The other account has no saved profile.
       await page.goto(`/${locale}/people`);
       await search(page, locale, `Mahmoud ${marker} Ahmde`);
       await expect(page.locator(".people-result")).toHaveCount(1);
@@ -78,7 +79,8 @@ for (const locale of ["en", "ar"] as const) {
       await search(page, locale, `${marker} أحدم`);
       await expect(page.locator(".people-result")).toHaveCount(1); await expect(link).toHaveAttribute("href", destination!);
       await link.click(); await expect(page.getByRole("heading", { name: displayName, exact: true })).toBeVisible();
-      await save(owner, displayName, false); await page.goto(`/${locale}/people`);
+      await fixture(client => client.query('UPDATE "User" SET "emailVerifiedAt"=NULL WHERE id=(SELECT "userId" FROM "Profile" WHERE "directoryId"=$1)', [destination!.split("/").at(-1)]));
+      await page.goto(`/${locale}/people`);
       await search(page, locale, `${marker} Ahmde`);
       await expect(page.locator(".people-result")).toHaveCount(0);
       await expect(page.getByText(peopleText[locale].empty, { exact: true })).toBeVisible();
@@ -87,17 +89,17 @@ for (const locale of ["en", "ar"] as const) {
       await page.setViewportSize({ width: 320, height: 900 }); await fits(page);
     } finally { await owner.close(); await hidden.close(); }
   });
-  test(`${locale}: confirms a generated label, searches without shared membership and hides direct profile access`, async ({ context, page, browser }) => {
+  test(`${locale}: saves a generated label, searches without shared membership and offers no hiding control`, async ({ context, page, browser }) => {
     const id = await signIn(context), other = await browser.newContext(), text = peopleText[locale];
     try {
       await signIn(other); await page.setViewportSize({ width: 320, height: 900 });
       await page.goto(`/${locale}/profile`);
       const input = page.getByLabel(identityText[locale].name, { exact: true });
       const suggestion = await input.inputValue(); expect(suggestion).toMatch(new RegExp(`^${text.suggestion} [0-9A-F]{10}$`));
-      await expect(page.getByLabel(text.visible)).not.toBeChecked();
+      await expect(page.getByText(text.directoryHint, { exact: true })).toBeVisible();
+      await expect(page.getByRole("checkbox")).toHaveCount(3); // Notification preferences only.
       await page.reload(); await expect(input).toHaveValue(suggestion);
       expect(await fixture(async client => Number((await client.query('SELECT count(*) FROM "Profile" WHERE "userId"=$1', [id])).rows[0].count))).toBe(0);
-      await page.getByLabel(text.visible).check();
       await page.getByRole("button", { name: identityText[locale].save, exact: true }).focus(); await page.keyboard.press("Enter");
       await expect(page.locator("#identity-feedback")).toHaveText(identityText[locale].saved); await fits(page);
       const response = await other.request.get(`/api/people?q=${encodeURIComponent(suggestion)}`);
@@ -106,14 +108,9 @@ for (const locale of ["en", "ar"] as const) {
       const viewer = await other.newPage(); await viewer.goto(`/${locale}/people`); await search(viewer, locale, suggestion);
       await viewer.getByRole("link", { name: suggestion, exact: true }).click();
       await expect(viewer.getByRole("heading", { name: suggestion, exact: true })).toBeVisible();
-      await page.getByLabel(text.visible).uncheck(); await page.getByRole("button", { name: identityText[locale].save, exact: true }).click();
-      await expect(page.locator("#identity-feedback")).toHaveText(identityText[locale].saved);
-      expect((await other.request.get(`/api/people/${item.id}`)).status()).toBe(404);
-      await viewer.reload(); await expect(viewer.getByRole("main").getByRole("alert")).toHaveText(text.unavailable);
-      await expect(viewer.getByRole("heading", { name: suggestion, exact: true })).toHaveCount(0);
-      await page.reload(); await expect(input).toHaveValue(suggestion); await expect(page.getByLabel(text.visible)).not.toBeChecked();
-      await page.getByLabel(text.visible).check(); await page.getByRole("button", { name: identityText[locale].save, exact: true }).click();
-      await expect(page.locator("#identity-feedback")).toHaveText(identityText[locale].saved);
+      expect((await context.request.put("/api/people/profile", { data: { displayName: suggestion, directoryVisible: false }, headers: { Origin: origin } })).status()).toBe(400);
+      await viewer.reload(); await expect(viewer.getByRole("heading", { name: suggestion, exact: true })).toBeVisible();
+      await page.reload(); await expect(input).toHaveValue(suggestion);
       expect((await other.request.get(`/api/people/${item.id}`)).status()).toBe(200);
     } finally { await other.close(); }
   });
@@ -160,7 +157,7 @@ for (const locale of ["en", "ar"] as const) {
       await page.getByLabel(peopleText[locale].query, { exact: true }).fill(marker);
       await page.getByRole("button", { name: peopleText[locale].submit, exact: true }).click();
       await expect.poll(() => page.evaluate(() => (window as unknown as PeopleBrowser).peopleHold.reached)).toBe(true);
-      await save(owner, marker, false);
+      await save(owner, `Changed${randomUUID()}`);
       const refresh = page.waitForResponse(response => new URL(response.url()).pathname === `/${locale}/people` && response.request().headers().rsc === "1");
       await page.evaluate(() => (window as unknown as PeopleBrowser).next.router.refresh()); expect((await refresh).status()).toBe(200);
       await expect(page.getByLabel(peopleText[locale].query, { exact: true })).toHaveValue("");
@@ -176,7 +173,7 @@ test("people endpoints enforce verification, origin, exact inputs and generic un
     expect((await anonymous.request.get("/api/people?q=Member")).status()).toBe(401);
     expect((await anonymous.request.get(`/api/people/${randomUUID()}`)).status()).toBe(401);
     await signIn(context);
-    expect((await context.request.put("/api/people/profile", { data: { displayName: "Forged", directoryVisible: true } })).status()).toBe(403);
+    expect((await context.request.put("/api/people/profile", { data: { displayName: "Forged" } })).status()).toBe(403);
     for (const data of [{ displayName: "Forged", directoryVisible: true, userId: randomUUID() }, { displayName: "A", directoryVisible: "true" }, { displayName: "", directoryVisible: true }]) {
       expect((await context.request.put("/api/people/profile", { data, headers: { Origin: origin } })).status()).toBe(400);
     }
@@ -192,7 +189,7 @@ test("review regression: both profile HTTP routes share one budget across indepe
     await other.addCookies([{ name: sessionCookie, value: token, url: origin, httpOnly: true, sameSite: "Lax" }]);
     const write = (session: BrowserContext, legacy: boolean, displayName: string) => legacy
       ? session.request.post("/api/identity/profile", { data: { displayName }, headers: { Origin: origin } })
-      : session.request.put("/api/people/profile", { data: { displayName, directoryVisible: true }, headers: { Origin: origin } });
+      : session.request.put("/api/people/profile", { data: { displayName }, headers: { Origin: origin } });
     for (let i = 0; i < 30; i++) expect((await write(i % 2 ? other : context, i % 2 === 1, "HTTP shared budget")).status()).toBe(200);
     const snapshot = () => fixture(async client => JSON.stringify((await client.query('SELECT * FROM "Profile" WHERE "userId"=$1', [ownerId])).rows));
     const before = await snapshot();
@@ -214,7 +211,7 @@ test("review regression: both profile HTTP routes reject embedded controls witho
   for (const control of ["\t", "\n", "\u007f", "\u202e", "\u2066", "\u200b"]) {
     const displayName = `${marker} A${control}B`;
     const responses = [await context.request.post("/api/identity/profile", { data: { displayName }, headers: { Origin: origin } }),
-      await context.request.put("/api/people/profile", { data: { displayName, directoryVisible: false }, headers: { Origin: origin } })];
+      await context.request.put("/api/people/profile", { data: { displayName }, headers: { Origin: origin } })];
     expect(responses.map(response => response.status())).toEqual([400, 400]);
     for (const response of responses) expect(await response.json()).toEqual({ ok: false });
   }

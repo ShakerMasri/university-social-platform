@@ -9,6 +9,14 @@ test("ordinary startup leaves synthetic identity disabled", async ({ request, pa
     headers: { Origin: "http://127.0.0.1:3100", "X-Usp-Peer": "127.0.0.1", "X-Usp-Peer-Signature": "a".repeat(64), "X-Role": "admin" },
   })).status()).toBe(503);
   expect((await request.post("/__local-preview/confirmation", { data: { email: "synthetic@university.test" }, headers: { Origin: "http://127.0.0.1:3100" } })).status()).toBe(404);
+  await page.context().addCookies([{ name: "usp_m2_session", value: "a".repeat(43), url: "http://127.0.0.1:3100", httpOnly: true, sameSite: "Lax" }]);
+  for (const locale of ["en", "ar"] as const) {
+    const response = await page.goto(`/${locale}?mode=preview&dev=1`);
+    expect(response?.headers()["cache-control"]).toContain("no-store");
+    await expect(page.locator(`main a[href='/${locale}/signin']`)).toBeVisible();
+    await expect(page.locator(".primary-navigation")).toHaveCount(0);
+    await expect(page.getByRole("main").getByRole("alert")).toHaveCount(0);
+  }
   await page.goto("/en/signin");
   await expect(page.getByText("Identity testing is available through the dedicated local test runner.")).toBeVisible();
   await expect(page.getByRole("textbox")).toHaveCount(0);

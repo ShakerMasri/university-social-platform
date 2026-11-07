@@ -4,6 +4,7 @@ export type OperationalEvent =
   | "identity.http.get_failed"
   | "identity.http.post_failed"
   | "identity.delivery_failed"
+  | "identity.home.failed"
   | "communities.http.failed"
   | "comments.page.failed"
   | "notifications.page.failed"
