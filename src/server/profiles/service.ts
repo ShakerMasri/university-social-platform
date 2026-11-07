@@ -5,6 +5,7 @@ import { communityId } from "../communities/policy.ts";
 import { InputError } from "../communities/http.ts";
 import { ProfileSaveRateLimited, updateOwnProfile } from "../identity/service.ts";
 import { lockDirectoryProfile } from "./locking.ts";
+import { peopleTypoPattern, peopleWordSeparatorPattern } from "./matching.ts";
 import { directoryProfileInput, peopleAnchor, peopleCursor, peoplePageSize, profileSuggestion, type PeopleInput } from "./policy.ts";
 
 export function ownDirectoryProfile(db: PrismaClient, token: unknown) {
@@ -25,10 +26,15 @@ export async function saveDirectoryProfile(db: PrismaClient, token: unknown, val
   }
 }
 function readable(input?: PeopleInput) {
-  // Matching uses the existing archive normalization without exporting email or
-  // adding a derived index. strpos keeps %, _ and quotes literal, with bound SQL.
-  const match = input ? Prisma.sql`AND strpos(lower(regexp_replace(normalize(p."displayName", NFC),
-    ${"[\u0640\u064b-\u0652\u0670]"}, '', 'g')), ${input.query}) > 0` : Prisma.empty;
+  // All terms may occur anywhere in the name, in any order. Share exactly the
+  // same predicate for candidates, anchors and post-lock delivery checks.
+  const name = Prisma.sql`lower(regexp_replace(normalize(p."displayName", NFC), ${"[\u0640\u064b-\u0652\u0670]"}, '', 'g'))`;
+  const words = Prisma.sql`regexp_replace(${name} COLLATE "C", ${peopleWordSeparatorPattern}, ' ', 'g')`;
+  const terms = input ? [...new Set(input.query.split(" "))].map(term => {
+    const pattern = peopleTypoPattern(term);
+    return pattern ? Prisma.sql`(strpos(${name}, ${term}) > 0 OR ${words} ~ ${pattern})` : Prisma.sql`strpos(${name}, ${term}) > 0`;
+  }) : [];
+  const match = terms.length ? Prisma.sql`AND (${Prisma.join(terms, " AND ")})` : Prisma.empty;
   return Prisma.sql`p."directoryVisible" AND u."emailVerifiedAt" IS NOT NULL ${match}`;
 }
 export function peopleCandidateQuery(input: PeopleInput, after?: string) {

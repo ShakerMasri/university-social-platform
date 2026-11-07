@@ -18,7 +18,7 @@ export function peopleInput(parameters: URLSearchParams): PeopleInput {
   const keys = [...parameters.keys()], raw = parameters.get("q");
   if (keys.length > 2 || new Set(keys).size !== keys.length || keys.some(key => !["q", "after"].includes(key)) ||
       raw === null || !raw.isWellFormed() || Array.from(raw).length > 60 || /[\p{Cc}\p{Cf}]/u.test(raw)) throw new Error("Invalid people query");
-  const query = normalizeArchiveText(raw.trim());
+  const query = normalizeArchiveText(raw.trim()).replace(/\s+/gu, " ");
   if (Array.from(query).length < 2) throw new Error("Invalid people query");
   const after = parameters.get("after");
   if (after !== null && !/^[0-9a-f-]{36}\.[0-9a-f]{64}$/.test(after)) throw new Error("Invalid people cursor");
@@ -27,7 +27,7 @@ export function peopleInput(parameters: URLSearchParams): PeopleInput {
 }
 export function peopleCursor(id: string, input: PeopleInput, actorId: string, key: string) {
   if (!/^[0-9a-f]{64}$/.test(key)) throw new Error("People signing unavailable");
-  const scope = JSON.stringify(["m4-people-v1", actorId, input.query, communityId(id)]);
+  const scope = JSON.stringify(["m4-people-v3", actorId, input.query, communityId(id)]);
   return `${id}.${keyedDigest(key, scope)}`;
 }
 export function peopleAnchor(input: PeopleInput, actorId: string, key: string) {

@@ -43,6 +43,50 @@ async function fits(page: Page) {
 }
 type PeopleBrowser = Window & { next: { router: { refresh(): void } }; peopleHold: { reached: boolean; release(): void } };
 for (const locale of ["en", "ar"] as const) {
+  test(`${locale}: Unicode-number typos respect whole words, partial matching and visibility`, async ({ context, page, browser }) => {
+    const owner = await browser.newContext(), hidden = await browser.newContext(), marker = randomUUID().slice(0, 8);
+    const displayName = `${marker} a³a`;
+    try {
+      await signIn(context); await signIn(owner); await signIn(hidden);
+      await save(owner, displayName); await save(hidden, displayName, false);
+      await page.goto(`/${locale}/people`); await search(page, locale, `${marker} a²a`);
+      await expect(page.locator(".people-result")).toHaveCount(1);
+      const link = page.getByRole("link", { name: displayName, exact: true }), destination = await link.getAttribute("href");
+      await link.click(); await expect(page.getByRole("heading", { name: displayName, exact: true })).toBeVisible();
+      await save(owner, `${marker} ab²zz`);
+      await page.goto(`/${locale}/people`); await search(page, locale, `${marker} abc`);
+      await expect(page.locator(".people-result")).toHaveCount(0);
+      await expect(page.getByText(peopleText[locale].empty, { exact: true })).toBeVisible();
+      await search(page, locale, `${marker} ²z`);
+      await expect(page.locator(".people-result")).toHaveCount(1);
+      await save(owner, displayName, false); await search(page, locale, `${marker} a²a`);
+      await expect(page.locator(".people-result")).toHaveCount(0);
+      expect((await context.request.get(`/api/people/${destination!.split("/").at(-1)}`)).status()).toBe(404);
+    } finally { await owner.close(); await hidden.close(); }
+  });
+  test(`${locale}: suggests visible profiles for typos and separate name parts, explains empty results and keeps hidden profiles private`, async ({ context, page, browser }) => {
+    const owner = await browser.newContext(), hidden = await browser.newContext(), marker = randomUUID().slice(0, 8);
+    const displayName = `${marker} أَحْـمَد Ahmed Mahmoud`;
+    try {
+      await signIn(context); await signIn(owner); await signIn(hidden);
+      await save(owner, displayName); await save(hidden, displayName, false);
+      await page.goto(`/${locale}/people`);
+      await search(page, locale, `Mahmoud ${marker} Ahmde`);
+      await expect(page.locator(".people-result")).toHaveCount(1);
+      const link = page.getByRole("link", { name: displayName, exact: true }), destination = await link.getAttribute("href");
+      await expect(link).toBeVisible();
+      await search(page, locale, `${marker} أحدم`);
+      await expect(page.locator(".people-result")).toHaveCount(1); await expect(link).toHaveAttribute("href", destination!);
+      await link.click(); await expect(page.getByRole("heading", { name: displayName, exact: true })).toBeVisible();
+      await save(owner, displayName, false); await page.goto(`/${locale}/people`);
+      await search(page, locale, `${marker} Ahmde`);
+      await expect(page.locator(".people-result")).toHaveCount(0);
+      await expect(page.getByText(peopleText[locale].empty, { exact: true })).toBeVisible();
+      await expect(page.getByRole("link", { name: peopleText[locale].settings, exact: true })).toHaveAttribute("href", `/${locale}/profile`);
+      expect((await context.request.get(`/api/people/${destination!.split("/").at(-1)}`)).status()).toBe(404);
+      await page.setViewportSize({ width: 320, height: 900 }); await fits(page);
+    } finally { await owner.close(); await hidden.close(); }
+  });
   test(`${locale}: confirms a generated label, searches without shared membership and hides direct profile access`, async ({ context, page, browser }) => {
     const id = await signIn(context), other = await browser.newContext(), text = peopleText[locale];
     try {

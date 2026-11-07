@@ -1,6 +1,6 @@
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { randomBytes, randomUUID } from "node:crypto";
-import { readFileSync, readdirSync } from "node:fs";
+import { readFileSync, readdirSync, writeFileSync } from "node:fs";
 import { Client } from "pg";
 import { createLocalDatabase } from "../../src/server/database/client";
 import { requestSignIn, confirmSignIn, updateOwnProfile, logout } from "../../src/server/identity/service";
@@ -8,6 +8,7 @@ import { newToken, digest } from "../../src/server/identity/policy";
 import { ownDirectoryProfile, saveDirectoryProfile, searchPeople, readDirectoryProfile, peopleCandidateQuery } from "../../src/server/profiles/service";
 import { Prisma } from "../../src/generated/prisma/client";
 import { peopleInput } from "../../src/server/profiles/policy";
+import { peopleTypoPattern, peopleWordSeparatorPattern } from "../../src/server/profiles/matching";
 import { readManifest, databaseUrl, assertDatabaseIdentity } from "../../tools/database/targets";
 
 const manifest = readManifest(), name = process.env.M1B_TEST_DATABASE, upgrade = process.env.M4_PEOPLE_UPGRADE_DATABASE;
@@ -46,6 +47,43 @@ async function waitForBlock(client: Client) {
   throw new Error("Expected a real profile lock wait");
 }
 describe("permission-aware people discovery", () => {
+  it("P3 regression: Unicode-number substitutions match through actual search and the fuzzy clause itself", async () => {
+    const owner = await actor(), reader = await actor(), hidden = await actor(), unverified = await actor(), marker = randomUUID().slice(0, 8);
+    await save(owner, `${marker} a³a`);
+    await save(hidden, `${marker} a³a`, false); await save(unverified, `${marker} a³a`);
+    await migration.query('UPDATE "User" SET "emailVerifiedAt"=NULL WHERE id=$1', [unverified.id]);
+    expect((await search(reader, `${marker} a²a`)).items.map(row => row.displayName)).toEqual([`${marker} a³a`]);
+    const rows = await db.$queryRaw<{ matches: boolean }[]>`SELECT regexp_replace(${"a³a"}::text COLLATE "C", ${peopleWordSeparatorPattern}, ' ', 'g') ~ ${peopleTypoPattern("a²a")} AS matches`;
+    expect(rows[0].matches).toBe(true); // No literal fallback can hide a fuzzy failure.
+    await save(owner, `${marker} a³a`, false);
+    expect((await search(reader, `${marker} a²a`)).items).toEqual([]);
+  });
+  it("P3 regression: Unicode numbers cannot split a word and create a false fuzzy match", async () => {
+    const owner = await actor(), reader = await actor(), marker = randomUUID().slice(0, 8);
+    await save(owner, `${marker} ab²zz`);
+    expect((await search(reader, `${marker} abc`)).items).toEqual([]);
+    const rows = await db.$queryRaw<{ matches: boolean }[]>`SELECT regexp_replace(${"ab²zz"}::text COLLATE "C", ${peopleWordSeparatorPattern}, ' ', 'g') ~ ${peopleTypoPattern("abc")} AS matches`;
+    expect(rows[0].matches).toBe(false);
+  });
+  it("P3 regression: Unicode-number edits and both word boundaries agree with explicit whole-word expectations", async () => {
+    const owner = await actor(), reader = await actor(), marker = randomUUID().slice(0, 8);
+    const cases: [string, string, boolean][] = [
+      ["a²a", "a³a", true], ["a²a", "a²³a", true], ["a²³a", "a²a", true], ["a²³a", "a³²a", true],
+      ["aⅷa", "aⅸa", true], ["a½a", "a¼a", true], ["a١a", "a٢a", true], ["𐐨²a", "𐐩²a", true],
+      ["١٢٣", "١٤٣", true], ["١٢٣", "١٢٤٣", true], ["١٢٣", "١٣", true], ["١٢٣", "٢١٣", true],
+      ["𐐨𐐩𐐪", "𐐨𐐩𐐫", true], ["𐐨𐐩𐐪", "𐐨𐐩𐐫𐐪", true], ["𐐨𐐩𐐪", "𐐨𐐪", true], ["𐐨𐐩𐐪", "𐐩𐐨𐐪", true],
+      ["abc", "ab²zz", false], ["abc", "²ab", false], ["abc", "ab①zz", false], ["abc", "ab𐐨zz", false],
+      ["a²a", "x a³a,y", true], ["abc", "ab😀zz", true], ["a²a", "a³zz", false],
+    ];
+    for (const [query, name, expected] of cases) {
+      const rows = await db.$queryRaw<{ matches: boolean }[]>`SELECT regexp_replace(${name}::text COLLATE "C", ${peopleWordSeparatorPattern}, ' ', 'g') ~ ${peopleTypoPattern(query)} AS matches`;
+      expect(rows[0].matches, `${query} / ${name}`).toBe(expected);
+      await save(owner, `${marker} ${name}`);
+      expect((await search(reader, `${marker} ${query}`)).items.map(row => row.displayName)).toEqual(expected ? [`${marker} ${name}`] : []);
+    }
+    await save(owner, `${marker} ab²zz`);
+    expect((await search(reader, `${marker} ²z`)).items).toHaveLength(1); // Exact partial matches stay available.
+  });
   it("review regression: mixed legacy and People saves charge one shared budget across sessions", async () => {
     const owner = await actor(), secondToken = newToken();
     await db.session.create({ data: { userId: owner.id, tokenDigest: digest(secondToken), expiresAt: new Date(Date.now() + 86400000) } });
@@ -135,31 +173,55 @@ describe("permission-aware people discovery", () => {
     await deny(search(owner, marker), 401); await deny(search({ token: newToken() }, marker), 401);
     await logout(db, reader.token); await deny(search(reader, marker), 401);
   });
+  it("suggests visible names for one-edit English/Arabic typos and reordered name parts without treating symbols as operators", async () => {
+    const owner = await actor(), hidden = await actor(), unverified = await actor(), reader = await actor(), marker = randomUUID().slice(0, 8);
+    const displayName = `${marker} أحمد Ahmed Mahmoud 😀 C%_++`;
+    await save(owner, displayName); await save(hidden, displayName, false); await save(unverified, displayName);
+    await migration.query('UPDATE "User" SET "emailVerifiedAt"=NULL WHERE id=$1', [unverified.id]);
+    const expected = { id: (await db.profile.findUniqueOrThrow({ where: { userId: owner.id } })).directoryId, displayName };
+    for (const typo of ["Ahmde", "Ahmd", "Ahmmed", "Ahmet", "أحدم", "أحد", "أحممد", "أحكد"]) {
+      expect((await search(reader, `${marker} ${typo}`)).items).toEqual([expected]);
+    }
+    expect((await search(reader, `Mahmoud   ${marker} AHMED`)).items).toEqual([expected]);
+    expect((await search(reader, `${marker} ahm`)).items).toEqual([expected]);
+    for (const unmatched of ["ax", "zebra", "Axxed", "c++", ".*", "(Ahmed|.*)", "😀😁"]) {
+      expect((await search(reader, `${marker} ${unmatched}`)).items).toEqual([]);
+    }
+    await save(owner, displayName, false);
+    expect((await search(reader, `${marker} Ahmde`)).items).toEqual([]);
+    await deny(readDirectoryProfile(db, reader.token, expected.id), 404);
+  });
   it("paginates duplicate names and rejects cross-user/query cursors and hidden or renamed anchors", async () => {
     const owner = await actor(), reader = await actor(), other = await actor(), marker = `Page${randomUUID()}`;
     const ids = Array.from({ length: 23 }, () => randomUUID()).sort();
     for (const id of ids) {
       await migration.query('INSERT INTO "User" (id,email,"emailKey","emailVerifiedAt","updatedAt") VALUES ($1,$2,$2,now(),now())', [id, `${id}@university.test`]);
-      await migration.query('INSERT INTO "Profile" ("userId","displayName","directoryVisible","updatedAt") VALUES ($1,$2,true,now())', [id, marker]);
+      await migration.query('INSERT INTO "Profile" ("userId","displayName","directoryVisible","updatedAt") VALUES ($1,$2,true,now())', [id, `${marker} Ahmed a³a`]);
     }
     const first = await search(reader, marker), second = await search(reader, marker, first.next!);
     expect(first.items).toHaveLength(20); expect(second.items).toHaveLength(3); expect(second.next).toBeNull();
     expect(new Set([...first.items, ...second.items].map(row => row.id)).size).toBe(23);
+    const fuzzyFirst = await search(reader, `${marker} Ahmde`), fuzzySecond = await search(reader, `${marker} Ahmde`, fuzzyFirst.next!);
+    expect(fuzzyFirst.items).toEqual(first.items); expect(fuzzySecond.items).toEqual(second.items); expect(fuzzySecond.next).toBeNull();
+    const unicodeFirst = await search(reader, `${marker} a²a`), unicodeSecond = await search(reader, `${marker} a²a`, unicodeFirst.next!);
+    expect(unicodeFirst.items).toEqual(first.items); expect(unicodeSecond.items).toEqual(second.items); expect(unicodeSecond.next).toBeNull();
     await expect(search(other, marker, first.next!)).rejects.toThrow("Restart people search");
     await expect(search(reader, "Changed", first.next!)).rejects.toThrow("Restart people search");
     const anchorId = first.items.at(-1)!.id;
     await migration.query('UPDATE "Profile" SET "directoryVisible"=false WHERE "directoryId"=$1', [anchorId]);
     await deny(search(reader, marker, first.next!), 404);
+    await deny(search(reader, `${marker} a²a`, unicodeFirst.next!), 404);
     await migration.query('UPDATE "Profile" SET "directoryVisible"=true,"displayName"=\'Changed\' WHERE "directoryId"=$1', [anchorId]);
     await deny(search(reader, marker, first.next!), 404);
+    await deny(search(reader, `${marker} a²a`, unicodeFirst.next!), 404);
     await save(owner, "Unrelated");
   });
   it("rechecks hidden detail and search candidates after actual lock waits", async () => {
     for (const detail of [false, true]) {
-      const owner = await actor(), reader = await actor(), marker = `Race${randomUUID()}`; await save(owner, marker);
+      const owner = await actor(), reader = await actor(), marker = `Race${randomUUID()}`; await save(owner, `${marker} Ahmed a³a`);
       const profile = await db.profile.findUniqueOrThrow({ where: { userId: owner.id } });
       const lock = await blocker(owner.id);
-      const pending = detail ? readDirectoryProfile(db, reader.token, profile.directoryId) : search(reader, marker);
+      const pending = detail ? readDirectoryProfile(db, reader.token, profile.directoryId) : search(reader, `${marker} Ahmde a²a`);
       const outcome = pending.then(value => ({ value, status: 200 }), error => ({ value: null, status: error.status as number }));
       try {
         await waitForBlock(lock);
@@ -249,12 +311,19 @@ describe("permission-aware people discovery", () => {
     const ids = Array.from({ length: 2000 }, () => randomUUID()), marker = randomUUID().slice(0, 8);
     await migration.query('INSERT INTO "User" (id,email,"emailKey","emailVerifiedAt","updatedAt") SELECT id,id::text||\'@university.test\',id::text||\'@university.test\',now(),now() FROM unnest($1::uuid[]) id', [ids]);
     await migration.query('INSERT INTO "Profile" ("userId","displayName","directoryVisible","updatedAt") SELECT id,$2::text||CASE WHEN ord%2=0 THEN \' Ahmad أحمد\' ELSE \' Samir سمير\' END, ord%3<>0,now() FROM unnest($1::uuid[]) WITH ORDINALITY x(id,ord)', [ids, marker]);
-    for (const [kind, query] of [["broad", marker], ["arabic", `${marker} ahmad أحمد`], ["no-match", `${marker} absent`]]) {
+    const observations = [];
+    const distinct = Array.from({ length: 60 }, (_, i) => String.fromCodePoint(0x10428 + i)).join("");
+    for (const [kind, query] of [["broad", marker], ["arabic", `${marker} ahmad أحمد`], ["reordered", `أحمد ${marker} ahmad`], ["typo", `${marker} ahamd`], ["no-match", `${marker} absent`], ["long-typo", "a".repeat(60)], ["long-unicode-typo", "𐐨".repeat(60)], ["long-distinct-unicode", distinct]]) {
       const input = peopleInput(new URLSearchParams({ q: query }));
-      const plan = await db.$queryRaw<{ "QUERY PLAN": { Plan: { "Actual Rows": number; "Node Type": string }; "Execution Time": number }[] }[]>(Prisma.sql`EXPLAIN (ANALYZE, BUFFERS, FORMAT JSON) ${peopleCandidateQuery(input)}`);
+      const plan = await db.$transaction(async tx => {
+        await tx.$queryRaw`SELECT set_config('statement_timeout', '3000', true)`;
+        return tx.$queryRaw<{ "QUERY PLAN": { Plan: { "Actual Rows": number; "Node Type": string }; "Execution Time": number }[] }[]>(Prisma.sql`EXPLAIN (ANALYZE, BUFFERS, FORMAT JSON) ${peopleCandidateQuery(input)}`);
+      });
       const result = plan[0]["QUERY PLAN"][0];
       expect(result.Plan["Node Type"]).toBe("Limit"); expect(result.Plan["Actual Rows"]).toBeLessThanOrEqual(21);
-      console.info("Synthetic people candidate plan", { kind, addedProfiles: ids.length, rows: result.Plan["Actual Rows"], executionMs: result["Execution Time"] });
+      observations.push({ kind, addedProfiles: ids.length, rows: result.Plan["Actual Rows"], executionMs: result["Execution Time"], plan: result.Plan });
     }
+    writeFileSync(".cache/people-typo-p3-plans.json", JSON.stringify(observations, null, 2));
+    console.info("Synthetic people candidate plans", observations);
   });
 });

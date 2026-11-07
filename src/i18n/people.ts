@@ -3,9 +3,10 @@ import type { Locale } from "./locales";
 export const peopleText = {
   en: {
     title: "People", intro: "Find confirmed profiles across the university community.",
-    query: "Search display names", hint: "Enter 2–60 characters. English and Arabic names are searched together. Names may be shared by several people.",
+    query: "Search display names", hint: "Enter 2–60 characters. Search English or Arabic name parts in any order. Small typos in words of 3 or more letters are supported. Names may be shared by several people.",
     submit: "Search people", initial: "Search for a display name to begin.", results: "People results",
-    empty: "No matching profiles.", next: "Next profiles", retry: "Retry search", loading: "Searching…",
+    empty: "No matching profiles. Try fewer name parts or another spelling. Only profiles whose owners enabled People visibility appear here.", next: "Next profiles", retry: "Retry search", loading: "Searching…",
+    settings: "Manage my profile visibility",
     failed: "Could not load profiles. Try again.", invalid: "Check the query or start a new search.",
     unavailable: "This profile is unavailable or you do not have access.", rate: "Too many profile requests. Try again later.",
     back: "Back to People", profile: "Profile", notice: "This display name is chosen by the account holder. It does not establish identity or teacher status.",
@@ -15,9 +16,10 @@ export const peopleText = {
   },
   ar: {
     title: "الأشخاص", intro: "ابحث عن الملفات المؤكدة عبر مجتمع الجامعة.",
-    query: "البحث بأسماء العرض", hint: "أدخل من حرفين إلى 60 حرفًا. يشمل البحث الأسماء العربية والإنجليزية معًا. قد يشترك عدة أشخاص في الاسم نفسه.",
+    query: "البحث بأسماء العرض", hint: "أدخل من حرفين إلى 60 حرفًا. ابحث بأجزاء الاسم العربي أو الإنجليزي بأي ترتيب. يدعم البحث الأخطاء البسيطة في الكلمات من 3 أحرف فأكثر. قد يشترك عدة أشخاص في الاسم نفسه.",
     submit: "البحث عن أشخاص", initial: "ابدأ بالبحث عن اسم عرض.", results: "نتائج الأشخاص",
-    empty: "لا توجد ملفات مطابقة.", next: "الملفات التالية", retry: "إعادة البحث", loading: "جارٍ البحث…",
+    empty: "لا توجد ملفات مطابقة. جرّب أجزاء أقل من الاسم أو تهجئة أخرى. تظهر فقط الملفات التي فعّل أصحابها الظهور في بحث الأشخاص.", next: "الملفات التالية", retry: "إعادة البحث", loading: "جارٍ البحث…",
+    settings: "إدارة ظهور ملفي الشخصي",
     failed: "تعذر تحميل الملفات. حاول مجددًا.", invalid: "تحقق من نص البحث أو ابدأ بحثًا جديدًا.",
     unavailable: "هذا الملف غير متاح أو ليس لديك صلاحية الوصول.", rate: "طلبات ملفات كثيرة. حاول لاحقًا.",
     back: "العودة إلى الأشخاص", profile: "الملف الشخصي", notice: "يختار صاحب الحساب اسم العرض. لا يثبت الاسم الهوية أو صفة المدرّس.",

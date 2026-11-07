@@ -58,7 +58,7 @@ export function PeopleSearch({ locale }: { locale: Locale }) {
       {state === "loading" && <p role="status">{text.loading}</p>}
       {state === "failed" && <><p role="alert">{error}</p><button onClick={() => void search(last.current)}>{text.retry}</button></>}
       {result && <>
-        {result.items.length === 0 && <p role="status">{text.empty}</p>}
+        {result.items.length === 0 && <><p role="status">{text.empty}</p><p><Link href={`/${locale}/profile`}>{text.settings}</Link></p></>}
         <ul className="community-list">{result.items.map(item => <li className="community-card people-result" key={item.id}>
           <h3 dir="auto"><Link prefetch={false} href={`/${locale}/people/${item.id}`}><bdi>{item.displayName}</bdi></Link></h3>
         </li>)}</ul>
