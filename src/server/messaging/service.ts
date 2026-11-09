@@ -147,22 +147,23 @@ function conversationProjection(row: DirectConversation, actor: string, peer: Pe
 }
 
 export async function readMessages(db: PrismaClient, token: unknown, conversationValue: unknown, cursor?: unknown) {
-  const conversationId = communityId(conversationValue), after = cursor === undefined ? undefined : communityId(cursor);
+  const conversationId = communityId(conversationValue), before = cursor === undefined ? undefined : communityId(cursor);
   await reserveAttempt(db, token, "m4-message-read", true);
   return withPair(db, token, { conversationId }, async (tx, actor, _pair, row) => {
     if (!row) throw unavailable();
     for (const account of [row.firstId, row.secondId]) await lockDirectoryProfile(tx, account);
     // History stays readable after rejection/block or loss of peer verification.
-    const anchor = after ? await tx.directMessage.findFirst({ where: { id: after, conversationId }, select: { createdAt: true, id: true } }) : null;
-    if (after && !anchor) throw unavailable();
+    const anchor = before ? await tx.directMessage.findFirst({ where: { id: before, conversationId }, select: { createdAt: true, id: true } }) : null;
+    if (before && !anchor) throw unavailable();
     const rows = await tx.directMessage.findMany({ where: { conversationId, ...(anchor ? { OR: [
-      { createdAt: { gt: anchor.createdAt } }, { createdAt: anchor.createdAt, id: { gt: anchor.id } },
-    ] } : {}) }, orderBy: [{ createdAt: "asc" }, { id: "asc" }], take: messagePageSize + 1,
+      { createdAt: { lt: anchor.createdAt } }, { createdAt: anchor.createdAt, id: { lt: anchor.id } },
+    ] } : {}) }, orderBy: [{ createdAt: "desc" }, { id: "desc" }], take: messagePageSize + 1,
     select: { id: true, body: true, senderId: true, createdAt: true } });
-    const items = rows.slice(0, messagePageSize).map(({ senderId, ...message }) => ({ ...message, mine: senderId === actor }));
+    // Read the newest bounded batch, then display that batch chronologically.
+    const items = rows.slice(0, messagePageSize).reverse().map(({ senderId, ...message }) => ({ ...message, mine: senderId === actor }));
     const peer = await tx.user.findUniqueOrThrow({ where: { id: row.firstId === actor ? row.secondId : row.firstId }, select: peerSelect });
     const profile = await tx.profile.findUniqueOrThrow({ where: { userId: actor }, select: { directoryId: true } });
-    return { items, next: rows.length > messagePageSize ? items.at(-1)!.id : null,
+    return { items, next: rows.length > messagePageSize ? items[0].id : null,
       ...conversationProjection(row, actor, peer), scope: profile.directoryId };
   });
 }

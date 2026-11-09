@@ -157,20 +157,34 @@ describe("M4 local direct messaging on PostgreSQL", () => {
     const missingProfile = await readMessages(db, p.b.token, p.conversationId);
     expect(missingProfile.items).toHaveLength(1); expect(missingProfile.peer).toBeNull(); expect(missingProfile.canAccept).toBe(false);
   });
-  it("persists bilingual inert text with scoped oldest-first pages and no email/account IDs in projections", async () => {
+  it("opens the newest bilingual batch and pages backward without exposing email/account IDs", async () => {
     const p = await pair(), other = await pair();
     await decideConversation(db, p.b.token, p.conversationId, "accept");
     for (let i = 0; i < 20; i++) await sendMessage(db, p.a.token, p.conversationId, input(i === 0 ? "😀".repeat(4000) : `Message ${i} رسالة`));
     const first = await readMessages(db, p.b.token, p.conversationId); expect(first.items).toHaveLength(20); expect(first.next).toBeTruthy();
     const second = await readMessages(db, p.b.token, p.conversationId, first.next); expect(second.items).toHaveLength(1); expect(second.next).toBeNull();
     expect(new Set([...first.items, ...second.items].map(row => row.id)).size).toBe(21);
-    expect(first.items[0]).toMatchObject({ id: p.messageId, body: p.first.body, mine: false });
+    expect(first.items.at(-1)!.body).toBe("Message 19 رسالة");
+    expect(second.items[0]).toMatchObject({ id: p.messageId, body: p.first.body, mine: false });
+    expect(first.next).toBe(first.items[0].id);
     expect(Object.keys(first.items[0]).sort()).toEqual(["body", "createdAt", "id", "mine"]);
     await deny(readMessages(db, p.b.token, p.conversationId, other.messageId), 404);
     await deny(listConversations(db, p.b.token, other.conversationId), 404);
     const connection = await createLocalDatabase(databaseUrl(manifest, name!, "runtime"));
     try { expect((await readMessages(connection, p.b.token, p.conversationId)).items).toEqual(first.items); }
     finally { await connection.$disconnect(); }
+  });
+  it("traverses tied message timestamps backward without duplicates or omissions", async () => {
+    const p = await pair();
+    await decideConversation(db, p.b.token, p.conversationId, "accept");
+    for (let i = 0; i < 20; i++) await sendMessage(db, p.a.token, p.conversationId, input(`Tied ${i}`));
+    await migration.query('UPDATE "DirectMessage" SET "createdAt"=\'2026-01-01T00:00:00Z\' WHERE "conversationId"=$1', [p.conversationId]);
+    const expected = await db.directMessage.findMany({ where: { conversationId: p.conversationId }, orderBy: { id: "asc" }, select: { id: true } });
+    const latest = await readMessages(db, p.b.token, p.conversationId);
+    const older = await readMessages(db, p.b.token, p.conversationId, latest.next);
+    expect(latest.items.map(row => row.id)).toEqual(expected.slice(1).map(row => row.id));
+    expect([...older.items, ...latest.items].map(row => row.id)).toEqual(expected.map(row => row.id));
+    expect(older.next).toBeNull();
   });
   it("bounds conversation pages to 20 and scopes their anchors to the current participant", async () => {
     const owner = await actor(), ids: string[] = [];

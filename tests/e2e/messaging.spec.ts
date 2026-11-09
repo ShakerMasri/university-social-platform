@@ -33,6 +33,16 @@ async function contact(context: BrowserContext, directoryId: string, data = inpu
   expect(response.status()).toBe(200);
   return await response.json() as { conversationId: string; messageId: string };
 }
+async function seedHistory(conversationId: string, firstId: string, senderId: string, count: number) {
+  // Bulk history is synthetic fixture setup on this runner's checked disposable
+  // target, not a message-edit API or evidence of bypassing the send budget.
+  await fixture(async client => {
+    const start = Date.now() - (count + 1) * 1000;
+    await client.query('UPDATE "DirectMessage" SET "createdAt"=$1 WHERE id=$2 AND "conversationId"=$3', [new Date(start), firstId, conversationId]);
+    for (let index = 1; index < count; index++) await client.query('INSERT INTO "DirectMessage" (id,"conversationId","senderId","submissionKey",body,"createdAt") VALUES ($1,$2,$3,$4,$5,$6)',
+      [randomUUID(), conversationId, senderId, digest(randomUUID()), `History ${index}`, new Date(start + index * 1000)]);
+  });
+}
 async function refresh(page: Page, locale: "en" | "ar") {
   await page.getByRole("button", { name: messagingText[locale].refresh, exact: true }).first().click();
   await expect(page.locator(".message-history")).toBeVisible();
@@ -60,7 +70,7 @@ test("HTTP boundaries enforce authentication, exact JSON, origin, bounds and pri
     const response = await other.request.get(`/api/conversations/${p.conversationId}/messages`);
     expect(response.status()).toBe(200); expect(response.headers()["cache-control"]).toBe("private, no-store");
     expect(JSON.stringify(await response.json())).not.toContain(target.id);
-    for (const query of ["?after=bad", "?after=" + p.messageId + "&after=" + p.messageId, "?limit=100"]) {
+    for (const query of ["?before=bad", "?before=" + p.messageId + "&before=" + p.messageId, "?after=" + p.messageId, "?limit=100"]) {
       expect((await context.request.get(`/api/conversations/${p.conversationId}/messages${query}`)).status()).toBe(400);
     }
     expect((await other.request.put(`/api/conversations/${p.conversationId}/request`, { headers, data: { decision: "accept", actor: target.id } })).status()).toBe(400);
@@ -380,6 +390,57 @@ for (const locale of ["en", "ar"] as const) {
       await expect(page.getByRole("button", { name: text.unblock, exact: true })).toBeVisible();
     } finally { await other.close(); }
   });
+  test(`${locale}: upward scrolling preserves the visible message, pauses on failure and rechecks revoked access`, async ({ context, page, browser }) => {
+    const other = await browser.newContext(), text = messagingText[locale], gate = Promise.withResolvers<void>();
+    try {
+      const actor = await account(context), peer = await account(other), p = await contact(context, peer.directoryId, input("History 0"));
+      expect((await other.request.put(`/api/conversations/${p.conversationId}/request`, { headers, data: { decision: "accept" } })).status()).toBe(200);
+      await seedHistory(p.conversationId, p.messageId, actor.id, 65);
+      let olderReads = 0, failNext = false;
+      await page.route(url => url.pathname === `/api/conversations/${p.conversationId}/messages` && url.searchParams.has("before"), async route => {
+        olderReads++;
+        if (olderReads === 1) await gate.promise;
+        if (failNext) { failNext = false; await route.fulfill({ status: 503, contentType: "application/json", body: '{"ok":false}' }); }
+        else await route.continue();
+      });
+      await page.goto(`/${locale}/messages/${p.conversationId}`);
+      const box = page.getByRole("region", { name: text.history, exact: true });
+      await expect(page.locator(".message-history > li")).toHaveCount(20);
+      await expect(page.getByText("History 64", { exact: true })).toBeInViewport();
+      await expect(page.getByText("History 0", { exact: true })).toHaveCount(0);
+      expect(await box.evaluate(element => element.scrollHeight - element.clientHeight - element.scrollTop < 2)).toBe(true);
+      expect(olderReads).toBe(0); // Opening at the bottom must not automatically drain old pages.
+      const older = box.getByRole("button", { name: text.more, exact: true });
+      await expect(older).not.toBeInViewport();
+      await box.evaluate(element => { element.scrollTop = 150; });
+      await box.hover(); await page.mouse.wheel(0, -80);
+      await expect.poll(() => olderReads).toBe(1);
+      const anchor = await box.evaluate(element => {
+        const top = element.getBoundingClientRect().top;
+        const row = [...element.querySelectorAll<HTMLElement>("[data-message-id]")].find(item => item.getBoundingClientRect().bottom > top)!;
+        return { id: row.dataset.messageId!, offset: row.getBoundingClientRect().top - top };
+      });
+      gate.resolve();
+      await expect(page.locator(".message-history > li")).toHaveCount(40);
+      await expect.poll(async () => Math.abs(await box.evaluate((element, saved) => element.querySelector(`[data-message-id="${saved.id}"]`)!.getBoundingClientRect().top - element.getBoundingClientRect().top - saved.offset, anchor))).toBeLessThan(2);
+      expect(olderReads).toBe(1);
+      failNext = true;
+      await box.evaluate(element => { element.scrollTop = 150; });
+      await box.hover(); await page.mouse.wheel(0, -80);
+      await expect(page.getByText(text.failed, { exact: true })).toBeVisible();
+      await expect(page.locator(".message-history > li")).toHaveCount(40);
+      await page.mouse.wheel(0, -500);
+      await expect(older).toBeInViewport();
+      await page.waitForTimeout(200); // Observe that a failed automatic read does not retry itself.
+      expect(olderReads).toBe(2);
+      await page.getByRole("button", { name: text.more, exact: true }).focus(); await page.keyboard.press("Enter");
+      await expect(page.locator(".message-history > li")).toHaveCount(60); await expect(box).toBeFocused();
+      await fixture(client => client.query('UPDATE "Session" SET "revokedAt"=now() WHERE "userId"=$1', [actor.id]));
+      await page.getByRole("button", { name: text.more, exact: true }).click();
+      await expect(page.getByText(text.unavailable, { exact: true })).toBeVisible();
+      await expect(page.locator(".message-history")).toHaveCount(0); await expect(page.getByLabel(text.body, { exact: true })).toHaveCount(0);
+    } finally { gate.resolve(); await other.close(); }
+  });
   test(`${locale}: history paging, unavailable reads and explicit retry retain truthful loading and empty states`, async ({ context, page, browser }) => {
     const other = await browser.newContext(), text = messagingText[locale];
     try {
@@ -389,7 +450,7 @@ for (const locale of ["en", "ar"] as const) {
       await page.goto(`/${locale}/messages/${p.conversationId}`);
       await expect(page.locator(".message-history > li")).toHaveCount(20);
       await page.getByRole("button", { name: text.more, exact: true }).focus(); await page.keyboard.press("Enter");
-      await expect(page.locator(".message-history > li")).toHaveCount(1);
+      await expect(page.locator(".message-history > li")).toHaveCount(21);
       await expect(page.getByText("Paged message 19", { exact: true })).toBeVisible();
       await expect(page.getByRole("button", { name: text.more, exact: true })).toHaveCount(0);
       await page.route(`**/api/conversations/${p.conversationId}/messages`, route => route.fulfill({ status: 503, contentType: "application/json", body: '{"ok":false}' }));
@@ -455,8 +516,8 @@ test("HTTP scoped paging, expiry, budgets, rejection and bilateral blocks preser
     expect((await (await context.request.get(`${path}/messages`)).json()).items).toHaveLength(1);
     for (let i = 0; i < 20; i++) expect((await context.request.post(`${path}/messages`, { headers, data: input(`Page ${i}`) })).status()).toBe(200);
     const first = await (await context.request.get(`${path}/messages`)).json(); expect(first.items).toHaveLength(20);
-    const second = await (await context.request.get(`${path}/messages?after=${first.next}`)).json(); expect(second.items).toHaveLength(1); expect(second.next).toBeNull();
-    expect((await context.request.get(`${path}/messages?after=${foreign.messageId}`)).status()).toBe(404);
+    const second = await (await context.request.get(`${path}/messages?before=${first.next}`)).json(); expect(second.items).toHaveLength(1); expect(second.next).toBeNull();
+    expect((await context.request.get(`${path}/messages?before=${foreign.messageId}`)).status()).toBe(404);
     await fixture(client => client.query('UPDATE "Session" SET "expiresAt"=now()-interval \'1 second\' WHERE "userId"=$1', [a.id]));
     expect((await context.request.get(`${path}/messages`)).status()).toBe(401);
     expect((await context.request.post(`${path}/messages`, { headers, data: input() })).status()).toBe(401);
@@ -465,6 +526,27 @@ test("HTTP scoped paging, expiry, budgets, rejection and bilateral blocks preser
     expect((await other.request.get(`${path}/messages`)).status()).toBe(429);
     expect((await other.request.put(`${path}/block`, { headers, data: { blocked: true } })).status()).toBe(200);
   } finally { await other.close(); await third.close(); }
+});
+
+test("long older-history browsing stays bounded and can return to the latest messages", async ({ context, page, browser }) => {
+  const other = await browser.newContext(), text = messagingText.en;
+  try {
+    const actor = await account(context), peer = await account(other), p = await contact(context, peer.directoryId, input("History 0"));
+    expect((await other.request.put(`/api/conversations/${p.conversationId}/request`, { headers, data: { decision: "accept" } })).status()).toBe(200);
+    await seedHistory(p.conversationId, p.messageId, actor.id, 225);
+    await page.goto(`/en/messages/${p.conversationId}`);
+    await expect(page.locator(".message-history > li")).toHaveCount(20);
+    for (let batch = 1; batch <= 11; batch++) {
+      await page.getByRole("button", { name: text.more, exact: true }).focus(); await page.keyboard.press("Enter");
+      await expect(page.locator(".message-history > li").first().locator("p").last()).toHaveText(`History ${Math.max(0, 225 - (batch + 1) * 20)}`);
+    }
+    await expect(page.locator(".message-history > li")).toHaveCount(200);
+    await expect(page.getByRole("button", { name: text.more, exact: true })).toHaveCount(0);
+    await expect(page.getByText(text.newerOutside, { exact: false })).toBeVisible();
+    await page.getByRole("button", { name: text.latest, exact: true }).click();
+    await expect(page.locator(".message-history > li")).toHaveCount(20);
+    await expect(page.getByText("History 224", { exact: true })).toBeInViewport();
+  } finally { await other.close(); }
 });
 
 // Last: the original Playwright-owned application is deliberately replaced.

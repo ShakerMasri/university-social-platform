@@ -1,10 +1,21 @@
 import { describe, expect, it } from "vitest";
 import { NextRequest } from "next/server";
-import { communityBody, InputError } from "./http";
+import { communityBody, cursor, InputError } from "./http";
 
 const origin = "http://localhost:3100";
 const request = (body: string | ReadableStream<Uint8Array>, contentType = "application/json", query = "") => new NextRequest(`${origin}/api/communities${query}`, {
   method: "POST", headers: { "content-type": contentType, "content-length": "1" }, body,
+});
+
+describe("direction-specific cursors", () => {
+  const id = "ABCDEF12-3456-4789-ABCD-EF1234567890";
+  it("keeps forward collection cursors and older-history cursors distinct", () => {
+    expect(cursor(new NextRequest(`${origin}/api/conversations?after=${id}`))).toBe(id.toLowerCase());
+    expect(cursor(new NextRequest(`${origin}/api/conversations/id/messages?before=${id}`), "before")).toBe(id.toLowerCase());
+    for (const query of [`?after=${id}`, `?before=${id}&before=${id}`, `?before=${id}&limit=100`, "?before=bad"]) {
+      expect(() => cursor(new NextRequest(`${origin}/api/conversations/id/messages${query}`), "before")).toThrow(InputError);
+    }
+  });
 });
 describe("shared bounded JSON body reader", () => {
   it.each(["application/json", "Application/JSON", "aPpLiCaTiOn/JsOn", "Application/JSON; CHARSET=UTF-8", "application/json; profile=legacy"])("accepts the JSON type with casing %s without imposing messaging-only parameters", async contentType => {

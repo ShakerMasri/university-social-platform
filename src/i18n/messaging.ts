@@ -3,7 +3,9 @@ export const messagingText = {
   en: {
     title: "Messages", contact: "Send a message request", body: "Message text", send: "Send message", retrySend: "Retry the same message",
     hint: "Plain text, up to 4,000 characters. The recipient must accept before replying. You can send up to five messages while pending.",
-    refresh: "Refresh messages", more: "Load next messages", next: "Next conversations", back: "Back to messages",
+    refresh: "Refresh messages", more: "Load older messages", next: "Next conversations", back: "Back to messages",
+    history: "Message history", olderHint: "Scroll up to load older messages, or use the button.", olderLoaded: "Older messages loaded.",
+    newerOutside: "Newer messages are outside this view.", latest: "Show latest messages",
     loading: "Loading messages…", working: "Saving…", failed: "Could not load or save messages. Try again.",
     unavailable: "Messaging is unavailable. Your session, profile or permissions may have changed.", rate: "Too many messaging attempts. Wait 15 minutes before trying again.",
     invalid: "Enter 1–4,000 characters of plain text.", conflict: "This retry conflicts with the saved message. Open the conversation to check its history.",
@@ -20,7 +22,9 @@ export const messagingText = {
   ar: {
     title: "الرسائل", contact: "إرسال طلب مراسلة", body: "نص الرسالة", send: "إرسال الرسالة", retrySend: "إعادة محاولة الرسالة نفسها",
     hint: "نص عادي حتى 4,000 محرف. يجب أن يقبل المستلم قبل الرد. يمكنك إرسال خمس رسائل كحد أقصى أثناء الانتظار.",
-    refresh: "تحديث الرسائل", more: "تحميل الرسائل التالية", next: "المحادثات التالية", back: "العودة إلى الرسائل",
+    refresh: "تحديث الرسائل", more: "تحميل الرسائل الأقدم", next: "المحادثات التالية", back: "العودة إلى الرسائل",
+    history: "سجل الرسائل", olderHint: "مرّر إلى أعلى لتحميل الرسائل الأقدم، أو استخدم الزر.", olderLoaded: "حُمّلت رسائل أقدم.",
+    newerOutside: "توجد رسائل أحدث خارج هذا العرض.", latest: "عرض أحدث الرسائل",
     loading: "جارٍ تحميل الرسائل…", working: "جارٍ الحفظ…", failed: "تعذر تحميل الرسائل أو حفظها. حاول مجددًا.",
     unavailable: "المراسلة غير متاحة. ربما تغيرت جلستك أو ملفك أو صلاحياتك.", rate: "محاولات مراسلة كثيرة. انتظر 15 دقيقة قبل المحاولة مجددًا.",
     invalid: "أدخل نصًا عاديًا من محرف واحد إلى 4,000 محرف.", conflict: "تتعارض هذه المحاولة مع الرسالة المحفوظة. افتح المحادثة للتحقق من سجلها.",

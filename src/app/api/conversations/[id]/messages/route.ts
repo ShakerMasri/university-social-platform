@@ -10,7 +10,7 @@ type Context = { params: Promise<{ id: string }> };
 export function GET(request: NextRequest, { params }: Context) {
   return messagingHTTP(request, async (db, token) => {
     const { id } = await params;
-    return communityReply(await readMessages(db, token, validInput(() => communityId(id)), cursor(request)));
+    return communityReply(await readMessages(db, token, validInput(() => communityId(id)), cursor(request, "before")));
   });
 }
 export function POST(request: NextRequest, { params }: Context) {

@@ -26,10 +26,10 @@ export async function communityHTTP(request: NextRequest, handle: (db: PrismaCli
 export function validInput<T>(read: () => T): T {
   try { return read(); } catch { throw new InputError("Invalid input"); }
 }
-export function cursor(request: NextRequest) {
+export function cursor(request: NextRequest, parameter: "after" | "before" = "after") {
   const keys = [...request.nextUrl.searchParams.keys()];
-  if (keys.some((key) => key !== "after") || keys.length > 1) throw new InputError("Invalid cursor");
-  const value = request.nextUrl.searchParams.get("after");
+  if (keys.some((key) => key !== parameter) || keys.length > 1) throw new InputError("Invalid cursor");
+  const value = request.nextUrl.searchParams.get(parameter);
   return value === null ? undefined : validInput(() => communityId(value));
 }
 export async function communityBody(request: NextRequest, maximumBytes = 8192): Promise<Record<string, unknown>> {

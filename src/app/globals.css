@@ -80,6 +80,7 @@ footer { padding-block: 1rem; border-block-start: 1px solid var(--line); font-si
 .discovery-layout { display: grid; grid-template-columns: minmax(0, 1fr) minmax(18rem, 23rem); align-items: start; gap: 2rem; }
 .discovery-layout > *, .community-list > * { min-inline-size: 0; }
 .community-list { list-style: none; padding: 0; margin-block: 1rem 1.5rem; display: grid; gap: 1rem; }
+.message-scroll { block-size: min(60dvh, 40rem); min-block-size: 12rem; overflow-y: auto; overflow-anchor: none; padding: 0.25rem; }
 .community-card { padding: clamp(1rem, 3vw, 1.5rem); background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); }
 .community-card h2 { font-size: 1.25rem; margin-block: 0.75rem; }
 .discovery-card h3 { margin-block: 0.75rem; font-size: 1.25rem; }
