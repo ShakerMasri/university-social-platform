@@ -40,7 +40,7 @@ const handler: import("node:http").RequestListener = async (request, response) =
     }
     request.headers["x-usp-peer"] = ip;
     request.headers["x-usp-peer-signature"] = keyedDigest(context.peerKey, ip);
-    if (request.url?.includes("/identity/") || request.url?.includes("/communities") || request.url?.includes("/people") || /\/(profile|verify|signin)(?:[?#]|$)/.test(request.url ?? "")) {
+    if (request.url?.includes("/identity/") || request.url?.includes("/communities") || request.url?.includes("/people") || /\/(messages|conversations)(?:[/?#]|$)/.test(request.url ?? "") || /\/(profile|verify|signin)(?:[?#]|$)/.test(request.url ?? "")) {
       response.setHeader("Cache-Control", "private, no-store");
       response.setHeader("Referrer-Policy", "no-referrer");
     }
@@ -70,6 +70,7 @@ try {
 // Separate authenticated loopback channel for Playwright's Node worker. It is
 // neither an app route nor accessible with browser cookies. Tokens stay in RAM.
 const key = randomBytes(32).toString("hex");
+const controllable = mode === "preview" || (mode === "test" && process.env.M2_IDENTITY_E2E === "1" && process.env.M2_BROWSER_GROUP === "messaging");
 const control = controlServer((socket) => {
   socket.setTimeout(3000, () => socket.destroy());
   let buffer = "";
@@ -80,9 +81,9 @@ const control = controlServer((socket) => {
     try {
       const input: unknown = JSON.parse(buffer.split("\n")[0]);
       if (!input || typeof input !== "object" || !("key" in input) || typeof input.key !== "string" || !/^[0-9a-f]{64}$/.test(input.key) ||
-          !timingSafeEqual(Buffer.from(input.key, "hex"), Buffer.from(key, "hex")) || (!("email" in input) && !(mode === "preview" && "operation" in input && ["stop", "status"].includes(String(input.operation))))) throw new Error("Rejected");
-      if (mode === "preview" && "operation" in input && input.operation === "status") { socket.end(JSON.stringify({ databaseName: name }) + "\n"); return; }
-      if (mode === "preview" && "operation" in input && input.operation === "stop") {
+          !timingSafeEqual(Buffer.from(input.key, "hex"), Buffer.from(key, "hex")) || (!("email" in input) && !(controllable && "operation" in input && ["stop", "status"].includes(String(input.operation))))) throw new Error("Rejected");
+      if (controllable && "operation" in input && input.operation === "status") { socket.end(JSON.stringify({ databaseName: name }) + "\n"); return; }
+      if (controllable && "operation" in input && input.operation === "stop") {
         socket.end(JSON.stringify({ stopped: true, databaseName: name }) + "\n", requestStop); return;
       }
       if (!("email" in input)) throw new Error("Rejected");

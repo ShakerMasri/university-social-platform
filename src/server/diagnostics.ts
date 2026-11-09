@@ -11,7 +11,9 @@ export type OperationalEvent =
   | "archive.page.failed"
   | "archive.http.failed"
   | "profiles.http.failed"
-  | "profiles.page.failed";
+  | "profiles.page.failed"
+  | "messaging.http.failed"
+  | "messaging.page.failed";
 
 // Fixed event names identify the failing boundary. Never accept an Error,
 // request, URL, headers, query, user identifier or provider-supplied message.

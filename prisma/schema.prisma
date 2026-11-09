@@ -28,6 +28,10 @@ model User {
   commentVotes    CommentVote[]
   notificationPreference NotificationPreference?
   notifications Notification[]
+  firstConversations DirectConversation[] @relation("DirectFirst")
+  secondConversations DirectConversation[] @relation("DirectSecond")
+  initiatedConversations DirectConversation[] @relation("DirectInitiator")
+  directMessages DirectMessage[]
 
   // The composite foreign key binds every challenge to the current email.
   @@unique([id, emailKey])
@@ -219,4 +223,43 @@ model CommentVote {
 
   @@id([commentId, userId])
   @@index([userId])
+}
+
+enum DirectRequestState {
+  PENDING
+  ACCEPTED
+  REJECTED
+}
+
+model DirectConversation {
+  id String @id @default(uuid()) @db.Uuid
+  firstId String @db.Uuid
+  secondId String @db.Uuid
+  initiatorId String @db.Uuid
+  state DirectRequestState @default(PENDING)
+  pendingMessages Int
+  firstBlocked Boolean @default(false)
+  secondBlocked Boolean @default(false)
+  createdAt DateTime @default(now()) @db.Timestamptz(3)
+  first User @relation("DirectFirst", fields: [firstId], references: [id], onDelete: Restrict, onUpdate: Restrict)
+  second User @relation("DirectSecond", fields: [secondId], references: [id], onDelete: Restrict, onUpdate: Restrict)
+  initiator User @relation("DirectInitiator", fields: [initiatorId], references: [id], onDelete: Restrict, onUpdate: Restrict)
+  messages DirectMessage[]
+
+  @@unique([firstId, secondId])
+  @@index([firstId, id])
+  @@index([secondId, id])
+}
+
+model DirectMessage {
+  id String @id @default(uuid()) @db.Uuid
+  conversationId String @db.Uuid
+  senderId String @db.Uuid
+  submissionKey String @unique @db.VarChar(64)
+  body String @db.VarChar(4000)
+  createdAt DateTime @default(now()) @db.Timestamptz(3)
+  conversation DirectConversation @relation(fields: [conversationId], references: [id], onDelete: Restrict, onUpdate: Restrict)
+  sender User @relation(fields: [senderId], references: [id], onDelete: Restrict, onUpdate: Restrict)
+
+  @@index([conversationId, createdAt, id])
 }

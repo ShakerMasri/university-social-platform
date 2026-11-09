@@ -25,7 +25,7 @@ function processAbsent(pid: number) {
 
 // A crashed process can leave its private control file behind. Clear only this
 // development record's file, and only after both PID and listener are absent.
-export async function recoverStalePreview(manifest: LocalManifest, record: DatabaseRecord, path = resolve(".cache/m2-preview.json")) {
+export async function previewIsInactive(manifest: LocalManifest, record: DatabaseRecord, path = resolve(".cache/m2-preview.json")) {
   const { raw, control } = readControl(manifest, record, path);
   if (!processAbsent(control.pid)) return false;
   await new Promise<void>((accept, reject) => {
@@ -39,6 +39,13 @@ export async function recoverStalePreview(manifest: LocalManifest, record: Datab
     });
   });
   if (!processAbsent(control.pid) || readFileSync(path, "utf8") !== raw) throw new Error("Preview state changed; refusing stale-file cleanup");
+  return true;
+}
+
+export async function recoverStalePreview(manifest: LocalManifest, record: DatabaseRecord, path = resolve(".cache/m2-preview.json")) {
+  const { raw } = readControl(manifest, record, path);
+  if (!await previewIsInactive(manifest, record, path)) return false;
+  if (readFileSync(path, "utf8") !== raw) throw new Error("Preview state changed; refusing stale-file cleanup");
   unlinkSync(path);
   return true;
 }

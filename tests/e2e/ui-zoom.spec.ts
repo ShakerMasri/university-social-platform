@@ -8,6 +8,21 @@ import { communityText } from "../../src/i18n/communities";
 import { identityText } from "../../src/i18n/identity";
 import { archiveText } from "../../src/i18n/archive";
 import { peopleText } from "../../src/i18n/people";
+import { messagingText } from "../../src/i18n/messaging";
+
+async function messagingPeer() {
+  const manifest = readManifest(), name = process.env.M2_BROWSER_DATABASE;
+  if (!manifest.databases.some(record => record.name === name && record.kind === "test" && record.ready)) throw new Error("Owned disposable zoom messaging target required");
+  const url = databaseUrl(manifest, name!, "migration"); await assertDatabaseIdentity(url, manifest, "migration");
+  const client = new Client({ connectionString: url }), id = randomUUID(), directoryId = randomUUID(), email = `${id}@university.test`;
+  try {
+    await client.connect();
+    await client.query('INSERT INTO "User" (id,email,"emailKey","emailVerifiedAt","updatedAt") VALUES ($1,$2,$2,now(),now())', [id, email]);
+    await client.query('INSERT INTO "Profile" ("userId","directoryId","displayName","updatedAt") VALUES ($1,$2,$3,now())', [id, directoryId, "زميل ZoomLongName".repeat(3)]);
+    return directoryId;
+  } catch { throw new Error("Synthetic zoom messaging fixture failed; private diagnostics omitted"); }
+  finally { await client.end(); }
+}
 
 test.use({ trace: "off", screenshot: "off", video: "off" });
 const origin = "http://127.0.0.1:3100";
@@ -97,6 +112,10 @@ for (const locale of ["en", "ar"] as const) {
       const directory = await context.request.get(`/api/people?q=${email.slice(5, 13)}`);
       expect(directory.status()).toBe(200);
       const directoryId = (await directory.json()).items[0].id as string;
+      const contact = await context.request.post(`/api/people/${await messagingPeer()}/messages`, { headers: { Origin: origin }, data: {
+        requestId: randomUUID(), body: "MixedIdentifierرسالة".repeat(150),
+      } });
+      expect(contact.status()).toBe(200); const conversationId = (await contact.json()).conversationId as string;
       const { id } = await post(context, "/api/communities", { name: "Zoom مجتمع دراسة", description: "Academic learning · تعلم مشترك", visibility: "PUBLIC" });
       const { id: postId } = await post(context, `/api/communities/${id}/posts`, { requestId: randomUUID(), type: "RESOURCE", title: "التزامن Concurrency discussion", body: "MixedIdentifier".repeat(30), resourceUrl: "https://example.com/" + "reference".repeat(20) });
       await post(context, `/api/communities/${id}/posts/${postId}/comments`, { requestId: randomUUID(), body: "تعليق طويل · A thoughtful bilingual comment" });
@@ -107,9 +126,15 @@ for (const locale of ["en", "ar"] as const) {
         await setBrowserZoom(worker, factor);
         const measurement = await expectZoomMeasurement(page, baseline, factor);
         console.log(`${locale} native zoom ${factor * 100}%: ${JSON.stringify(measurement)}`);
-        for (const path of ["", "signin", "verify", "profile", "communities", `communities/${id}`, `communities/${id}/posts/${postId}`, "notifications", "archive", "people", `people/${directoryId}`]) {
+        for (const path of ["", "signin", "verify", "profile", "communities", `communities/${id}`, `communities/${id}/posts/${postId}`, "notifications", "archive", "people", `people/${directoryId}`, "messages", `messages/${conversationId}`]) {
           await page.goto(`/${locale}/${path}`);
           await expect(page.getByRole("heading", { level: 1 })).toBeVisible();
+          if (path.startsWith("messages/")) {
+            await expect(page.locator(".message-history")).toBeVisible();
+            await page.getByLabel(messagingText[locale].body, { exact: true }).fill("Zoom message رسالة");
+            await page.getByRole("button", { name: messagingText[locale].send, exact: true }).focus(); await page.keyboard.press("Enter");
+            await expect(page.locator(".message-composer [role=status]")).toHaveText(messagingText[locale].saved);
+          }
           await expectZoomMeasurement(page, baseline, factor);
           await expectPageFits(page);
         }

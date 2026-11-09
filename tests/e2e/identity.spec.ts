@@ -280,8 +280,11 @@ for (const locale of ["en", "ar"] as const) {
     await openLink(page, locale, await tokenFor(email));
     await page.getByRole("button", { name: text.confirm }).click();
     await expect(page.getByLabel(text.name)).toBeVisible();
-    const home = () => page.getByRole("link", { name: text.home, exact: true });
-    await home().click();
+    const home = async () => {
+      await page.getByRole("link", { name: text.home, exact: true }).click();
+      await expect(page).toHaveURL(new RegExp(`/${locale}$`));
+    };
+    await home();
     await expect(page.getByRole("main").getByRole("link", { name: text.signIn, exact: true })).toHaveCount(0);
     await expect(page.getByRole("banner").getByRole("link", { name: text.profile, exact: true })).toBeVisible();
     await expect(page.getByRole("main").getByRole("link")).toHaveAttribute("href", `/${locale}/communities`);
@@ -299,7 +302,7 @@ for (const locale of ["en", "ar"] as const) {
     await page.getByLabel(text.name).fill("Homepage عضو");
     await page.getByRole("button", { name: text.save }).click();
     await expect(page.locator("#identity-feedback")).toHaveText(text.saved);
-    await home().click();
+    await home();
     await page.reload();
     await expect(page.getByRole("banner").getByRole("link", { name: text.profile, exact: true })).toBeVisible();
     const anonymous = await browser.newContext({ baseURL: origin });
@@ -331,11 +334,14 @@ for (const locale of ["en", "ar"] as const) {
   for (const state of ["expired", "revoked"] as const) test(`${locale}: homepage rechecks ${state} sessions on history restoration and reload`, async ({ page, context }) => {
     const text = identityText[locale], { cookie } = await savedProfile(page, context, locale);
     await page.getByRole("link", { name: text.home, exact: true }).click();
+    await expect(page).toHaveURL(new RegExp(`/${locale}$`));
     await expect(page.getByRole("banner").getByRole("link", { name: text.profile, exact: true })).toBeVisible();
     await page.getByRole("banner").getByRole("link", { name: text.profile, exact: true }).click();
+    await expect(page).toHaveURL(new RegExp(`/${locale}/profile$`));
     if (state === "expired") await fixtureSQL('UPDATE "Session" SET "createdAt" = now() - interval \'8 days\', "expiresAt" = now() - interval \'1 day\' WHERE "tokenDigest" = $1', [digest(cookie.value)]);
     else await fixtureSQL('UPDATE "Session" SET "revokedAt" = clock_timestamp() WHERE "tokenDigest" = $1', [digest(cookie.value)]);
     await page.goBack();
+    await expect(page).toHaveURL(new RegExp(`/${locale}$`));
     await expect(page.getByRole("link", { name: text.signIn, exact: true })).toBeVisible();
     await expect(page.getByRole("link", { name: text.profile, exact: true })).toHaveCount(0);
     await page.reload();

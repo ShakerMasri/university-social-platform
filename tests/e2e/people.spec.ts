@@ -107,6 +107,7 @@ for (const locale of ["en", "ar"] as const) {
       const item = (await response.json()).items[0]; expect(Object.keys(item).sort()).toEqual(["displayName", "id"]); expect(item.id).not.toBe(id);
       const viewer = await other.newPage(); await viewer.goto(`/${locale}/people`); await search(viewer, locale, suggestion);
       await viewer.getByRole("link", { name: suggestion, exact: true }).click();
+      await expect(viewer).toHaveURL(`${origin}/${locale}/people/${item.id}`);
       await expect(viewer.getByRole("heading", { name: suggestion, exact: true })).toBeVisible();
       expect((await context.request.put("/api/people/profile", { data: { displayName: suggestion, directoryVisible: false }, headers: { Origin: origin } })).status()).toBe(400);
       await viewer.reload(); await expect(viewer.getByRole("heading", { name: suggestion, exact: true })).toBeVisible();

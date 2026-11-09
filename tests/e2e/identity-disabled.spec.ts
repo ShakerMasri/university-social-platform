@@ -32,6 +32,17 @@ test("ordinary startup leaves synthetic identity disabled", async ({ request, pa
   await expect(page.getByRole("textbox")).toHaveCount(0);
   expect((await request.post("/api/communities", { data: { name: "Synthetic", description: "", visibility: "PUBLIC" }, headers: { Origin: "http://127.0.0.1:3100" } })).status()).toBe(503);
   const id = "11111111-2222-3333-4444-555555555555";
+  const forgedHeaders = { Origin: "http://127.0.0.1:3100", "X-Usp-Peer": "127.0.0.1", "X-Usp-Peer-Signature": "a".repeat(64), "X-Messaging-Scope": id };
+  for (const path of ["/api/conversations", `/api/conversations/${id}/messages`]) expect((await request.get(path, { headers: forgedHeaders })).status()).toBe(503);
+  for (const path of [`/api/people/${id}/messages`, `/api/conversations/${id}/messages`]) expect((await request.post(path, { headers: forgedHeaders, data: { body: "Synthetic", requestId: id } })).status()).toBe(503);
+  expect((await request.put(`/api/conversations/${id}/request`, { headers: forgedHeaders, data: { decision: "accept" } })).status()).toBe(503);
+  expect((await request.put(`/api/conversations/${id}/block`, { headers: forgedHeaders, data: { blocked: true } })).status()).toBe(503);
+  for (const locale of ["en", "ar"]) for (const path of ["messages", `messages/${id}`]) {
+    const reply = await page.goto(`/${locale}/${path}`);
+    expect(reply?.headers()["cache-control"]).toContain("no-store");
+    await expect(page.getByRole("main").getByRole("alert")).toBeVisible();
+    await expect(page.getByRole("textbox")).toHaveCount(0);
+  }
   expect((await request.get("/api/notifications/preferences")).status()).toBe(503);
   expect((await request.get("/api/notifications")).status()).toBe(503);
   expect((await request.post("/api/notifications/read-all", { data: {}, headers: { Origin: "http://127.0.0.1:3100" } })).status()).toBe(503);

@@ -33,7 +33,9 @@ export function cursor(request: NextRequest) {
   return value === null ? undefined : validInput(() => communityId(value));
 }
 export async function communityBody(request: NextRequest, maximumBytes = 8192): Promise<Record<string, unknown>> {
-  if (request.nextUrl.search || !request.headers.get("content-type")?.startsWith("application/json")) throw new InputError("Invalid input");
+  // Match the exact type/subtype case-insensitively. Callers may impose a
+  // stricter parameter policy, as messaging does before reaching this reader.
+  if (request.nextUrl.search || !/^application\/json(?:\s*;|$)/i.test(request.headers.get("content-type") ?? "")) throw new InputError("Invalid input");
   const reader = request.body?.getReader();
   if (!reader) throw new InputError("Invalid input");
   let size = 0;

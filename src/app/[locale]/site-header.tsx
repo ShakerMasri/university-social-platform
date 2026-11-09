@@ -7,6 +7,7 @@ import { notificationText } from "@/i18n/notifications";
 import { interfaceText } from "@/i18n/interface";
 import { archiveText } from "@/i18n/archive";
 import { peopleText } from "@/i18n/people";
+import { messagingText } from "@/i18n/messaging";
 
 export function SiteHeader({ locale, path = "", accountNavigation = false }: { locale: Locale; path?: string; accountNavigation?: boolean }) {
   const text = dictionaries[locale];
@@ -23,6 +24,7 @@ export function SiteHeader({ locale, path = "", accountNavigation = false }: { l
       <Link prefetch={false} href={`/${locale}/communities`} aria-current={path === "communities" ? "page" : path.startsWith("communities/") ? "location" : undefined}>{communityText[locale].title}</Link>
       <Link prefetch={false} href={`/${locale}/archive`} aria-current={path.split("?")[0] === "archive" ? "page" : undefined}>{archiveText[locale].title}</Link>
       <Link prefetch={false} href={`/${locale}/people`} aria-current={path === "people" ? "page" : path.startsWith("people/") ? "location" : undefined}>{peopleText[locale].title}</Link>
+      <Link prefetch={false} href={`/${locale}/messages`} aria-current={path === "messages" ? "page" : path.startsWith("messages/") ? "location" : undefined}>{messagingText[locale].title}</Link>
       <Link prefetch={false} href={`/${locale}/notifications`} aria-current={path === "notifications" ? "page" : undefined}>{notificationText[locale].title}</Link>
       <Link prefetch={false} href={`/${locale}/profile`} aria-current={path === "profile" ? "page" : undefined}>{identityText[locale].profile}</Link>
     </nav>}

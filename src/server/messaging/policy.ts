@@ -75,3 +75,10 @@ export function messageBlockInput(value: Record<string, unknown>) {
   }
   return { blocked: value.blocked };
 }
+
+export function messageDecisionInput(value: Record<string, unknown>) {
+  if (Object.keys(value).some(key => key !== "decision") || (value.decision !== "accept" && value.decision !== "reject")) {
+    throw new Error("Invalid message decision");
+  }
+  return value.decision;
+}
