@@ -120,6 +120,21 @@ for (const locale of ["en", "ar"] as const) {
       const { id: postId } = await post(context, `/api/communities/${id}/posts`, { requestId: randomUUID(), type: "RESOURCE", title: "التزامن Concurrency discussion", body: "MixedIdentifier".repeat(30), resourceUrl: "https://example.com/" + "reference".repeat(20) });
       await post(context, `/api/communities/${id}/posts/${postId}/comments`, { requestId: randomUUID(), body: "تعليق طويل · A thoughtful bilingual comment" });
       await page.goto(`/${locale}/profile`);
+      await setBrowserZoom(worker, 1);
+      // Native window bounds do not guarantee the required content width.
+      const nativeWindowSession = await context.newCDPSession(page);
+      try {
+        try {
+          const { windowId } = await nativeWindowSession.send("Browser.getWindowForTarget");
+          await nativeWindowSession.send("Browser.setContentsSize", { windowId, width: 1280 });
+        } catch (cause) {
+          throw new Error("Native 1280px content initialization requires Chromium CDP window identification and Browser.setContentsSize support.", { cause });
+        }
+        await expect.poll(() => page.evaluate(() => innerWidth), {
+          message: "Chromium native content width must reach exactly 1280px at 100% zoom before baseline capture",
+          timeout: 5_000,
+        }).toBe(1280);
+      } finally { await nativeWindowSession.detach(); }
       const baseline = await page.evaluate(() => ({ width: innerWidth, dpr: devicePixelRatio, font: getComputedStyle(document.documentElement).fontSize }));
       expect(baseline.width).toBeGreaterThanOrEqual(1280);
       for (const factor of [2, 4]) {

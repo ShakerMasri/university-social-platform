@@ -1,6 +1,6 @@
 import { spawnSync } from "node:child_process";
 import { randomBytes } from "node:crypto";
-import { existsSync, mkdirSync, readFileSync, writeFileSync, unlinkSync, rmdirSync } from "node:fs";
+import { existsSync, mkdirSync, mkdtempSync, readFileSync, writeFileSync, unlinkSync, rmdirSync } from "node:fs";
 import { createServer } from "node:net";
 import { dirname, resolve } from "node:path";
 import { Client } from "pg";
@@ -350,21 +350,75 @@ async function test(m: LocalManifest) {
   }
 }
 
+async function manualQa(m: LocalManifest, operation: "start" | "status" | "stop") {
+  // Load manual-only code only for these explicit commands. Existing automated
+  // commands keep their exact selection, lifecycle and migration-review paths.
+  const { runManualSession } = await import("../testing/manual-session.mts");
+  const currentManifest = () => {
+    const current = readManifest();
+    if (current.owner !== m.owner || current.containerId !== m.containerId || current.root !== m.root) throw new Error("Manual QA manifest identity changed");
+    return current;
+  };
+  await runManualSession(operation, m, {
+    verify() {
+      const current = currentManifest(); verifyResources(current);
+      const state = JSON.parse(execute("docker", ["inspect", "--format", "{{json .State}}", current.container])) as { Running: boolean; Health?: { Status: string } };
+      if (!current.containerId || !state.Running || state.Health?.Status !== "healthy") throw new Error("Manual QA requires the existing owned PostgreSQL container to be healthy; no automatic resume");
+    },
+    register(record) {
+      if (JSON.stringify(currentManifest()) !== JSON.stringify(m) || record.kind !== "test" || record.ready ||
+          !new RegExp(`^usp_m1b_${m.owner}_test_[a-f0-9]{12}$`).test(record.name) || m.databases.some(row => row.name === record.name)) {
+        throw new Error("Manual QA refuses a changed manifest or existing database name");
+      }
+      m.databases.push(record); save(m);
+    },
+    async create(record, marker) {
+      if (!/^mqa_[a-f0-9]{32}$/.test(marker)) throw new Error("Invalid manual creation marker");
+      await createDatabase(m, record); // Refuses an existing database, including unregistered ones.
+      psql(m, "postgres", `COMMENT ON DATABASE ${identifier(record.name)} IS ${sqlLiteral(marker)};`);
+    },
+    migrate: name => migrate(m, name),
+    async remove(name) {
+      // Reload rather than overwriting a stale long-lived manifest snapshot.
+      const current = currentManifest(), record = current.databases.find(row => row.name === name && row.kind === "test" && row.ready);
+      if (!record) throw new Error("Manual cleanup target is not registered and ready");
+      await removeTestDatabase(current, record);
+    },
+    connections(name) {
+      const current = currentManifest(); verifyResources(current);
+      return Number(psql(current, "postgres", `SELECT count(*) FROM pg_stat_activity WHERE backend_type='client backend' AND pid<>pg_backend_pid()${name ? ` AND datname=${sqlLiteral(name)}` : ""};`).trim());
+    },
+    portFree: candidate => ensurePortFree(candidate, "Manual QA application"),
+  });
+}
+
 async function identityBrowser(m: LocalManifest) {
   // The empty-discovery checkpoint needs a pristine target even when comments
   // run before communities. Keep all assertions, with separate fixture scopes.
   for (const group of ["empty", "main", "archive", "messaging"] as const) await identityBrowserGroup(m, group);
 }
-async function identityBrowserGroup(m: LocalManifest, group: "empty" | "main" | "archive" | "messaging") {
+async function identityBrowserGroup(m: LocalManifest, group: "empty" | "main" | "archive" | "messaging" | "zoom") {
   verifyResources(m);
+  const zoomOnly = group === "zoom";
   const controlPath = resolve(".cache/m2-browser.json");
   if (existsSync(controlPath)) throw new Error("Existing identity browser control file requires inspection; not overwritten");
+  if (zoomOnly) await ensurePortFree(3100, "Zoom browser application");
+  const testArguments: string[] = [];
+  if (zoomOnly) {
+    mkdirSync(resolve("test-results"), { recursive: true });
+    const output = mkdtempSync(resolve("test-results/zoom-"));
+    testArguments.push("tests/e2e/ui-zoom.spec.ts",
+      "--grep", "(?:en|ar): real 200% and 400% browser zoom retains reflow and form navigation$",
+      "--project=chromium", "--workers=1", "--retries=0", "--max-failures=1", "--output", output);
+    console.log(`Focused EN/AR native zoom evidence: ${output}`);
+  }
   const record: DatabaseRecord = { name: `usp_m1b_${m.owner}_test_${randomBytes(6).toString("hex")}`, kind: "test", ready: false };
+  if (zoomOnly && m.databases.some(existing => existing.name === record.name)) throw new Error("Zoom database name already registered; refusing adoption");
   m.databases.push(record); save(m);
   try {
     await createDatabase(m, record);
     await migrate(m, record.name);
-    const result = spawnSync(process.execPath, ["tools/testing/run-playwright.mts", "test"], {
+    const result = spawnSync(process.execPath, ["tools/testing/run-playwright.mts", "test", ...testArguments], {
       env: { ...process.env, M2_IDENTITY_E2E: "1", M2_BROWSER_GROUP: group, M2_BROWSER_DATABASE: record.name },
       // The opt-in manual helper prints instructions before each Inspector pause.
       // Buffered output would hide them until the session had already ended.
@@ -374,10 +428,13 @@ async function identityBrowserGroup(m: LocalManifest, group: "empty" | "main" | 
     process.stdout.write(result.stdout ?? ""); process.stderr.write(result.stderr ?? "");
     if (result.error || result.status !== 0) throw new Error("Identity browser tests failed");
   } finally {
+    // Do not erase control state or attempt a drop while an application remains.
+    if (zoomOnly) await ensurePortFree(3100, "Zoom browser shutdown; inspect resources before retrying");
     if (existsSync(controlPath)) {
       removeBrowserControl(controlPath, record.name);
     }
     if (record.ready) await removeTestDatabase(m, record);
+    else if (zoomOnly) console.error(`Zoom provisioning incomplete; inspect manifest entry ${record.name}. No unverified database was removed.`);
   }
 }
 
@@ -576,7 +633,12 @@ try {
       await reviewMigration(m);
       await test(m);
     }
+    else if (command === "manual-qa") await manualQa(m, "start");
+    else if (command === "manual-qa-status") await manualQa(m, "status");
+    else if (command === "manual-qa-stop") await manualQa(m, "stop");
     else if (command === "identity-browser") { await reviewMigration(m); await identityBrowser(m); }
+    // Replay the already-reviewed history only on the new focused browser target.
+    else if (command === "zoom-browser") await identityBrowserGroup(m, "zoom");
     else if (command === "messaging-browser") { await reviewMigration(m); await identityBrowserGroup(m, "messaging"); }
     else if (command === "messaging-restart-check") await restartMessagingDatabase(m);
     else if (command === "cleanup") await cleanup(m);
