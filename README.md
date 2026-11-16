@@ -19,11 +19,12 @@ A Computer Engineering graduation project for university students and teachers t
 | M4, profiles and People | Editable default names and discovery of all saved verified profiles across communities | Implemented and integration-tested locally; not deployed |
 | M4, local messaging | Protected APIs, People contact, requests/history, recipient decisions, bilateral blocks, safe retries and scoped pagination in EN/AR | Implemented and synthetic/local tested; no realtime provider or deployment; evidence in the project brief |
 | M4, final local verification | 193 unit / 143 database / 10 ordinary Chromium / 228 authenticated Chromium passes; owner reports 29 manual PASS / H06 BLOCKED | Reviewed local scope signed off 2026-11-15; QA session safely closed and retained data verified preserved; exceptions/evidence limits remain; not deployed |
+| M5-01, evidence retrieval | Bounded server-only platform passages, citation references and access/content revalidation | Implemented; 51 focused unit/mocked checks and eight focused PostgreSQL cases pass; no provider/API/UI or deployment |
 | Local development | Interactive synthetic sign-in through posts with hot reload and persistent data | Implemented and tested locally |
 
 **Nothing is deployed.** Live university email is not connected. Post/comment editing/deletion, a personalized study feed and AI are still pending. Direct text messaging works in the synthetic local application with explicit refresh. See the [profiles/People checkpoint](docs/project-brief.md#profiles-and-people-discovery--planned-before-messaging), [archive checkpoint](docs/project-brief.md#first-archive-slice--implementation-and-verification), [replies and notifications checkpoint](docs/project-brief.md#replies-and-in-app-notifications--local-checkpoint-2026-10-28), [workflow checkpoint](docs/project-brief.md#interactive-development-workflow--2026-10-27), [comments checkpoint](docs/project-brief.md#createread-comments--approved-2026-10-27) and [voting checkpoint](docs/project-brief.md#postcomment-upvotes--approved-2026-10-27) for verification.
 
-The **reviewed local M4 scope is signed off and closed as of 2026-11-15**, after [verified safe manual-session shutdown and retained-database preservation](docs/project-brief.md#phase-4b-final-local-sign-off-and-safe-shutdown--2026-11-15). Session `3526750d5719` and only its disposable database were closed/removed; PostgreSQL and both retained databases were preserved without restart. The 29 manual passes are owner-reported: documented observations include English archive search, Arabic/mixed search, RTL, and five NVDA checks including the Arabic interface. H03 keyboard discovery is an **OWNER REHEARSAL**; H02 unassisted discovery is not independently established. Separate EN/AR runs were not consistently recorded for other cases; missing browser/version, method, assistance and detailed screen-reader metadata remain **NOT DOCUMENTED / OWNER CONFIRMATION REQUIRED**. H06 remains manually BLOCKED with an approved automated-evidence exception. The owner explicitly acknowledged these limits for local closure. Live email/recovery, wider human evaluation and real-user lifecycle/release decisions remain open. Commit/publication still require separate authorization; M5/M6 and production readiness are separate, and M5 implementation has not begun. The [M3 completion record](docs/project-brief.md#m3-completion-and-next-milestone--2026-11-03) is historical context.
+The **reviewed local M4 scope is signed off and closed as of 2026-11-15**, after [verified safe manual-session shutdown and retained-database preservation](docs/project-brief.md#phase-4b-final-local-sign-off-and-safe-shutdown--2026-11-15). Session `3526750d5719` and only its disposable database were closed/removed; PostgreSQL and both retained databases were preserved without restart. The 29 manual passes are owner-reported: documented observations include English archive search, Arabic/mixed search, RTL, and five NVDA checks including the Arabic interface. H03 keyboard discovery is an **OWNER REHEARSAL**; H02 unassisted discovery is not independently established. Separate EN/AR runs were not consistently recorded for other cases; missing browser/version, method, assistance and detailed screen-reader metadata remain **NOT DOCUMENTED / OWNER CONFIRMATION REQUIRED**. H06 remains manually BLOCKED with an approved automated-evidence exception. The owner explicitly acknowledged these limits for local closure. Live email/recovery, wider human evaluation and real-user lifecycle/release decisions remain open. Commit/publication still require separate authorization; M5/M6 and production readiness are separate, and M5-01 evidence retrieval now has a separate checkpoint in the project brief. The [M3 completion record](docs/project-brief.md#m3-completion-and-next-milestone--2026-11-03) is historical context.
 
 ## Partner review of the UI/UX branch
 
@@ -117,6 +118,22 @@ For the hot-reload workflow check, stop dev/preview and run `npm.cmd run test:de
 
 
 ## Check the application
+
+For the provider-free M5-01 layer, these focused checks use existing dependencies and do not connect to databases:
+
+```powershell
+npm.cmd test -- src/server/evidence/policy.test.ts src/server/evidence/service.test.ts src/server/archive/policy.test.ts src/server/archive/sources.test.ts
+node node_modules/typescript/bin/tsc --noEmit --incremental false
+node node_modules/eslint/bin/eslint.js src/server/archive/service.ts src/server/archive/sources.test.ts src/server/evidence tests/database/evidence.test.ts --max-warnings=0
+```
+
+To run only the eight evidence PostgreSQL cases, use the maintained focused runner against an already-running, identity-verified owned PostgreSQL instance:
+
+```powershell
+npm.cmd run db:test:evidence
+```
+
+It creates one fresh random test database, applies existing migration history and runtime grants only there, verifies both restricted roles/markers and schema agreement, runs only `tests/database/evidence.test.ts`, and removes only its new database without force. It never adopts registered retained targets or starts a stopped container. Do not supply `M5_EVIDENCE_DATABASE` / `M4_ARCHIVE_DATABASE` manually to bypass allocation. Run guarded database commands sequentially. The verified M5-01B run used a separate temporary project root/container/new volume because the retained container was stopped; its original resources were not started or mounted. See [M5-01B isolation, results and preservation limits](docs/project-brief.md#m5-01b-focused-postgresql-verification--2026-11-16).
 
 Install Chromium once. All npm browser-test commands automatically reuse `.cache/ms-playwright` when that folder exists and no `PLAYWRIGHT_BROWSERS_PATH` override is supplied. An explicit override is respected; without the project cache, Playwright uses its standard cache (including CI). Direct `npx playwright` calls still follow Playwright's normal environment settings. To install browsers into the project cache:
 

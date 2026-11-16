@@ -350,6 +350,37 @@ async function test(m: LocalManifest) {
   }
 }
 
+async function evidenceTest(m: LocalManifest) {
+  verifyResources(m);
+  const state = execute("docker", ["inspect", "--format", "{{.State.Status}}", m.container]).trim();
+  if (state !== "running") throw new Error("Focused evidence tests require an already-running owned PostgreSQL; no container will be started");
+  // This closure owns exactly one newly generated record. Existing registered
+  // test/development targets can never become its preparation or cleanup target.
+  const record: DatabaseRecord = { name: `usp_m1b_${m.owner}_test_${randomBytes(6).toString("hex")}`, kind: "test", ready: false };
+  m.databases.push(record); save(m);
+  const output = resolve(`.cache/m5-evidence-schema-${record.name}.sql`);
+  try {
+    await createDatabase(m, record);
+    await migrate(m, record.name);
+    const url = databaseUrl(m, record.name, "migration");
+    await assertDatabaseIdentity(url, m, "migration");
+    await assertDatabaseIdentity(databaseUrl(m, record.name, "runtime"), m, "runtime");
+    execute(process.execPath, ["node_modules/prisma/build/index.js", "migrate", "diff", "--from-config-datasource",
+      "--to-schema", "prisma/schema.prisma", "--script", "--output", output], undefined,
+      { ...process.env, M1B_MIGRATION_URL: url, PRISMA_HIDE_UPDATE_MESSAGE: "1", CHECKPOINT_DISABLE: "1" });
+    if (!existsSync(output) || readFileSync(output, "utf8").replace(/^--.*$/gm, "").trim()) throw new Error("Fresh evidence target schema does not match the checked-in schema");
+    console.log(`Fresh evidence target identity, restricted roles and schema verified: ${record.name}`);
+    const result = spawnSync(process.execPath, ["node_modules/vitest/vitest.mjs", "run", "--config", "vitest.database.config.mjs", "tests/database/evidence.test.ts"], {
+      env: { ...process.env, M5_EVIDENCE_DATABASE: record.name }, encoding: "utf8", windowsHide: true,
+    });
+    process.stdout.write(result.stdout ?? ""); process.stderr.write(result.stderr ?? "");
+    if (result.error || result.status !== 0) throw new Error("Focused evidence PostgreSQL tests failed");
+  } finally {
+    if (record.ready) await removeTestDatabase(m, record);
+    if (existsSync(output)) unlinkSync(output);
+  }
+}
+
 async function manualQa(m: LocalManifest, operation: "start" | "status" | "stop") {
   // Load manual-only code only for these explicit commands. Existing automated
   // commands keep their exact selection, lifecycle and migration-review paths.
@@ -633,6 +664,7 @@ try {
       await reviewMigration(m);
       await test(m);
     }
+    else if (command === "evidence-test") await evidenceTest(m);
     else if (command === "manual-qa") await manualQa(m, "start");
     else if (command === "manual-qa-status") await manualQa(m, "status");
     else if (command === "manual-qa-stop") await manualQa(m, "stop");
