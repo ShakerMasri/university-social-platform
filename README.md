@@ -20,6 +20,7 @@ A Computer Engineering graduation project for university students and teachers t
 | M4, local messaging | Protected APIs, People contact, requests/history, recipient decisions, bilateral blocks, safe retries and scoped pagination in EN/AR | Implemented and synthetic/local tested; no realtime provider or deployment; evidence in the project brief |
 | M4, final local verification | 193 unit / 143 database / 10 ordinary Chromium / 228 authenticated Chromium passes; owner reports 29 manual PASS / H06 BLOCKED | Reviewed local scope signed off 2026-11-15; QA session safely closed and retained data verified preserved; exceptions/evidence limits remain; not deployed |
 | M5-01, evidence retrieval | Bounded server-only platform passages, citation references and access/content revalidation | Implemented; 51 focused unit/mocked checks and eight focused PostgreSQL cases pass; no provider/API/UI or deployment |
+| M5-03C, evidence questions | Explicit server-only prepared-question retrieval with guarded EN/AR syntax | Implemented; 68 focused unit checks and five fresh PostgreSQL cases pass; raw retrieval/archive unchanged; no API/UI or provider |
 | Local development | Interactive synthetic sign-in through posts with hot reload and persistent data | Implemented and tested locally |
 
 **Nothing is deployed.** Live university email is not connected. Post/comment editing/deletion, a personalized study feed and AI are still pending. Direct text messaging works in the synthetic local application with explicit refresh. See the [profiles/People checkpoint](docs/project-brief.md#profiles-and-people-discovery--planned-before-messaging), [archive checkpoint](docs/project-brief.md#first-archive-slice--implementation-and-verification), [replies and notifications checkpoint](docs/project-brief.md#replies-and-in-app-notifications--local-checkpoint-2026-10-28), [workflow checkpoint](docs/project-brief.md#interactive-development-workflow--2026-10-27), [comments checkpoint](docs/project-brief.md#createread-comments--approved-2026-10-27) and [voting checkpoint](docs/project-brief.md#postcomment-upvotes--approved-2026-10-27) for verification.
@@ -144,6 +145,37 @@ node node_modules/eslint/bin/eslint.js tools/database/local.mts tests/database/e
 ```
 
 The [versioned corpus](tests/evaluation/evidence-corpus.ts) defines source text, study intents and relevance labels before execution. The [evaluator](tests/database/evidence-quality.test.ts) writes source aliases and metrics to `.cache/m5-evidence-quality.json`, without bodies, session tokens or account IDs. It is skipped in ordinary database campaigns. One warmup and five measured calls per query preserve the real limiter using a fresh synthetic reader per case. Quality misses are measured, not hidden by a passing harness. Current measurements, definitions and limits are in the [M5-02 record](docs/project-brief.md#m5-02-retrieval-quality-evaluation--2026-11-16). As above, use only the runner's fresh target; it will not start stopped retained resources. This checkpoint's actual run used an independent temporary container/new volume and removed them after evaluation.
+
+Historical M5-03 comparisons remain opt-in test tools. The approved guarded path is available through the separate server-only entry point below; raw retrieval/archive behavior stays unchanged. Reuse the saved M5-02 report rather than repeating that PostgreSQL run:
+
+```powershell
+npm.cmd test -- tools/database/evidence-query-experiment.test.ts
+Copy-Item -LiteralPath .cache/m5-02/results.json -Destination .cache/m5-query-baseline.json
+npm.cmd run db:experiment:evidence-query
+```
+
+The experiment requires the same guarded fresh-target workflow. It verifies the saved report's application/corpus hashes and gold labels, then writes `.cache/m5-query-experiment.json` with before/after quality and all per-case latency deltas. Original input limits are validated before stripping recognized question prefixes and one final question mark; interior words, technical tokens and filters are preserved. The actual M5-03 run used its own temporary container/new volume, copied the saved baseline there, and removed its resources afterward. Its [measured results](docs/project-brief.md#m5-03-bounded-query-preparation-experiment--2026-11-16) precede the M5-03B negation findings. The historical unguarded comparator is never used by production retrieval.
+
+M5-03B adds a separate [12-question holdout](tests/evaluation/evidence-query-holdout.ts) and the now-integrated [guarded preparation](src/server/evidence/query-preparation.ts). It compares raw, original-prepared and revised queries in balanced order on one fresh target; the original corpus/results remain frozen:
+
+```powershell
+npm.cmd test -- src/server/evidence/query-preparation.test.ts
+Copy-Item -LiteralPath .cache/m5-02/results.json -Destination .cache/m5-query-baseline.json
+npm.cmd run db:validate:evidence-query
+```
+
+The same running-instance/fresh-target guards apply. Only the holdout file runs; it writes `.cache/m5-query-holdout.json` with source aliases, metrics and per-case outcomes, plus permission/revocation probe counts. The approved revision keeps complete negated questions, adds only `ما معنى` and avoids ambiguous one-word reductions. The historical revision helper re-exports that implementation. See the [validation and narrow ADOPT recommendation](docs/project-brief.md#m5-03b-final-query-preparation-validation--2026-11-16).
+
+For M5-03C, call `retrievePreparedQuestionEvidence(db, sessionToken, parameters)` from [the questions module](src/server/evidence/questions.ts) at a trusted server boundary. It prepares only the query, then delegates to raw `retrieveEvidence` for authorization, shared rate limits, locking and evidence/citations. Raw `retrieveEvidence` and archive search retain their literal-input contracts. Future answer delivery must still call `revalidateEvidence` for every input source immediately before release. No route/UI calls the new entry point yet.
+
+```powershell
+npm.cmd test -- src/server/evidence/query-preparation.test.ts src/server/evidence/questions.test.ts tools/database/evidence-query-experiment.test.ts
+node node_modules/typescript/bin/tsc --noEmit --incremental false
+node node_modules/eslint/bin/eslint.js src/server/evidence/query-preparation.ts src/server/evidence/query-preparation.test.ts src/server/evidence/questions.ts src/server/evidence/questions.test.ts tools/database/local.mts tools/database/evidence-query-experiment.ts tools/database/evidence-query-revision.ts tests/database/evidence-questions.test.ts --max-warnings=0
+npm.cmd run db:test:evidence-questions
+```
+
+The database command uses the same guarded fresh allocation, prepares existing schema only there, and runs only five `tests/database/evidence-questions.test.ts` cases. This integration reused the earlier quality measurements instead of repeating them. See the [M5-03C evidence and limits](docs/project-brief.md#m5-03c-safe-evidence-question-integration--2026-11-16).
 
 Install Chromium once. All npm browser-test commands automatically reuse `.cache/ms-playwright` when that folder exists and no `PLAYWRIGHT_BROWSERS_PATH` override is supplied. An explicit override is respected; without the project cache, Playwright uses its standard cache (including CI). Direct `npx playwright` calls still follow Playwright's normal environment settings. To install browsers into the project cache:
 

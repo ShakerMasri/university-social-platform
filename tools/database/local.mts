@@ -350,7 +350,14 @@ async function test(m: LocalManifest) {
   }
 }
 
-async function evidenceTest(m: LocalManifest, evaluate = false) {
+const evidenceTestFiles = {
+  integration: "tests/database/evidence.test.ts",
+  questions: "tests/database/evidence-questions.test.ts",
+  quality: "tests/database/evidence-quality.test.ts",
+  "query-preparation": "tests/database/evidence-quality.test.ts",
+  "query-holdout": "tests/database/evidence-query-holdout.test.ts",
+} as const;
+async function evidenceTest(m: LocalManifest, mode: keyof typeof evidenceTestFiles = "integration") {
   verifyResources(m);
   const state = execute("docker", ["inspect", "--format", "{{.State.Status}}", m.container]).trim();
   if (state !== "running") throw new Error("Focused evidence tests require an already-running owned PostgreSQL; no container will be started");
@@ -370,9 +377,12 @@ async function evidenceTest(m: LocalManifest, evaluate = false) {
       { ...process.env, M1B_MIGRATION_URL: url, PRISMA_HIDE_UPDATE_MESSAGE: "1", CHECKPOINT_DISABLE: "1" });
     if (!existsSync(output) || readFileSync(output, "utf8").replace(/^--.*$/gm, "").trim()) throw new Error("Fresh evidence target schema does not match the checked-in schema");
     console.log(`Fresh evidence target identity, restricted roles and schema verified: ${record.name}`);
-    const file = evaluate ? "tests/database/evidence-quality.test.ts" : "tests/database/evidence.test.ts";
+    const evaluate = mode === "quality" || mode === "query-preparation" || mode === "query-holdout";
+    const file = evidenceTestFiles[mode];
     const result = spawnSync(process.execPath, ["node_modules/vitest/vitest.mjs", "run", "--config", "vitest.database.config.mjs", file], {
-      env: { ...process.env, M5_EVIDENCE_DATABASE: record.name, M5_EVIDENCE_EVALUATION: evaluate ? "1" : "0" }, encoding: "utf8", windowsHide: true,
+      env: { ...process.env, M5_EVIDENCE_DATABASE: record.name, M5_EVIDENCE_EVALUATION: evaluate ? "1" : "0",
+        M5_QUERY_PREPARATION_EXPERIMENT: mode === "query-preparation" ? "1" : "0",
+        M5_QUERY_HOLDOUT_VALIDATION: mode === "query-holdout" ? "1" : "0" }, encoding: "utf8", windowsHide: true,
     });
     process.stdout.write(result.stdout ?? ""); process.stderr.write(result.stderr ?? "");
     if (result.error || result.status !== 0) throw new Error("Focused evidence PostgreSQL tests failed");
@@ -666,7 +676,10 @@ try {
       await test(m);
     }
     else if (command === "evidence-test") await evidenceTest(m);
-    else if (command === "evidence-evaluate") await evidenceTest(m, true);
+    else if (command === "evidence-questions") await evidenceTest(m, "questions");
+    else if (command === "evidence-evaluate") await evidenceTest(m, "quality");
+    else if (command === "evidence-query-experiment") await evidenceTest(m, "query-preparation");
+    else if (command === "evidence-query-holdout") await evidenceTest(m, "query-holdout");
     else if (command === "manual-qa") await manualQa(m, "start");
     else if (command === "manual-qa-status") await manualQa(m, "status");
     else if (command === "manual-qa-stop") await manualQa(m, "stop");

@@ -5,13 +5,15 @@ import { Client } from "pg";
 import { createLocalDatabase } from "../../src/server/database/client";
 import { digest, newToken } from "../../src/server/identity/policy";
 import { changeMembership } from "../../src/server/communities/service";
-import { InputError } from "../../src/server/communities/http";
+import { InputError, validInput } from "../../src/server/communities/http";
 import { retrieveEvidence, revalidateEvidence } from "../../src/server/evidence/service";
 import { assertDatabaseIdentity, databaseUrl, readManifest } from "../../tools/database/targets";
 import { corpusComments, corpusPosts, corpusVersion, evaluationQueries, privateMarker, supportingAnchors } from "../evaluation/evidence-corpus";
+import { prepareEvidenceQuery } from "../../tools/database/evidence-query-experiment";
 
 // Quality/latency evaluation is opt-in; ordinary database campaigns skip it.
 const evaluating = process.env.M5_EVIDENCE_EVALUATION === "1";
+const experimenting = process.env.M5_QUERY_PREPARATION_EXPERIMENT === "1";
 const manifest = evaluating ? readManifest() : null, name = process.env.M5_EVIDENCE_DATABASE;
 if (evaluating && !manifest?.databases.some(row => row.name === name && row.kind === "test" && row.ready)) throw new Error("Fresh owned evaluation target required");
 let db: Awaited<ReturnType<typeof createLocalDatabase>>, migration: Client;
@@ -30,6 +32,11 @@ function percentile(values: number[], quantile: number) {
 }
 function mean(values: number[]) { return values.reduce((sum, value) => sum + value, 0) / values.length; }
 const hash = (value: string) => createHash("sha256").update(value).digest("hex");
+type BaselineReport = {
+  corpusSha256: string; applicationSha256: string; summary: Record<string, unknown>;
+  rows: { id: string; gold: string[]; status: number; retrieved: string[]; recallAt5: number | null;
+    topRelevant: boolean | null; supportingPassageRecallAt5: number | null; latencyMs: { p50: number; p95: number } }[];
+};
 
 describe.skipIf(!evaluating)("M5-02 synthetic retrieval quality on fresh PostgreSQL", () => {
   beforeAll(async () => {
@@ -52,6 +59,17 @@ describe.skipIf(!evaluating)("M5-02 synthetic retrieval quality on fresh Postgre
   }
 
   it("records quality and repeated service latency without changing retrieval behavior", async () => {
+    const corpusSha256 = hash(readFileSync("tests/evaluation/evidence-corpus.ts", "utf8").replace(/\r\n/g, "\n"));
+    const sourceFiles = ["src/server/archive/service.ts", "src/server/archive/policy.ts", "src/server/evidence/service.ts", "src/server/evidence/policy.ts", "src/server/communities/service.ts"];
+    const applicationSha256 = hash(sourceFiles.map(path => readFileSync(path, "utf8").replace(/\r\n/g, "\n")).join("\n"));
+    // Reuse the completed M5-02 run; do not rerun its PostgreSQL baseline. Only
+    // accept a report for this exact corpus, gold ordering and application code.
+    const baselineText = experimenting ? readFileSync(".cache/m5-query-baseline.json", "utf8") : null;
+    const baseline = baselineText ? JSON.parse(baselineText) as BaselineReport : null;
+    if (baseline) {
+      expect(baseline.corpusSha256).toBe(corpusSha256); expect(baseline.applicationSha256).toBe(applicationSha256);
+      expect(baseline.rows.map(row => ({ id: row.id, gold: row.gold }))).toEqual(evaluationQueries.map(query => ({ id: query.id, gold: query.gold })));
+    }
     const owner = await actor();
     for (const [id, visibility] of [[publicCommunity, "PUBLIC"], [privateCommunity, "PRIVATE"]]) {
       await migration.query('INSERT INTO "Community" (id,"ownerId",name,description,visibility) VALUES ($1,$2,$3,\'\',$4::"CommunityVisibility")', [id, owner.id, "Synthetic evaluation", visibility]);
@@ -79,8 +97,9 @@ describe.skipIf(!evaluating)("M5-02 synthetic retrieval quality on fresh Postgre
       if (query.actor) await migration.query('INSERT INTO "CommunityMembership" ("communityId","userId",status) VALUES ($1,$2,$3::"MembershipStatus")',
         [privateCommunity, reader.id, query.actor === "pending" ? "PENDING" : "MEMBER"]);
       const parameters = new URLSearchParams({ q: query.query, ...(query.privateFilter ? { community: privateCommunity } : {}) });
+      const retrieve = () => retrieveEvidence(db, reader.token, experimenting ? validInput(() => prepareEvidenceQuery(parameters)) : parameters);
       if (query.actor === "revoked") {
-        const before = await retrieveEvidence(db, reader.token, parameters);
+        const before = await retrieve();
         expect(before.evidence.some(item => item.citation.communityId === privateCommunity)).toBe(true);
         await changeMembership(db, owner.token, privateCommunity, { action: "remove", userId: reader.id });
         await expect(revalidateEvidence(db, reader.token, before.evidence)).rejects.toMatchObject({ status: 404 });
@@ -89,7 +108,7 @@ describe.skipIf(!evaluating)("M5-02 synthetic retrieval quality on fresh Postgre
       async function attempt() {
         const started = performance.now();
         try {
-          const result = await retrieveEvidence(db, reader.token, parameters);
+          const result = await retrieve();
           const elapsedMs = performance.now() - started;
           expect(result.evidence.length).toBeLessThanOrEqual(5); expect(result.interrupted).toBe(false);
           if (query.actor !== "member") {
@@ -121,15 +140,14 @@ describe.skipIf(!evaluating)("M5-02 synthetic retrieval quality on fresh Postgre
         timings.push(current.elapsedMs); if (current.status === 200) successfulLatency.push(current.elapsedMs);
       }
       rows.push({ id: query.id, category: query.category, status: warmup.status, gold: query.gold, retrieved: warmup.retrieved,
+        preparationChanged: experimenting && warmup.status !== 400 && prepareEvidenceQuery(parameters).get("q") !== parameters.get("q"),
         recallAt5: query.gold.length ? warmup.relevant.length / query.gold.length : null,
         topRelevant: query.gold.length ? query.gold.includes(warmup.retrieved[0]) : null,
         supportingPassageRecallAt5: query.gold.length ? warmup.supporting.length / query.gold.length : null,
         latencyMs: { samples: timings, p50: percentile(timings, 0.5), p95: percentile(timings, 0.95) } });
     }
     const answerable = rows.filter(row => row.recallAt5 !== null);
-    const sourceFiles = ["src/server/archive/service.ts", "src/server/archive/policy.ts", "src/server/evidence/service.ts", "src/server/evidence/policy.ts", "src/server/communities/service.ts"];
-    const report = { corpusVersion, corpusSha256: hash(readFileSync("tests/evaluation/evidence-corpus.ts", "utf8")),
-      applicationSha256: hash(sourceFiles.map(path => readFileSync(path, "utf8").replace(/\r\n/g, "\n")).join("\n")),
+    const report = { corpusVersion, corpusSha256, applicationSha256, variant: experimenting ? "bounded-query-v1" : "baseline",
       environment: { node: process.version, postgres: (await migration.query<{ server_version: string }>("SHOW server_version")).rows[0].server_version },
       dataset: { posts: corpusPosts.length, commentsAndReplies: corpusComments.length, queries: rows.length, answerableQueries: answerable.length },
       method: { samplesPerQuery, warmupCalls, measuredCalls, sequential: true, successfulLatencySamples: successfulLatency.length, revocationChecks },
@@ -138,7 +156,22 @@ describe.skipIf(!evaluating)("M5-02 synthetic retrieval quality on fresh Postgre
         correctInsufficientEmpty: rows.find(row => row.id === "insufficient")?.retrieved.length === 0,
         privateFilterDenied: rows.find(row => row.id === "private-filter-denied")?.status === 404, forbiddenExposures,
         successfulLatencyMs: { p50: percentile(successfulLatency, 0.5), p95: percentile(successfulLatency, 0.95), max: Math.max(...successfulLatency) } }, rows };
-    writeFileSync(".cache/m5-evidence-quality.json", JSON.stringify(report, null, 2));
-    console.log(JSON.stringify({ evaluation: corpusVersion, dataset: report.dataset, summary: report.summary }));
+    const comparisons = baseline ? rows.map((row, index) => {
+      const before = baseline.rows[index];
+      return { id: row.id, baselineStatus: before.status, experimentStatus: row.status,
+        baselineRetrieved: before.retrieved, experimentRetrieved: row.retrieved,
+        recallDelta: row.recallAt5 === null ? null : row.recallAt5 - before.recallAt5!,
+        topRelevanceDelta: row.topRelevant === null ? null : Number(row.topRelevant) - Number(before.topRelevant),
+        supportingPassageRecallDelta: row.supportingPassageRecallAt5 === null ? null : row.supportingPassageRecallAt5 - before.supportingPassageRecallAt5!,
+        medianLatencyDeltaMs: row.latencyMs.p50! - before.latencyMs.p50,
+        p95LatencyDeltaMs: row.latencyMs.p95! - before.latencyMs.p95 };
+    }) : [];
+    const comparison = baseline ? { baselineReportSha256: hash(baselineText!), baselineSummary: baseline.summary, cases: comparisons,
+      qualityRegressions: comparisons.filter(row => (row.recallDelta ?? 0) < 0 || (row.topRelevanceDelta ?? 0) < 0 || (row.supportingPassageRecallDelta ?? 0) < 0).map(row => row.id),
+      qualityImprovements: comparisons.filter(row => (row.recallDelta ?? 0) > 0 || (row.topRelevanceDelta ?? 0) > 0 || (row.supportingPassageRecallDelta ?? 0) > 0).map(row => row.id),
+      slowerMedianCases: comparisons.filter(row => row.medianLatencyDeltaMs > 0).map(row => row.id) } : null;
+    writeFileSync(experimenting ? ".cache/m5-query-experiment.json" : ".cache/m5-evidence-quality.json", JSON.stringify({ ...report, comparison }, null, 2));
+    console.log(JSON.stringify({ evaluation: report.variant, dataset: report.dataset, summary: report.summary,
+      qualityRegressions: comparison?.qualityRegressions }));
   }, 60000);
 });
