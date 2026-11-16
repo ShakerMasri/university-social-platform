@@ -1,0 +1,13 @@
+{
+  "forbiddenExposures": 0,
+  "citationChecks": 130,
+  "permissionChecks": 10,
+  "revocationChecks": 3,
+  "completedProbes": [
+    "access-and-sequential-revocation",
+    "input-sql-filters-and-shared-budget",
+    "queued-revocation",
+    "citation-staleness-logout-creator-policy",
+    "21-candidates-five-posts-one-comment-each"
+  ]
+}

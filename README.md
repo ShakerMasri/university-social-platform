@@ -19,11 +19,13 @@ A Computer Engineering graduation project for university students and teachers t
 | M4, profiles and People | Editable default names and discovery of all saved verified profiles across communities | Implemented and integration-tested locally; not deployed |
 | M4, local messaging | Protected APIs, People contact, requests/history, recipient decisions, bilateral blocks, safe retries and scoped pagination in EN/AR | Implemented and synthetic/local tested; no realtime provider or deployment; evidence in the project brief |
 | M4, final local verification | 193 unit / 143 database / 10 ordinary Chromium / 228 authenticated Chromium passes; owner reports 29 manual PASS / H06 BLOCKED | Reviewed local scope signed off 2026-11-15; QA session safely closed and retained data verified preserved; exceptions/evidence limits remain; not deployed |
+| M5-01, evidence retrieval | Bounded server-only platform passages, citation references and access/content revalidation | Implemented; 51 focused unit/mocked checks and eight focused PostgreSQL cases pass; no provider/API/UI or deployment |
+| M5-03C, evidence questions | Explicit server-only prepared-question retrieval with guarded EN/AR syntax | Implemented; 68 focused unit checks and five fresh PostgreSQL cases pass; raw retrieval/archive unchanged; no API/UI or provider |
 | Local development | Interactive synthetic sign-in through posts with hot reload and persistent data | Implemented and tested locally |
 
 **Nothing is deployed.** Live university email is not connected. Post/comment editing/deletion, a personalized study feed and AI are still pending. Direct text messaging works in the synthetic local application with explicit refresh. See the [profiles/People checkpoint](docs/project-brief.md#profiles-and-people-discovery--planned-before-messaging), [archive checkpoint](docs/project-brief.md#first-archive-slice--implementation-and-verification), [replies and notifications checkpoint](docs/project-brief.md#replies-and-in-app-notifications--local-checkpoint-2026-10-28), [workflow checkpoint](docs/project-brief.md#interactive-development-workflow--2026-10-27), [comments checkpoint](docs/project-brief.md#createread-comments--approved-2026-10-27) and [voting checkpoint](docs/project-brief.md#postcomment-upvotes--approved-2026-10-27) for verification.
 
-The **reviewed local M4 scope is signed off and closed as of 2026-11-15**, after [verified safe manual-session shutdown and retained-database preservation](docs/project-brief.md#phase-4b-final-local-sign-off-and-safe-shutdown--2026-11-15). Session `3526750d5719` and only its disposable database were closed/removed; PostgreSQL and both retained databases were preserved without restart. The 29 manual passes are owner-reported: documented observations include English archive search, Arabic/mixed search, RTL, and five NVDA checks including the Arabic interface. H03 keyboard discovery is an **OWNER REHEARSAL**; H02 unassisted discovery is not independently established. Separate EN/AR runs were not consistently recorded for other cases; missing browser/version, method, assistance and detailed screen-reader metadata remain **NOT DOCUMENTED / OWNER CONFIRMATION REQUIRED**. H06 remains manually BLOCKED with an approved automated-evidence exception. The owner explicitly acknowledged these limits for local closure. Live email/recovery, wider human evaluation and real-user lifecycle/release decisions remain open. Commit/publication still require separate authorization; M5/M6 and production readiness are separate, and M5 implementation has not begun. The [M3 completion record](docs/project-brief.md#m3-completion-and-next-milestone--2026-11-03) is historical context.
+The **reviewed local M4 scope is signed off and closed as of 2026-11-15**, after [verified safe manual-session shutdown and retained-database preservation](docs/project-brief.md#phase-4b-final-local-sign-off-and-safe-shutdown--2026-11-15). Session `3526750d5719` and only its disposable database were closed/removed; PostgreSQL and both retained databases were preserved without restart. The 29 manual passes are owner-reported: documented observations include English archive search, Arabic/mixed search, RTL, and five NVDA checks including the Arabic interface. H03 keyboard discovery is an **OWNER REHEARSAL**; H02 unassisted discovery is not independently established. Separate EN/AR runs were not consistently recorded for other cases; missing browser/version, method, assistance and detailed screen-reader metadata remain **NOT DOCUMENTED / OWNER CONFIRMATION REQUIRED**. H06 remains manually BLOCKED with an approved automated-evidence exception. The owner explicitly acknowledged these limits for local closure. Live email/recovery, wider human evaluation and real-user lifecycle/release decisions remain open. Commit/publication still require separate authorization; M5/M6 and production readiness are separate, and M5-01 evidence retrieval now has a separate checkpoint in the project brief. The [M3 completion record](docs/project-brief.md#m3-completion-and-next-milestone--2026-11-03) is historical context.
 
 ## Partner review of the UI/UX branch
 
@@ -117,6 +119,131 @@ For the hot-reload workflow check, stop dev/preview and run `npm.cmd run test:de
 
 
 ## Check the application
+
+For the provider-free M5-01 layer, these focused checks use existing dependencies and do not connect to databases:
+
+```powershell
+npm.cmd test -- src/server/evidence/policy.test.ts src/server/evidence/service.test.ts src/server/archive/policy.test.ts src/server/archive/sources.test.ts
+node node_modules/typescript/bin/tsc --noEmit --incremental false
+node node_modules/eslint/bin/eslint.js src/server/archive/service.ts src/server/archive/sources.test.ts src/server/evidence tests/database/evidence.test.ts --max-warnings=0
+```
+
+To run only the eight evidence PostgreSQL cases, use the maintained focused runner against an already-running, identity-verified owned PostgreSQL instance:
+
+```powershell
+npm.cmd run db:test:evidence
+```
+
+It creates one fresh random test database, applies existing migration history and runtime grants only there, verifies both restricted roles/markers and schema agreement, runs only `tests/database/evidence.test.ts`, and removes only its new database without force. It never adopts registered retained targets or starts a stopped container. Do not supply `M5_EVIDENCE_DATABASE` / `M4_ARCHIVE_DATABASE` manually to bypass allocation. Run guarded database commands sequentially. The verified M5-01B run used a separate temporary project root/container/new volume because the retained container was stopped; its original resources were not started or mounted. See [M5-01B isolation, results and preservation limits](docs/project-brief.md#m5-01b-focused-postgresql-verification--2026-11-16).
+
+For the opt-in M5-02 synthetic retrieval-quality evaluation, the same guarded allocation/preparation/cleanup path runs only its evaluation file:
+
+```powershell
+npm.cmd run db:evaluate:evidence
+node node_modules/typescript/bin/tsc --noEmit --incremental false
+node node_modules/eslint/bin/eslint.js tools/database/local.mts tests/database/evidence-quality.test.ts tests/evaluation/evidence-corpus.ts --max-warnings=0
+```
+
+The [versioned corpus](tests/evaluation/evidence-corpus.ts) defines source text, study intents and relevance labels before execution. The [evaluator](tests/database/evidence-quality.test.ts) writes source aliases and metrics to `.cache/m5-evidence-quality.json`, without bodies, session tokens or account IDs. It is skipped in ordinary database campaigns. One warmup and five measured calls per query preserve the real limiter using a fresh synthetic reader per case. Quality misses are measured, not hidden by a passing harness. Current measurements, definitions and limits are in the [M5-02 record](docs/project-brief.md#m5-02-retrieval-quality-evaluation--2026-11-16). As above, use only the runner's fresh target; it will not start stopped retained resources. This checkpoint's actual run used an independent temporary container/new volume and removed them after evaluation.
+
+Historical M5-03 comparisons remain opt-in test tools. The approved guarded path is available through the separate server-only entry point below; raw retrieval/archive behavior stays unchanged. Reuse the saved M5-02 report rather than repeating that PostgreSQL run:
+
+```powershell
+npm.cmd test -- tools/database/evidence-query-experiment.test.ts
+Copy-Item -LiteralPath .cache/m5-02/results.json -Destination .cache/m5-query-baseline.json
+npm.cmd run db:experiment:evidence-query
+```
+
+The experiment requires the same guarded fresh-target workflow. It verifies the saved report's application/corpus hashes and gold labels, then writes `.cache/m5-query-experiment.json` with before/after quality and all per-case latency deltas. Original input limits are validated before stripping recognized question prefixes and one final question mark; interior words, technical tokens and filters are preserved. The actual M5-03 run used its own temporary container/new volume, copied the saved baseline there, and removed its resources afterward. Its [measured results](docs/project-brief.md#m5-03-bounded-query-preparation-experiment--2026-11-16) precede the M5-03B negation findings. The historical unguarded comparator is never used by production retrieval.
+
+M5-03B adds a separate [12-question holdout](tests/evaluation/evidence-query-holdout.ts) and the now-integrated [guarded preparation](src/server/evidence/query-preparation.ts). It compares raw, original-prepared and revised queries in balanced order on one fresh target; the original corpus/results remain frozen:
+
+```powershell
+npm.cmd test -- src/server/evidence/query-preparation.test.ts
+Copy-Item -LiteralPath .cache/m5-02/results.json -Destination .cache/m5-query-baseline.json
+npm.cmd run db:validate:evidence-query
+```
+
+The same running-instance/fresh-target guards apply. Only the holdout file runs; it writes `.cache/m5-query-holdout.json` with source aliases, metrics and per-case outcomes, plus permission/revocation probe counts. The approved revision keeps complete negated questions, adds only `ما معنى` and avoids ambiguous one-word reductions. The historical revision helper re-exports that implementation. See the [validation and narrow ADOPT recommendation](docs/project-brief.md#m5-03b-final-query-preparation-validation--2026-11-16).
+
+For M5-03C, call `retrievePreparedQuestionEvidence(db, sessionToken, parameters)` from [the questions module](src/server/evidence/questions.ts) at a trusted server boundary. It prepares only the query, then delegates to raw `retrieveEvidence` for authorization, shared rate limits, locking and evidence/citations. Raw `retrieveEvidence` and archive search retain their literal-input contracts. Future answer delivery must still call `revalidateEvidence` for every input source immediately before release. No route/UI calls the new entry point yet.
+
+```powershell
+npm.cmd test -- src/server/evidence/query-preparation.test.ts src/server/evidence/questions.test.ts tools/database/evidence-query-experiment.test.ts
+node node_modules/typescript/bin/tsc --noEmit --incremental false
+node node_modules/eslint/bin/eslint.js src/server/evidence/query-preparation.ts src/server/evidence/query-preparation.test.ts src/server/evidence/questions.ts src/server/evidence/questions.test.ts tools/database/local.mts tools/database/evidence-query-experiment.ts tools/database/evidence-query-revision.ts tests/database/evidence-questions.test.ts --max-warnings=0
+npm.cmd run db:test:evidence-questions
+```
+
+The database command uses the same guarded fresh allocation, prepares existing schema only there, and runs only five `tests/database/evidence-questions.test.ts` cases. This integration reused the earlier quality measurements instead of repeating them. See the [M5-03C evidence and limits](docs/project-brief.md#m5-03c-safe-evidence-question-integration--2026-11-16).
+
+**M5-04 is closed with a final owner decision not to adopt any experimental ranking, comment-selection or passage-selection algorithm.** The commands below are retained for research, not production integration. [Closure findings and limitations](docs/project-brief.md#m5-04d-consolidation-and-local-closure--2026-11-16), [measured reports](tests/evaluation/results/), and [byte-hash/source provenance](tests/evaluation/results/provenance.json) preserve the results. The original ranker/evaluator are archived only as non-executable text in `tests/evaluation/history/`; the historical evaluator contains two recorded security-harness failures later corrected in the maintained tests. Generated app code, operational manifests, credentials and local Docker/lifecycle artifacts are excluded.
+
+The source-hash checks are intentionally strict: A/A2 need the pre-refactor `src/server/archive/service.ts` and `src/server/evidence/service.ts` from Git commit `ae45702dfaad93752bb5bcfeaf60490003568a7d` in a **separate disposable replay workspace**. Their frozen registration must not be rewritten to accept current hashes. A's original measured source differs from the later experimental-pipeline refactor; its exact historical snapshots are preserved. B/C registrations match the current source. The committed `tests/evaluation/results/m5-02-baseline.json` can supply `.cache/m5-query-baseline.json` when deliberately preparing an authorized replay. Never reuse retained targets to bypass fresh-allocation guards. No historical evaluation was rerun for closure, and local latency samples are not promises of identical future timings.
+
+Production import isolation has a focused regression check, requiring no database or Docker:
+
+```powershell
+npm.cmd test -- tools/database/evidence-experiment-isolation.test.ts
+```
+
+It scans source/Next imports and transitive local dependencies without executing them, rejecting experimental/test imports and unreviewed computed module loads. Production retains its chronological five-source retrieval, parent-first selection, canonical 1,200-point passage and existing authorization/revalidation behavior. Shared exports and mapper extraction are behavior-preserving refactors only.
+
+M5-04A is an opt-in, evidence-only lexical ranking experiment. Production retrieval and archive search remain unchanged. On an already-running owned disposable instance, the maintained fresh-target guards run only its paired evaluation and focused security probes:
+
+```powershell
+npm.cmd test -- tools/database/evidence-ranking-experiment.test.ts
+Copy-Item -LiteralPath .cache/m5-02/results.json -Destination .cache/m5-query-baseline.json
+npm.cmd run db:experiment:evidence-ranking
+# To repeat only security probes, without rerunning completed quality measurements:
+npm.cmd run db:test:evidence-ranking-security
+node node_modules/typescript/bin/tsc --noEmit --incremental false
+node node_modules/eslint/bin/eslint.js tools/database/evidence-ranking-experiment.ts tools/database/evidence-ranking-experiment.test.ts tests/database/evidence-ranking.test.ts tools/database/local.mts --max-warnings=0
+```
+
+The evaluator verifies the frozen M5-02 report, corpus/labels and production-source digests, then measures both raw-input variants on the same newly allocated database. It writes `.cache/m5-ranking-results.json` with aliases, per-case quality/latency deltas and sanitized samples. It ranks up to 21 recent eligible parents before taking five, preserving the existing source-selection/window behavior. No provider calls or limiter resets occur. Short irrelevant text and candidates beyond that horizon remain limitations; [M5-04A results and REVISE recommendation](docs/project-brief.md#m5-04a-evidence-relevance-ranking-experiment--2026-11-16) explain the evidence.
+
+The actual run used independent temporary roots/containers/new volumes because the retained project instance was stopped. Ignored orchestration reused the earlier guarded isolation path: `node .cache/m5-04a/verify.mjs prepare`, `setup`, `test`, `finish` (each phase is a separate invocation). After correcting two probe-harness issues, `.cache/m5-04a-security/verify.mjs` ran those same four phases for security only. Neither invocation starts, mounts or connects to retained databases. Both environments were removed; the completed paired measurements were not repeated. These local evidence scripts/results are ignored artifacts, not shipped tooling.
+
+M5-04A2 adds a separate [frozen 12-case ranking holdout](tests/evaluation/evidence-ranking-holdout.ts). Its [registration](tests/evaluation/evidence-ranking-registration.json) fixes source/rule/evaluator hashes; deliberate future experiments need a separate registration rather than silently relabeling this one. The maintained command requires an already-running, identity-verified owned instance and allocates/prepares/removes only one new test database:
+
+```powershell
+npm.cmd test -- tools/database/evidence-ranking-experiment.test.ts tools/database/evidence-ranking-revision.test.ts
+Copy-Item -LiteralPath tests/evaluation/evidence-ranking-registration.json -Destination .cache/m5-ranking-registration.json
+npm.cmd run db:validate:evidence-ranking
+node node_modules/typescript/bin/tsc --noEmit --incremental false
+node node_modules/eslint/bin/eslint.js tools/database/evidence-ranking-experiment.ts tools/database/evidence-ranking-revision.ts tools/database/evidence-ranking-revision.test.ts tools/database/local.mts tests/evaluation/evidence-ranking-holdout.ts tests/database/evidence-ranking-holdout.test.ts --max-warnings=0
+```
+
+Only `tests/database/evidence-ranking-holdout.test.ts` runs. It compares raw baseline, original density ranking and revised local-context ranking on the same fresh target, then checks permissions, revocation, citations and shared budgets. It writes `.cache/m5-ranking-holdout.json` and `.cache/m5-ranking-holdout-security.json` with aliases/metrics/probe counts and no source bodies or account tokens. Horizon diagnostics use only the existing capped candidate query; no larger retrieval or full-match count is introduced. Production and archive behavior stay unchanged. See [results, regression and duplication prerequisites](docs/project-brief.md#m5-04a2-ranking-refinement-and-holdout-validation--2026-11-16).
+
+The actual evaluation used `.cache/m5-04a2/verify.mjs` with separate `prepare`, `setup`, `test`, `finish` invocations in an independent temporary root/container/new volume, reusing the earlier guarded isolation path. It copied the preregistered source/labels, reused the cached pinned image on a free loopback port, and removed its own resources afterward. Retained databases were never mounted, connected to or started. Its sanitized provenance, results and security evidence remain in ignored `.cache/m5-04a2/`; earlier datasets/results were preserved.
+
+M5-04B separately tests post versus comment selection, without using either experimental ranker. Its [10-case corpus](tests/evaluation/evidence-comment-corpus.ts) and [registration](tests/evaluation/evidence-comment-registration.json) fix baseline aliases, useful-source labels/anchors and source/evaluator hashes. On an already-running owned instance:
+
+```powershell
+npm.cmd test -- tools/database/evidence-comment-experiment.test.ts src/server/evidence/service.test.ts src/server/archive/sources.test.ts
+Copy-Item -LiteralPath tests/evaluation/evidence-comment-registration.json -Destination .cache/m5-comment-registration.json
+npm.cmd run db:experiment:evidence-comments
+node node_modules/typescript/bin/tsc --noEmit --incremental false
+node node_modules/eslint/bin/eslint.js src/server/archive/service.ts src/server/evidence/service.ts tools/database/evidence-comment-experiment.ts tools/database/evidence-comment-experiment.test.ts tests/evaluation/evidence-comment-corpus.ts tests/database/evidence-comment.test.ts tools/database/local.mts --max-warnings=0
+```
+
+The maintained fresh-target runner invokes only `tests/database/evidence-comment.test.ts`, applying existing schema/role/identity checks and guarded non-forced cleanup. The evaluator writes `.cache/m5-comment-results.json` and `.cache/m5-comment-security.json` with aliases, per-case metrics and probe counts. Only the experimental entry lets a `QUESTION` parent's earliest matching permitted comment override that parent. It shares canonical SQL permissions, locks and evidence projection; source ordering, five-source cutoff, one source per post and production behavior remain unchanged. The [results and REVISE recommendation](docs/project-brief.md#m5-04b-post-versus-comment-evidence-selection--2026-11-16) record the already-answered-parent regression.
+
+The actual run used ignored `.cache/m5-04b/verify.mjs` with separate `prepare`, `setup`, `test`, `finish` invocations in an independent temporary root/container/new volume. Its cached pinned image/free-loopback-port setup, fresh target and cleanup passed the existing guards. Retained databases were not mounted, connected to or started. Raw evidence, source-preservation checks and before-refactor source snapshots remain in `.cache/m5-04b/`. The shared services gained exports/a pure mapper extraction without behavior changes, so older hash registrations still describe their historical source snapshots; do not rewrite frozen registrations to bypass those checks. No earlier evaluation was rerun.
+
+M5-04C is a pure passage-only experiment; it never changes retrieved sources or calls a database/provider. Its [frozen multilingual cases](tests/evaluation/evidence-passage-corpus.ts) and [registration](tests/evaluation/evidence-passage-registration.json) fix source/rule/evaluator hashes. Run unit/wiring checks first, then the opt-in benchmark separately to avoid concurrent-test latency interference:
+
+```powershell
+npm.cmd test -- tools/database/evidence-passage-experiment.test.ts
+node node_modules/typescript/bin/tsc --noEmit --incremental false
+node node_modules/eslint/bin/eslint.js tools/database/evidence-passage-experiment.ts tools/database/evidence-passage-experiment.test.ts tools/database/evidence-passage-evaluation.test.ts tests/evaluation/evidence-passage-corpus.ts --max-warnings=0
+$env:M5_PASSAGE_EVALUATION = '1'
+try { npm.cmd test -- tools/database/evidence-passage-evaluation.test.ts } finally { Remove-Item Env:M5_PASSAGE_EVALUATION }
+```
+
+The benchmark writes `.cache/m5-04c/results.json` with case IDs, quality/length metrics, exact code-point ranges and helper-only latency samples; it excludes raw source bodies and private fixture text. It preserves the production 1,200-point output bound including explicit internal-gap markers and returns at most two exact source segments plus omission metadata. It measures 15 balanced three-call batches per case/variant; ordinary tests skip the benchmark. Source/access/metadata checks are unit/mocked only. Production retrieval, source projection, fingerprinting and revalidation remain untouched; there is no database/Docker setup for this checkpoint. See [M5-04C results, the middle-explanation regression and REVISE recommendation](docs/project-brief.md#m5-04c-evidence-passage-selection--2026-11-16).
 
 Install Chromium once. All npm browser-test commands automatically reuse `.cache/ms-playwright` when that folder exists and no `PLAYWRIGHT_BROWSERS_PATH` override is supplied. An explicit override is respected; without the project cache, Playwright uses its standard cache (including CI). Direct `npx playwright` calls still follow Playwright's normal environment settings. To install browsers into the project cache:
 

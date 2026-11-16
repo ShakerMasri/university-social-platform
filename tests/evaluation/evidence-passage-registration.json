@@ -1,0 +1,17 @@
+{
+  "corpusFrozenBeforeExperiment": true,
+  "freezeSha256": "0460b4702fb22550d9885497343d740a8edf81189dff9c7a7b47ca281d272ada",
+  "design": "At most two exact contiguous source spans with code-point offsets, explicit gap marker, total rendered budget 1200. First around earliest query hit (160 before); second around a distant latest hit, otherwise source tail. Merge overlaps; retain short/no-hit text behavior. No ranking, source selection or label features.",
+  "hashes": {
+    "src/server/archive/policy.ts": "f764eb784c004a1fe66860d578f2ef2317986772fa586985484197925c91c634",
+    "src/server/archive/service.ts": "c6d89a36d07543786e40161fcfee77d34142bb36f486ca724cc2d12419af6c94",
+    "src/server/evidence/policy.ts": "a069ec8d02ef85392e422c16598d3b87217f178cb2a0af5d402786f0514a945e",
+    "src/server/evidence/service.ts": "6c21d6a356a851c36278cacea9823c268b714575e2e77e4b8734aa5424d744bf",
+    "tests/evaluation/evidence-corpus.ts": "c703d9dfa9c3cc651c01d4287069c9bd732e0690fc08a527b48dfa4c227cc15d",
+    "tests/evaluation/evidence-passage-corpus.ts": "327efc6d90aa9b6a9cc5beb49c505112871bb346d4fcdcb444ddfc7f159eb9ff",
+    "tests/evaluation/evidence-ranking-holdout.ts": "14a64fd34c2c838a34293e60ed743adacfc256da4b01109a2d93326ca103e294",
+    "tools/database/evidence-passage-evaluation.test.ts": "76b83024946c0e501a50c4ecddbb0448c17afa9dbf7f43cbee9ccf142d26f940",
+    "tools/database/evidence-passage-experiment.test.ts": "f9ab2e17f759f82e59432d2aba24f4092e6d50a1d1d7940d2407cf88d3c614d8",
+    "tools/database/evidence-passage-experiment.ts": "f1695ce7a4b9a3e2db9eb862e7ed9841e48afedf5a90269c28b02e45de231197"
+  }
+}
