@@ -35,7 +35,7 @@ for (const locale of ["en", "ar"] as const) {
       await requestLink(page, email, locale); await confirm(page, context, locale);
       await page.getByLabel(identityText[locale].name, { exact: true }).fill(name);
       await page.getByRole("button", { name: identityText[locale].save, exact: true }).click();
-      await expect(page.getByRole("status")).toHaveText(identityText[locale].saved);
+      await expect(page.locator("#identity-feedback")).toHaveText(identityText[locale].saved);
       await page.reload(); expect(await page.getByLabel(identityText[locale].name, { exact: true }).inputValue() === name).toBe(true);
       await page.getByRole("link", { name: communityText[locale].title, exact: true }).click();
       await page.getByLabel(communityText[locale].name, { exact: true }).fill("Local preview community");
@@ -102,7 +102,7 @@ if (process.env.USP_LOCAL_DEVELOPMENT_CHECK === "1") {
     await requestLink(page, address(), "en"); await confirm(page, context, "en");
     await page.getByLabel(identityText.en.name, { exact: true }).fill("Development restart user");
     await page.getByRole("button", { name: identityText.en.save, exact: true }).click();
-    await expect(page.getByRole("status")).toHaveText(identityText.en.saved);
+    await expect(page.locator("#identity-feedback")).toHaveText(identityText.en.saved);
     await page.getByRole("link", { name: communityText.en.title, exact: true }).click();
     await page.getByLabel(communityText.en.name, { exact: true }).fill("Development restart community");
     await page.getByRole("button", { name: communityText.en.create, exact: true }).click();

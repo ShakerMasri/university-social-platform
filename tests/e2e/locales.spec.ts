@@ -60,6 +60,23 @@ for (const item of cases) {
     expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true);
     await page.screenshot({ path: testInfo.outputPath(`${item.locale}-mobile.png`), fullPage: true });
   });
+
+  test(`${item.locale}: home rechecks the server on focus and history restoration without losing keyboard focus`, async ({ page }) => {
+    await page.goto(`/${item.locale}`);
+    await page.waitForLoadState("networkidle");
+    const skip = page.getByRole("link", { name: item.skip });
+    await skip.focus();
+    const refreshed = page.waitForResponse(response => new URL(response.url()).pathname === `/${item.locale}` && response.request().headers().rsc === "1");
+    await page.evaluate(() => window.dispatchEvent(new Event("focus")));
+    expect((await refreshed).status()).toBe(200);
+    await expect(skip).toBeFocused();
+    await page.locator(`main a[href='/${item.locale}/signin']`).click();
+    await expect(page).toHaveURL(new RegExp(`/${item.locale}/signin$`));
+    const restored = page.waitForResponse(response => new URL(response.url()).pathname === `/${item.locale}` && response.request().headers().rsc === "1");
+    await page.goBack();
+    expect((await restored).status()).toBe(200);
+    await expect(page.locator(`main a[href='/${item.locale}/signin']`)).toBeVisible();
+  });
 }
 
 test("unsupported locales and unknown paths return HTTP 404", async ({ page }) => {

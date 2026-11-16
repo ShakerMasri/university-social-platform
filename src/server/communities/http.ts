@@ -26,14 +26,16 @@ export async function communityHTTP(request: NextRequest, handle: (db: PrismaCli
 export function validInput<T>(read: () => T): T {
   try { return read(); } catch { throw new InputError("Invalid input"); }
 }
-export function cursor(request: NextRequest) {
+export function cursor(request: NextRequest, parameter: "after" | "before" = "after") {
   const keys = [...request.nextUrl.searchParams.keys()];
-  if (keys.some((key) => key !== "after") || keys.length > 1) throw new InputError("Invalid cursor");
-  const value = request.nextUrl.searchParams.get("after");
+  if (keys.some((key) => key !== parameter) || keys.length > 1) throw new InputError("Invalid cursor");
+  const value = request.nextUrl.searchParams.get(parameter);
   return value === null ? undefined : validInput(() => communityId(value));
 }
 export async function communityBody(request: NextRequest, maximumBytes = 8192): Promise<Record<string, unknown>> {
-  if (request.nextUrl.search || !request.headers.get("content-type")?.startsWith("application/json")) throw new InputError("Invalid input");
+  // Match the exact type/subtype case-insensitively. Callers may impose a
+  // stricter parameter policy, as messaging does before reaching this reader.
+  if (request.nextUrl.search || !/^application\/json(?:\s*;|$)/i.test(request.headers.get("content-type") ?? "")) throw new InputError("Invalid input");
   const reader = request.body?.getReader();
   if (!reader) throw new InputError("Invalid input");
   let size = 0;

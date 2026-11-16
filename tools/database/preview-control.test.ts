@@ -2,7 +2,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { readFileSync, unlinkSync } from "node:fs";
 import { createServer, type Server } from "node:net";
 import { resolve } from "node:path";
-import { recoverStalePreview, stopPreview } from "../identity/preview-control";
+import { previewIsInactive, recoverStalePreview, stopPreview } from "../identity/preview-control";
 import type { DatabaseRecord, LocalManifest } from "./targets";
 
 vi.mock("node:fs", () => ({ readFileSync: vi.fn(), unlinkSync: vi.fn() }));
@@ -32,6 +32,14 @@ afterEach(async () => {
 });
 
 describe("owned preview control recovery", () => {
+  it("checks inactive interactive ownership without deleting the registration during a database restart", async () => {
+    vi.mocked(readFileSync).mockReturnValue(JSON.stringify(control(await closedPort())));
+    await expect(previewIsInactive(manifest, record)).resolves.toBe(true);
+    expect(unlinkSync).not.toHaveBeenCalled();
+    vi.mocked(process.kill).mockReturnValue(true);
+    await expect(previewIsInactive(manifest, record)).resolves.toBe(false);
+    expect(unlinkSync).not.toHaveBeenCalled();
+  });
   it("removes a stable owned file only when both PID and actual control listener are absent", async () => {
     vi.mocked(readFileSync).mockReturnValue(JSON.stringify(control(await closedPort())));
     await expect(recoverStalePreview(manifest, record)).resolves.toBe(true);

@@ -1,7 +1,7 @@
 import "server-only";
 import type { Prisma, PrismaClient } from "../../generated/prisma/client.ts";
 import { sessionInTransaction } from "../identity/service.ts";
-import { digest } from "../identity/policy.ts";
+import { consumeUserAttempt } from "../identity/attempt-budget.ts";
 import { communityId, communityInput, communityPageSize, membershipInput } from "./policy.ts";
 
 export class CommunityError extends Error {
@@ -31,16 +31,7 @@ export async function mutating<T>(db: PrismaClient, token: unknown, run: (tx: Tr
 export async function reserveAttempt(db: PrismaClient, token: unknown, budget: string, requireProfile = false) {
   // Reserve attempts separately: a rejected write cannot roll back its budget.
   // Reuse the existing bounded counter table under a disjoint opaque user key.
-  const allowed = await authorized(db, token, async (tx, userId) => {
-    const keyDigest = digest(`${budget}:${userId}`);
-    await tx.identityRateLimit.upsert({ where: { keyDigest }, create: { keyDigest }, update: { hits: { increment: 0 } } });
-    const [counter] = await tx.$queryRaw<{ startedAt: Date; hits: number }[]>`SELECT "startedAt", hits FROM "IdentityRateLimit" WHERE "keyDigest" = ${keyDigest} FOR UPDATE`;
-    const [clock] = await tx.$queryRaw<{ now: Date }[]>`SELECT clock_timestamp() AS now`;
-    const reset = clock.now.getTime() - counter.startedAt.getTime() >= 15 * 60 * 1000;
-    if (!reset && counter.hits >= 30) return false;
-    await tx.identityRateLimit.update({ where: { keyDigest }, data: { hits: reset ? 1 : counter.hits + 1, ...(reset ? { startedAt: clock.now } : {}) } });
-    return true;
-  }, requireProfile);
+  const allowed = await authorized(db, token, (tx, userId) => consumeUserAttempt(tx, userId, budget), requireProfile);
   if (!allowed) throw new CommunityError(429);
 }
 async function lockedCommunity(tx: Transaction, id: string, write: boolean) {

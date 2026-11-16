@@ -1,11 +1,11 @@
 import { spawnSync } from "node:child_process";
 import { randomBytes } from "node:crypto";
-import { existsSync, mkdirSync, readFileSync, writeFileSync, unlinkSync, rmdirSync } from "node:fs";
+import { existsSync, mkdirSync, mkdtempSync, readFileSync, writeFileSync, unlinkSync, rmdirSync } from "node:fs";
 import { createServer } from "node:net";
 import { dirname, resolve } from "node:path";
 import { Client } from "pg";
 import { localPreviewPort } from "../../src/server/identity/local-policy.ts";
-import { recoverStalePreview, stopPreview } from "../identity/preview-control.ts";
+import { previewIsInactive, recoverStalePreview, stopPreview } from "../identity/preview-control.ts";
 import { composeEnvironment, validateComposeConfig } from "./compose.ts";
 import {
   assertDatabaseIdentity, databaseUrl, image, manifestPath, readManifest, validateManifest,
@@ -167,6 +167,10 @@ async function migrate(m: LocalManifest, name: string) {
     GRANT INSERT (id, "userId", "emailKey", "tokenDigest", "createdAt", "expiresAt") ON "EmailOwnershipChallenge" TO ${identifier(m.runtimeRole)};
     GRANT UPDATE ("emailVerifiedAt", "updatedAt") ON "User" TO ${identifier(m.runtimeRole)};
     GRANT UPDATE ("displayName", "updatedAt") ON "Profile" TO ${identifier(m.runtimeRole)};
+    -- Prisma materializes @default(false) in the upsert INSERT, including its
+    -- conflict/update path. Keep that INSERT privilege; never update the flag.
+    GRANT INSERT ("directoryVisible") ON "Profile" TO ${identifier(m.runtimeRole)};
+    REVOKE UPDATE ("directoryVisible") ON "Profile" FROM ${identifier(m.runtimeRole)};
     GRANT UPDATE ("consumedAt", "revokedAt") ON "EmailOwnershipChallenge" TO ${identifier(m.runtimeRole)};
     GRANT INSERT ("browserDigest") ON "EmailOwnershipChallenge" TO ${identifier(m.runtimeRole)};
     GRANT SELECT ON "Session", "IdentityRateLimit" TO ${identifier(m.runtimeRole)};
@@ -192,6 +196,8 @@ async function migrate(m: LocalManifest, name: string) {
     GRANT INSERT ("userId", announcements, replies, upvotes) ON "NotificationPreference" TO ${identifier(m.runtimeRole)};
     GRANT UPDATE (announcements, replies, upvotes) ON "NotificationPreference" TO ${identifier(m.runtimeRole)};
     GRANT SELECT ON "Post" TO ${identifier(m.runtimeRole)};
+    GRANT SELECT, INSERT ON "DirectConversation", "DirectMessage" TO ${identifier(m.runtimeRole)};
+    GRANT UPDATE (state, "pendingMessages", "firstBlocked", "secondBlocked") ON "DirectConversation" TO ${identifier(m.runtimeRole)};
     GRANT INSERT (id, "communityId", "authorId", "submissionKey", type, title, body, "resourceUrl", "createdAt") ON "Post" TO ${identifier(m.runtimeRole)};`);
   console.log(`Reviewed migration history applied: ${name}`);
 }
@@ -277,7 +283,7 @@ async function setup() {
 async function test(m: LocalManifest) {
   verifyResources(m);
   // Two complete-history databases and populated Unicode/M2/community/posts upgrade fixtures.
-  const records: DatabaseRecord[] = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9].map(() => ({
+  const records: DatabaseRecord[] = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11].map(() => ({
     name: `usp_m1b_${m.owner}_test_${randomBytes(6).toString("hex")}`, kind: "test", ready: false,
   }));
   m.databases.push(...records);
@@ -289,7 +295,7 @@ async function test(m: LocalManifest) {
     }
     const result = spawnSync(process.execPath, ["node_modules/vitest/vitest.mjs", "run", "--config", "vitest.database.config.mjs"], {
       env: { ...process.env, M1B_TEST_DATABASE: records[0].name, M1B_REPLAY_DATABASE: records[1].name,
-        M1B_UPGRADE_DATABASE: records[2].name, M2_UPGRADE_DATABASE: records[3].name, M3_UPGRADE_DATABASE: records[4].name, M3_POSTS_UPGRADE_DATABASE: records[5].name, M3_COMMENTS_UPGRADE_DATABASE: records[6].name, M3_VOTES_UPGRADE_DATABASE: records[7].name, M3_NOTIFICATIONS_UPGRADE_DATABASE: records[8].name, M4_ARCHIVE_DATABASE: records[9].name },
+        M1B_UPGRADE_DATABASE: records[2].name, M2_UPGRADE_DATABASE: records[3].name, M3_UPGRADE_DATABASE: records[4].name, M3_POSTS_UPGRADE_DATABASE: records[5].name, M3_COMMENTS_UPGRADE_DATABASE: records[6].name, M3_VOTES_UPGRADE_DATABASE: records[7].name, M3_NOTIFICATIONS_UPGRADE_DATABASE: records[8].name, M4_ARCHIVE_DATABASE: records[9].name, M4_PEOPLE_UPGRADE_DATABASE: records[10].name, M4_MESSAGING_UPGRADE_DATABASE: records[11].name },
       encoding: "utf8", windowsHide: true,
     });
     process.stdout.write(result.stdout ?? "");
@@ -302,6 +308,7 @@ async function test(m: LocalManifest) {
     await client.connect();
     try {
       const before = await client.query('SELECT id, email, "emailKey" FROM "User" ORDER BY id');
+      const profilesBefore = await client.query('SELECT * FROM "Profile" ORDER BY "userId"');
       const communityBefore = await client.query('SELECT * FROM "Community" ORDER BY id');
       const postBefore = await client.query('SELECT * FROM "Post" ORDER BY id');
       const commentBefore = await client.query('SELECT * FROM "Comment" ORDER BY id');
@@ -310,8 +317,11 @@ async function test(m: LocalManifest) {
       const notificationsBefore = await client.query('SELECT * FROM "Notification" ORDER BY id');
       const preferencesBefore = await client.query('SELECT * FROM "NotificationPreference" ORDER BY "userId"');
       const membershipBefore = await client.query('SELECT * FROM "CommunityMembership" ORDER BY "communityId", "userId"');
+      const conversationsBefore = await client.query('SELECT * FROM "DirectConversation" ORDER BY id');
+      const messagesBefore = await client.query('SELECT * FROM "DirectMessage" ORDER BY id');
       await migrate(m, records[0].name);
       const after = await client.query('SELECT id, email, "emailKey" FROM "User" ORDER BY id');
+      const profilesAfter = await client.query('SELECT * FROM "Profile" ORDER BY "userId"');
       const communityAfter = await client.query('SELECT * FROM "Community" ORDER BY id');
       const postAfter = await client.query('SELECT * FROM "Post" ORDER BY id');
       const commentAfter = await client.query('SELECT * FROM "Comment" ORDER BY id');
@@ -320,10 +330,15 @@ async function test(m: LocalManifest) {
       const notificationsAfter = await client.query('SELECT * FROM "Notification" ORDER BY id');
       const preferencesAfter = await client.query('SELECT * FROM "NotificationPreference" ORDER BY "userId"');
       const membershipAfter = await client.query('SELECT * FROM "CommunityMembership" ORDER BY "communityId", "userId"');
+      const conversationsAfter = await client.query('SELECT * FROM "DirectConversation" ORDER BY id');
+      const messagesAfter = await client.query('SELECT * FROM "DirectMessage" ORDER BY id');
+      if (!messagesBefore.rows.length || JSON.stringify([conversationsBefore.rows, messagesBefore.rows]) !== JSON.stringify([conversationsAfter.rows, messagesAfter.rows])) {
+        throw new Error("Migration reapplication changed synthetic correspondence");
+      }
       if (!before.rows.length || !communityBefore.rows.length || !membershipBefore.rows.length || !postBefore.rows.length ||
           !commentBefore.rows.length || !postVotesBefore.rows.length || !commentVotesBefore.rows.length ||
-          JSON.stringify([before.rows, communityBefore.rows, membershipBefore.rows, postBefore.rows, commentBefore.rows, postVotesBefore.rows, commentVotesBefore.rows, notificationsBefore.rows, preferencesBefore.rows]) !==
-          JSON.stringify([after.rows, communityAfter.rows, membershipAfter.rows, postAfter.rows, commentAfter.rows, postVotesAfter.rows, commentVotesAfter.rows, notificationsAfter.rows, preferencesAfter.rows])) {
+          JSON.stringify([before.rows, profilesBefore.rows, communityBefore.rows, membershipBefore.rows, postBefore.rows, commentBefore.rows, postVotesBefore.rows, commentVotesBefore.rows, notificationsBefore.rows, preferencesBefore.rows]) !==
+          JSON.stringify([after.rows, profilesAfter.rows, communityAfter.rows, membershipAfter.rows, postAfter.rows, commentAfter.rows, postVotesAfter.rows, commentVotesAfter.rows, notificationsAfter.rows, preferencesAfter.rows])) {
         throw new Error("Migration reapplication changed synthetic data");
       }
       console.log("Migration reapplication preserved populated user, community, membership, post, comment and vote records");
@@ -335,21 +350,75 @@ async function test(m: LocalManifest) {
   }
 }
 
+async function manualQa(m: LocalManifest, operation: "start" | "status" | "stop") {
+  // Load manual-only code only for these explicit commands. Existing automated
+  // commands keep their exact selection, lifecycle and migration-review paths.
+  const { runManualSession } = await import("../testing/manual-session.mts");
+  const currentManifest = () => {
+    const current = readManifest();
+    if (current.owner !== m.owner || current.containerId !== m.containerId || current.root !== m.root) throw new Error("Manual QA manifest identity changed");
+    return current;
+  };
+  await runManualSession(operation, m, {
+    verify() {
+      const current = currentManifest(); verifyResources(current);
+      const state = JSON.parse(execute("docker", ["inspect", "--format", "{{json .State}}", current.container])) as { Running: boolean; Health?: { Status: string } };
+      if (!current.containerId || !state.Running || state.Health?.Status !== "healthy") throw new Error("Manual QA requires the existing owned PostgreSQL container to be healthy; no automatic resume");
+    },
+    register(record) {
+      if (JSON.stringify(currentManifest()) !== JSON.stringify(m) || record.kind !== "test" || record.ready ||
+          !new RegExp(`^usp_m1b_${m.owner}_test_[a-f0-9]{12}$`).test(record.name) || m.databases.some(row => row.name === record.name)) {
+        throw new Error("Manual QA refuses a changed manifest or existing database name");
+      }
+      m.databases.push(record); save(m);
+    },
+    async create(record, marker) {
+      if (!/^mqa_[a-f0-9]{32}$/.test(marker)) throw new Error("Invalid manual creation marker");
+      await createDatabase(m, record); // Refuses an existing database, including unregistered ones.
+      psql(m, "postgres", `COMMENT ON DATABASE ${identifier(record.name)} IS ${sqlLiteral(marker)};`);
+    },
+    migrate: name => migrate(m, name),
+    async remove(name) {
+      // Reload rather than overwriting a stale long-lived manifest snapshot.
+      const current = currentManifest(), record = current.databases.find(row => row.name === name && row.kind === "test" && row.ready);
+      if (!record) throw new Error("Manual cleanup target is not registered and ready");
+      await removeTestDatabase(current, record);
+    },
+    connections(name) {
+      const current = currentManifest(); verifyResources(current);
+      return Number(psql(current, "postgres", `SELECT count(*) FROM pg_stat_activity WHERE backend_type='client backend' AND pid<>pg_backend_pid()${name ? ` AND datname=${sqlLiteral(name)}` : ""};`).trim());
+    },
+    portFree: candidate => ensurePortFree(candidate, "Manual QA application"),
+  });
+}
+
 async function identityBrowser(m: LocalManifest) {
   // The empty-discovery checkpoint needs a pristine target even when comments
   // run before communities. Keep all assertions, with separate fixture scopes.
-  for (const group of ["empty", "main", "archive"] as const) await identityBrowserGroup(m, group);
+  for (const group of ["empty", "main", "archive", "messaging"] as const) await identityBrowserGroup(m, group);
 }
-async function identityBrowserGroup(m: LocalManifest, group: "empty" | "main" | "archive") {
+async function identityBrowserGroup(m: LocalManifest, group: "empty" | "main" | "archive" | "messaging" | "zoom") {
   verifyResources(m);
+  const zoomOnly = group === "zoom";
   const controlPath = resolve(".cache/m2-browser.json");
   if (existsSync(controlPath)) throw new Error("Existing identity browser control file requires inspection; not overwritten");
+  if (zoomOnly) await ensurePortFree(3100, "Zoom browser application");
+  const testArguments: string[] = [];
+  if (zoomOnly) {
+    mkdirSync(resolve("test-results"), { recursive: true });
+    const output = mkdtempSync(resolve("test-results/zoom-"));
+    testArguments.push("tests/e2e/ui-zoom.spec.ts",
+      "--grep", "(?:en|ar): real 200% and 400% browser zoom retains reflow and form navigation$",
+      "--project=chromium", "--workers=1", "--retries=0", "--max-failures=1", "--output", output);
+    console.log(`Focused EN/AR native zoom evidence: ${output}`);
+  }
   const record: DatabaseRecord = { name: `usp_m1b_${m.owner}_test_${randomBytes(6).toString("hex")}`, kind: "test", ready: false };
+  if (zoomOnly && m.databases.some(existing => existing.name === record.name)) throw new Error("Zoom database name already registered; refusing adoption");
   m.databases.push(record); save(m);
   try {
     await createDatabase(m, record);
     await migrate(m, record.name);
-    const result = spawnSync(process.execPath, ["tools/testing/run-playwright.mts", "test"], {
+    const result = spawnSync(process.execPath, ["tools/testing/run-playwright.mts", "test", ...testArguments], {
       env: { ...process.env, M2_IDENTITY_E2E: "1", M2_BROWSER_GROUP: group, M2_BROWSER_DATABASE: record.name },
       // The opt-in manual helper prints instructions before each Inspector pause.
       // Buffered output would hide them until the session had already ended.
@@ -359,11 +428,36 @@ async function identityBrowserGroup(m: LocalManifest, group: "empty" | "main" | 
     process.stdout.write(result.stdout ?? ""); process.stderr.write(result.stderr ?? "");
     if (result.error || result.status !== 0) throw new Error("Identity browser tests failed");
   } finally {
+    // Do not erase control state or attempt a drop while an application remains.
+    if (zoomOnly) await ensurePortFree(3100, "Zoom browser shutdown; inspect resources before retrying");
     if (existsSync(controlPath)) {
       removeBrowserControl(controlPath, record.name);
     }
     if (record.ready) await removeTestDatabase(m, record);
+    else if (zoomOnly) console.error(`Zoom provisioning incomplete; inspect manifest entry ${record.name}. No unverified database was removed.`);
   }
+}
+
+async function restartMessagingDatabase(m: LocalManifest) {
+  const name = process.env.M2_BROWSER_DATABASE;
+  if (process.env.M2_IDENTITY_E2E !== "1" || process.env.M2_BROWSER_GROUP !== "messaging" ||
+    !m.containerId || !m.databases.some(row => row.name === name && row.kind === "test" && row.ready)) throw new Error("Owned disposable messaging restart context required");
+  const previewRecord = m.databases.find(row => row.kind === "development" && row.ready);
+  async function checkInteractive() {
+    if (existsSync(resolve(".cache/m2-preview.json")) && (!previewRecord || !await previewIsInactive(m, previewRecord))) throw new Error("Interactive runtime is active or uncertain; restart refused");
+  }
+  await checkInteractive();
+  for (const path of [".cache/m2-browser.json", ".cache/m2-preview-check.json"]) if (existsSync(resolve(path))) throw new Error("Stop the owned test application before database restart");
+  for (const port of [3000, 3100, 3200, 3201]) await ensurePortFree(port, "Application restart check");
+  await assertDatabaseIdentity(databaseUrl(m, name!, "runtime"), m, "runtime");
+  const id = verifyResources(m);
+  if (psql(m, "postgres", "SELECT count(*) FROM pg_stat_activity WHERE backend_type='client backend' AND pid<>pg_backend_pid();").trim() !== "0") throw new Error("Database clients remain; restart refused");
+  if (verifyResources(m) !== id) throw new Error("Database ownership changed before restart");
+  await checkInteractive();
+  execute("docker", ["stop", id]);
+  await resumePreviewDatabase(m);
+  for (const record of m.databases) await assertDatabaseIdentity(databaseUrl(m, record.name, "runtime"), m, "runtime");
+  console.log("Owned PostgreSQL restarted without changing retained databases, volume or binding");
 }
 
 function removeBrowserControl(path: string, name: string) {
@@ -539,13 +633,25 @@ try {
       await reviewMigration(m);
       await test(m);
     }
+    else if (command === "manual-qa") await manualQa(m, "start");
+    else if (command === "manual-qa-status") await manualQa(m, "status");
+    else if (command === "manual-qa-stop") await manualQa(m, "stop");
     else if (command === "identity-browser") { await reviewMigration(m); await identityBrowser(m); }
+    // Replay the already-reviewed history only on the new focused browser target.
+    else if (command === "zoom-browser") await identityBrowserGroup(m, "zoom");
+    else if (command === "messaging-browser") { await reviewMigration(m); await identityBrowserGroup(m, "messaging"); }
+    else if (command === "messaging-restart-check") await restartMessagingDatabase(m);
     else if (command === "cleanup") await cleanup(m);
     else if (command === "guard-check") await guardCheck(m);
     else if (command === "status") {
       verifyResources(m);
       for (const record of m.databases) await assertDatabaseIdentity(databaseUrl(m, record.name, "runtime"), m, "runtime");
       console.log(`Owned local PostgreSQL: ${m.container}; port ${m.port}; databases: ${m.databases.map((d) => d.name).join(", ")}`);
+    } else if (command === "resume") {
+      verifyResources(m);
+      await resumePreviewDatabase(m);
+      for (const record of m.databases) await assertDatabaseIdentity(databaseUrl(m, record.name, "runtime"), m, "runtime");
+      console.log("Owned PostgreSQL resumed and database identities verified; no migrations or grants applied");
     } else throw new Error("Unknown local database command");
   }
 } catch (error) {

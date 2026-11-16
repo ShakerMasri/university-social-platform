@@ -4,13 +4,14 @@ import { GET, POST } from "../app/api/identity/[operation]/route";
 import { communityHTTP, InputError } from "./communities/http";
 import { CommunityError } from "./communities/service";
 import { requireLocalIdentity } from "./identity/local";
-import { ownProfile, updateOwnProfile } from "./identity/service";
+import { ownProfile, ProfileSaveRateLimited, updateOwnProfile } from "./identity/service";
 
 vi.mock("./identity/local", () => ({
   requireLocalIdentity: vi.fn(() => ({ context: { origin: "http://127.0.0.1:3100" }, ip: "127.0.0.1" })),
   identityDatabase: vi.fn(() => ({})),
 }));
-vi.mock("./identity/service", () => ({
+vi.mock("./identity/service", async (importOriginal) => ({
+  ...await importOriginal<typeof import("./identity/service")>(),
   ownProfile: vi.fn(), updateOwnProfile: vi.fn(), allowIP: vi.fn(),
   confirmSignIn: vi.fn(), logout: vi.fn(), requestSignIn: vi.fn(),
 }));
@@ -45,6 +46,12 @@ describe("operational failure boundaries", () => {
     expect(response.headers.has("set-cookie")).toBe(false);
     expect(errors.mock.calls).toEqual([[JSON.stringify({ level: "error", event: "identity.http.post_failed" })]]);
   });
+  it("translates the legacy profile budget denial without cookies or failure diagnostics", async () => {
+    vi.mocked(updateOwnProfile).mockRejectedValueOnce(new ProfileSaveRateLimited());
+    const response = await POST(request("POST"), params);
+    expect(response.status).toBe(429); expect(await response.json()).toEqual({ ok: false });
+    expect(response.headers.has("set-cookie")).toBe(false); expect(errors).not.toHaveBeenCalled();
+  });
 
   it("reports unexpected community failures without exception or request content", async () => {
     const response = await communityHTTP(request(), async () => { throw sensitiveFailure; });
@@ -65,5 +72,10 @@ describe("operational failure boundaries", () => {
     expect(response.status).toBe(503);
     expect(await response.json()).toEqual({ ok: false });
     expect(errors.mock.calls).toEqual([[JSON.stringify({ level: "error", event: "archive.http.failed" })]]);
+  });
+  it("identifies profile failures without logging names, queries or database details", async () => {
+    const response = await communityHTTP(request(), async () => { throw sensitiveFailure; }, "profiles.http.failed");
+    expect(response.status).toBe(503); expect(await response.json()).toEqual({ ok: false });
+    expect(errors.mock.calls).toEqual([[JSON.stringify({ level: "error", event: "profiles.http.failed" })]]);
   });
 });

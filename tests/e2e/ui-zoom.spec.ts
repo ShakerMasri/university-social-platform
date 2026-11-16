@@ -7,6 +7,22 @@ import { readManifest, databaseUrl, assertDatabaseIdentity } from "../../tools/d
 import { communityText } from "../../src/i18n/communities";
 import { identityText } from "../../src/i18n/identity";
 import { archiveText } from "../../src/i18n/archive";
+import { peopleText } from "../../src/i18n/people";
+import { messagingText } from "../../src/i18n/messaging";
+
+async function messagingPeer() {
+  const manifest = readManifest(), name = process.env.M2_BROWSER_DATABASE;
+  if (!manifest.databases.some(record => record.name === name && record.kind === "test" && record.ready)) throw new Error("Owned disposable zoom messaging target required");
+  const url = databaseUrl(manifest, name!, "migration"); await assertDatabaseIdentity(url, manifest, "migration");
+  const client = new Client({ connectionString: url }), id = randomUUID(), directoryId = randomUUID(), email = `${id}@university.test`;
+  try {
+    await client.connect();
+    await client.query('INSERT INTO "User" (id,email,"emailKey","emailVerifiedAt","updatedAt") VALUES ($1,$2,$2,now(),now())', [id, email]);
+    await client.query('INSERT INTO "Profile" ("userId","directoryId","displayName","updatedAt") VALUES ($1,$2,$3,now())', [id, directoryId, "زميل ZoomLongName".repeat(3)]);
+    return directoryId;
+  } catch { throw new Error("Synthetic zoom messaging fixture failed; private diagnostics omitted"); }
+  finally { await client.end(); }
+}
 
 test.use({ trace: "off", screenshot: "off", video: "off" });
 const origin = "http://127.0.0.1:3100";
@@ -92,19 +108,48 @@ for (const locale of ["en", "ar"] as const) {
       const token = await syntheticTokenFor(email);
       await post(context, "/api/identity/confirm", { token, locale }, 200);
       await post(context, "/api/identity/profile", { displayName: "طالب Zoom participant" }, 200);
+      expect((await context.request.put("/api/people/profile", { data: { displayName: `Zoom ${email.slice(5, 13)}` }, headers: { Origin: origin } })).status()).toBe(200);
+      const directory = await context.request.get(`/api/people?q=${email.slice(5, 13)}`);
+      expect(directory.status()).toBe(200);
+      const directoryId = (await directory.json()).items[0].id as string;
+      const contact = await context.request.post(`/api/people/${await messagingPeer()}/messages`, { headers: { Origin: origin }, data: {
+        requestId: randomUUID(), body: "MixedIdentifierرسالة".repeat(150),
+      } });
+      expect(contact.status()).toBe(200); const conversationId = (await contact.json()).conversationId as string;
       const { id } = await post(context, "/api/communities", { name: "Zoom مجتمع دراسة", description: "Academic learning · تعلم مشترك", visibility: "PUBLIC" });
       const { id: postId } = await post(context, `/api/communities/${id}/posts`, { requestId: randomUUID(), type: "RESOURCE", title: "التزامن Concurrency discussion", body: "MixedIdentifier".repeat(30), resourceUrl: "https://example.com/" + "reference".repeat(20) });
       await post(context, `/api/communities/${id}/posts/${postId}/comments`, { requestId: randomUUID(), body: "تعليق طويل · A thoughtful bilingual comment" });
       await page.goto(`/${locale}/profile`);
+      await setBrowserZoom(worker, 1);
+      // Native window bounds do not guarantee the required content width.
+      const nativeWindowSession = await context.newCDPSession(page);
+      try {
+        try {
+          const { windowId } = await nativeWindowSession.send("Browser.getWindowForTarget");
+          await nativeWindowSession.send("Browser.setContentsSize", { windowId, width: 1280 });
+        } catch (cause) {
+          throw new Error("Native 1280px content initialization requires Chromium CDP window identification and Browser.setContentsSize support.", { cause });
+        }
+        await expect.poll(() => page.evaluate(() => innerWidth), {
+          message: "Chromium native content width must reach exactly 1280px at 100% zoom before baseline capture",
+          timeout: 5_000,
+        }).toBe(1280);
+      } finally { await nativeWindowSession.detach(); }
       const baseline = await page.evaluate(() => ({ width: innerWidth, dpr: devicePixelRatio, font: getComputedStyle(document.documentElement).fontSize }));
       expect(baseline.width).toBeGreaterThanOrEqual(1280);
       for (const factor of [2, 4]) {
         await setBrowserZoom(worker, factor);
         const measurement = await expectZoomMeasurement(page, baseline, factor);
         console.log(`${locale} native zoom ${factor * 100}%: ${JSON.stringify(measurement)}`);
-        for (const path of ["", "signin", "verify", "profile", "communities", `communities/${id}`, `communities/${id}/posts/${postId}`, "notifications", "archive"]) {
+        for (const path of ["", "signin", "verify", "profile", "communities", `communities/${id}`, `communities/${id}/posts/${postId}`, "notifications", "archive", "people", `people/${directoryId}`, "messages", `messages/${conversationId}`]) {
           await page.goto(`/${locale}/${path}`);
           await expect(page.getByRole("heading", { level: 1 })).toBeVisible();
+          if (path.startsWith("messages/")) {
+            await expect(page.locator(".message-history")).toBeVisible();
+            await page.getByLabel(messagingText[locale].body, { exact: true }).fill("Zoom message رسالة");
+            await page.getByRole("button", { name: messagingText[locale].send, exact: true }).focus(); await page.keyboard.press("Enter");
+            await expect(page.locator(".message-composer [role=status]")).toHaveText(messagingText[locale].saved);
+          }
           await expectZoomMeasurement(page, baseline, factor);
           await expectPageFits(page);
         }
@@ -136,6 +181,12 @@ for (const locale of ["en", "ar"] as const) {
         await expect(page.locator(".archive-result")).toHaveCount(1);
         await expect(page.getByRole("heading", { name: archiveText[locale].results, exact: true })).toBeFocused();
         await expectPageFits(page);
+        await page.goto(`/${locale}/people`);
+        await page.getByLabel(peopleText[locale].query, { exact: true }).fill("Zoom saved");
+        await page.getByRole("button", { name: peopleText[locale].submit, exact: true }).focus(); await page.keyboard.press("Enter");
+        await expect(page.locator(".people-result").first()).toBeVisible();
+        await expect(page.getByRole("heading", { name: peopleText[locale].results, exact: true })).toBeFocused();
+        await expectZoomMeasurement(page, baseline, factor); await expectPageFits(page);
       }
     } finally { await context.close(); }
   });

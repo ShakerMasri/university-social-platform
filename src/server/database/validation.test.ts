@@ -39,6 +39,10 @@ describe("approved persistence input policies", () => {
     }
   });
 
+  it("rejects embedded controls and bidirectional formatting at the shared name boundary", () => {
+    for (const name of ["A\tB", "A\nB", "A\rB", "A\u007fB", "A\u202eB", "A\u2066B", "A\u200bB"]) expect(() => validateDisplayName(name)).toThrow();
+  });
+
   it.each(["", " \t\n", "\u00a0\u2003\ufeff", "ع".repeat(61), "😀".repeat(61), "\ud800", "x\0y", undefined])(
     "rejects invalid display names (%#)", (value) => {
       expect(() => validateDisplayName(value)).toThrow();
