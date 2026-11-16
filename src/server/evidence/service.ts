@@ -12,23 +12,27 @@ function sourceFingerprint(source: ArchiveSource) {
     source.title, source.postCreatedAt.toISOString(), source.createdAt.toISOString(), source.body]));
 }
 
+// One canonical projection/fingerprint implementation for permitted sources.
+// Callers must obtain sources through a current server-side access boundary.
+export function projectEvidenceSource(source: ArchiveSource, terms: string[]): Evidence {
+  const citation: EvidenceCitation = { communityId: source.communityId, postId: source.postId, commentId: source.commentId };
+  // Prefer matching body context over a repeated title. The title is retained
+  // separately, including when query terms are split across title and body.
+  const normalizedBody = normalizeArchiveText(source.body);
+  const bodyMatches = terms.some(term => normalizedBody.includes(term));
+  const passageText = source.commentId === null && !bodyMatches ? `${source.title}\n${source.body}` : source.body;
+  return { sourceId: evidenceSourceId(citation), citation, fingerprint: sourceFingerprint(source),
+    kind: source.commentId === null ? "post" : source.rootId === null ? "comment" : "reply", title: source.title,
+    ...evidencePassage(passageText, terms),
+    createdAt: source.createdAt.toISOString(), postCreatedAt: source.postCreatedAt.toISOString() };
+}
+
 // Local platform content only. These results contain untrusted source text and
 // are not cleared for export to an external model or for shared caching.
 export async function retrieveEvidence(db: PrismaClient, token: unknown, parameters: URLSearchParams) {
   const input = validInput(() => evidenceInput(parameters));
   const { sources, interrupted } = await searchArchiveSources(db, token, input);
-  const evidence: Evidence[] = sources.map(source => {
-    const citation: EvidenceCitation = { communityId: source.communityId, postId: source.postId, commentId: source.commentId };
-    // Prefer matching body context over a repeated title. The title is retained
-    // separately, including when query terms are split across title and body.
-    const normalizedBody = normalizeArchiveText(source.body);
-    const bodyMatches = input.terms.some(term => normalizedBody.includes(term));
-    const passageText = source.commentId === null && !bodyMatches ? `${source.title}\n${source.body}` : source.body;
-    return { sourceId: evidenceSourceId(citation), citation, fingerprint: sourceFingerprint(source),
-      kind: source.commentId === null ? "post" : source.rootId === null ? "comment" : "reply", title: source.title,
-      ...evidencePassage(passageText, input.terms),
-      createdAt: source.createdAt.toISOString(), postCreatedAt: source.postCreatedAt.toISOString() };
-  });
+  const evidence = sources.map(source => projectEvidenceSource(source, input.terms));
   return { evidence, interrupted };
 }
 

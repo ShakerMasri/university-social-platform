@@ -1,0 +1,17 @@
+{
+  "corpusFrozenBeforeExperiment": true,
+  "freezeSha256": "46e861e1f5555a2fe0a4182350dcb771857d0c31fe8a5a6fca06d89ae4bcd163",
+  "rule": "Keep chronological five posts; for QUESTION posts allow the earliest currently permitted literal-matching comment/reply even when the parent matches. Other types retain parent precedence. One source per post; no content ranking.",
+  "productionArchiveImplementationUnchanged": true,
+  "hashes": {
+    "src/server/archive/policy.ts": "f764eb784c004a1fe66860d578f2ef2317986772fa586985484197925c91c634",
+    "src/server/archive/service.ts": "c6d89a36d07543786e40161fcfee77d34142bb36f486ca724cc2d12419af6c94",
+    "src/server/communities/service.ts": "946f05aa84c453c577c1b7fc4b371db609456f87caf2cc32d97be38e2edfe129",
+    "src/server/evidence/policy.ts": "a069ec8d02ef85392e422c16598d3b87217f178cb2a0af5d402786f0514a945e",
+    "src/server/evidence/service.ts": "6c21d6a356a851c36278cacea9823c268b714575e2e77e4b8734aa5424d744bf",
+    "tests/database/evidence-comment.test.ts": "1e129c75fc8ca01b0b4313a33148761220dd646bace1760f5ac3febf387f038e",
+    "tests/evaluation/evidence-comment-corpus.ts": "4742da175071133976f2dcfec0cfb668b8b7dac0ec3c0100705c25c6d74e6475",
+    "tools/database/evidence-comment-experiment.test.ts": "eac98c57e711c8b8f3b34531855acb85c1f845b09cf90574402631d3d51faa10",
+    "tools/database/evidence-comment-experiment.ts": "44a7828f57a2feef832f450f88240c3fd9ec017c2c2e4f2062cdab91b326d3a1"
+  }
+}

@@ -1,0 +1,86 @@
+{
+  "decision": "NOT_ADOPTED",
+  "closureDate": "2026-11-16",
+  "baseCommit": "ae45702dfaad93752bb5bcfeaf60490003568a7d",
+  "sourceHashes": "Artifact hashes below are exact bytes; existing evaluation registrations normalize CRLF to LF.",
+  "productionReview": {
+    "archiveImplementation": "identical to base commit, with appended server-only exports only",
+    "evidenceMapper": "same body after extraction and input.terms parameter rename",
+    "rankingCommentAndPassageAlgorithmsIntegrated": false
+  },
+  "historicalReplay": {
+    "rankingSourceModulesFromBaseCommit": [
+      "src/server/archive/service.ts",
+      "src/server/evidence/service.ts"
+    ],
+    "aOriginalRankerSnapshot": "tests/evaluation/history/m5-04a-ranker.ts.txt",
+    "aOriginalEvaluatorSnapshot": "tests/evaluation/history/m5-04a-evaluator.test.ts.txt",
+    "aInitialHarness": "paired quality measurement completed; two security harness probes failed, later corrected and rerun without remeasuring quality",
+    "aSecurityOnlyRerun": "four passed; quality skipped",
+    "a2": "restore the two base-commit source modules only in a separate disposable replay copy; current ranking evaluator/scorers match frozen registration",
+    "bAndC": "registrations match current sources",
+    "limitations": [
+      "No historical evaluation was rerun during closure.",
+      "Latency is host/runtime/load dependent; saved measurements cannot be reproduced bit for bit.",
+      "Operational manifests, credentials, Docker snapshots and local lifecycle scripts remain ignored.",
+      "Do not overwrite frozen hashes or use a retained database to bypass replay guards."
+    ]
+  },
+  "reusedChecks": {
+    "a": "4 unit checks; paired quality completed; corrected security-only run 4 pass, evaluation skipped",
+    "a2": "9 unit checks; 5 PostgreSQL tests",
+    "b": "25 unit checks; 6 PostgreSQL tests",
+    "c": "12 unit/mocked checks; 1 passage-only evaluation",
+    "typecheckAndScopedLint": "passing evidence reused from recorded checkpoints; evaluated source hashes rechecked"
+  },
+  "files": [
+    {
+      "path": "tests/evaluation/results/m5-02-baseline.json",
+      "sha256": "397a079cd08d8196149357a38eeb1dac382348e6ac4422418c22ff8d77f81bd4"
+    },
+    {
+      "path": "tests/evaluation/results/m5-04a.json",
+      "sha256": "20039a88a9f74bbdd06ae6682760cb9910741f9b273040765852ea048bd57af7"
+    },
+    {
+      "path": "tests/evaluation/results/m5-04a2.json",
+      "sha256": "47bacb386c8401dfc41768bf9017deebce49509c3920c8d498019d96899d15c2"
+    },
+    {
+      "path": "tests/evaluation/results/m5-04a2-security.json",
+      "sha256": "735a1e0afa1c73cf3dee0649104ef2bde7163d4c78384edbb78099f6a93458f3"
+    },
+    {
+      "path": "tests/evaluation/results/m5-04a2-freeze.json",
+      "sha256": "9ff3281fc6b9db6e019988c41a7c6b409cb8a03a4642092a62f5bd72fa47d5a6"
+    },
+    {
+      "path": "tests/evaluation/results/m5-04b.json",
+      "sha256": "3cc10120fa49cbd52525f4f05b227f2504dfcde46ad8b9ee5e049a77b6b9ec54"
+    },
+    {
+      "path": "tests/evaluation/results/m5-04b-security.json",
+      "sha256": "668451d3b41940b21bdb85bb6ee4983e289b058da4a19e374b17ff8012105cf0"
+    },
+    {
+      "path": "tests/evaluation/results/m5-04b-freeze.json",
+      "sha256": "46e861e1f5555a2fe0a4182350dcb771857d0c31fe8a5a6fca06d89ae4bcd163"
+    },
+    {
+      "path": "tests/evaluation/results/m5-04c.json",
+      "sha256": "cfbf341875fa50efdb70e841832cdfd4688290e7e3768d46dffeb8ebea84ed47"
+    },
+    {
+      "path": "tests/evaluation/results/m5-04c-freeze.json",
+      "sha256": "0460b4702fb22550d9885497343d740a8edf81189dff9c7a7b47ca281d272ada"
+    },
+    {
+      "path": "tests/evaluation/history/m5-04a-ranker.ts.txt",
+      "sha256": "c948e08de577da3333d8c66277068cdc4e77d1fde123bf55f33fb928caf95b7b"
+    },
+    {
+      "path": "tests/evaluation/history/m5-04a-evaluator.test.ts.txt",
+      "sha256": "5e03f69828510a3be9f73e86abca0808495807becdb97b3e98806079c1403fab"
+    }
+  ]
+}

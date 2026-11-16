@@ -152,3 +152,8 @@ export function archiveCommentTarget(db: PrismaClient, token: unknown, community
     return { commentId: row.id, rootId: row.rootId ?? row.id };
   }, "m4-archive-search", true);
 }
+
+// Server-only reuse of the existing policy boundary. Exporting these helpers
+// does not change archive pages or production evidence selection.
+export { lockedArchiveCandidates, matches as archiveTextMatches, scope as archiveSourceScope,
+  commentMember as archiveCommentMember, sourceProjection as archiveSourceProjection };

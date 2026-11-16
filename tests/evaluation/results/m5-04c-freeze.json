@@ -1,0 +1,5 @@
+{
+  "beforeExperimentImplementation": true,
+  "corpusSha256": "327efc6d90aa9b6a9cc5beb49c505112871bb346d4fcdcb444ddfc7f159eb9ff",
+  "design": "At most two exact contiguous source spans with code-point offsets, explicit gap marker, total rendered budget 1200. First around earliest query hit (160 before); second around a distant latest hit, otherwise source tail. Merge overlaps; retain short/no-hit text behavior. No ranking, source selection or label features."
+}

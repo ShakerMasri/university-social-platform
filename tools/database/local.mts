@@ -356,6 +356,10 @@ const evidenceTestFiles = {
   quality: "tests/database/evidence-quality.test.ts",
   "query-preparation": "tests/database/evidence-quality.test.ts",
   "query-holdout": "tests/database/evidence-query-holdout.test.ts",
+  ranking: "tests/database/evidence-ranking.test.ts",
+  "ranking-security": "tests/database/evidence-ranking.test.ts",
+  "ranking-holdout": "tests/database/evidence-ranking-holdout.test.ts",
+  "comment-selection": "tests/database/evidence-comment.test.ts",
 } as const;
 async function evidenceTest(m: LocalManifest, mode: keyof typeof evidenceTestFiles = "integration") {
   verifyResources(m);
@@ -382,6 +386,10 @@ async function evidenceTest(m: LocalManifest, mode: keyof typeof evidenceTestFil
     const result = spawnSync(process.execPath, ["node_modules/vitest/vitest.mjs", "run", "--config", "vitest.database.config.mjs", file], {
       env: { ...process.env, M5_EVIDENCE_DATABASE: record.name, M5_EVIDENCE_EVALUATION: evaluate ? "1" : "0",
         M5_QUERY_PREPARATION_EXPERIMENT: mode === "query-preparation" ? "1" : "0",
+        M5_RANKING_EXPERIMENT: mode === "ranking" || mode === "ranking-security" ? "1" : "0",
+        M5_RANKING_SECURITY_ONLY: mode === "ranking-security" ? "1" : "0",
+        M5_RANKING_HOLDOUT: mode === "ranking-holdout" ? "1" : "0",
+        M5_COMMENT_SELECTION: mode === "comment-selection" ? "1" : "0",
         M5_QUERY_HOLDOUT_VALIDATION: mode === "query-holdout" ? "1" : "0" }, encoding: "utf8", windowsHide: true,
     });
     process.stdout.write(result.stdout ?? ""); process.stderr.write(result.stderr ?? "");
@@ -680,6 +688,10 @@ try {
     else if (command === "evidence-evaluate") await evidenceTest(m, "quality");
     else if (command === "evidence-query-experiment") await evidenceTest(m, "query-preparation");
     else if (command === "evidence-query-holdout") await evidenceTest(m, "query-holdout");
+    else if (command === "evidence-ranking") await evidenceTest(m, "ranking");
+    else if (command === "evidence-ranking-security") await evidenceTest(m, "ranking-security");
+    else if (command === "evidence-ranking-holdout") await evidenceTest(m, "ranking-holdout");
+    else if (command === "evidence-comment-selection") await evidenceTest(m, "comment-selection");
     else if (command === "manual-qa") await manualQa(m, "start");
     else if (command === "manual-qa-status") await manualQa(m, "status");
     else if (command === "manual-qa-stop") await manualQa(m, "stop");

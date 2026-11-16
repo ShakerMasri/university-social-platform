@@ -177,6 +177,74 @@ npm.cmd run db:test:evidence-questions
 
 The database command uses the same guarded fresh allocation, prepares existing schema only there, and runs only five `tests/database/evidence-questions.test.ts` cases. This integration reused the earlier quality measurements instead of repeating them. See the [M5-03C evidence and limits](docs/project-brief.md#m5-03c-safe-evidence-question-integration--2026-11-16).
 
+**M5-04 is closed with a final owner decision not to adopt any experimental ranking, comment-selection or passage-selection algorithm.** The commands below are retained for research, not production integration. [Closure findings and limitations](docs/project-brief.md#m5-04d-consolidation-and-local-closure--2026-11-16), [measured reports](tests/evaluation/results/), and [byte-hash/source provenance](tests/evaluation/results/provenance.json) preserve the results. The original ranker/evaluator are archived only as non-executable text in `tests/evaluation/history/`; the historical evaluator contains two recorded security-harness failures later corrected in the maintained tests. Generated app code, operational manifests, credentials and local Docker/lifecycle artifacts are excluded.
+
+The source-hash checks are intentionally strict: A/A2 need the pre-refactor `src/server/archive/service.ts` and `src/server/evidence/service.ts` from Git commit `ae45702dfaad93752bb5bcfeaf60490003568a7d` in a **separate disposable replay workspace**. Their frozen registration must not be rewritten to accept current hashes. A's original measured source differs from the later experimental-pipeline refactor; its exact historical snapshots are preserved. B/C registrations match the current source. The committed `tests/evaluation/results/m5-02-baseline.json` can supply `.cache/m5-query-baseline.json` when deliberately preparing an authorized replay. Never reuse retained targets to bypass fresh-allocation guards. No historical evaluation was rerun for closure, and local latency samples are not promises of identical future timings.
+
+Production import isolation has a focused regression check, requiring no database or Docker:
+
+```powershell
+npm.cmd test -- tools/database/evidence-experiment-isolation.test.ts
+```
+
+It scans source/Next imports and transitive local dependencies without executing them, rejecting experimental/test imports and unreviewed computed module loads. Production retains its chronological five-source retrieval, parent-first selection, canonical 1,200-point passage and existing authorization/revalidation behavior. Shared exports and mapper extraction are behavior-preserving refactors only.
+
+M5-04A is an opt-in, evidence-only lexical ranking experiment. Production retrieval and archive search remain unchanged. On an already-running owned disposable instance, the maintained fresh-target guards run only its paired evaluation and focused security probes:
+
+```powershell
+npm.cmd test -- tools/database/evidence-ranking-experiment.test.ts
+Copy-Item -LiteralPath .cache/m5-02/results.json -Destination .cache/m5-query-baseline.json
+npm.cmd run db:experiment:evidence-ranking
+# To repeat only security probes, without rerunning completed quality measurements:
+npm.cmd run db:test:evidence-ranking-security
+node node_modules/typescript/bin/tsc --noEmit --incremental false
+node node_modules/eslint/bin/eslint.js tools/database/evidence-ranking-experiment.ts tools/database/evidence-ranking-experiment.test.ts tests/database/evidence-ranking.test.ts tools/database/local.mts --max-warnings=0
+```
+
+The evaluator verifies the frozen M5-02 report, corpus/labels and production-source digests, then measures both raw-input variants on the same newly allocated database. It writes `.cache/m5-ranking-results.json` with aliases, per-case quality/latency deltas and sanitized samples. It ranks up to 21 recent eligible parents before taking five, preserving the existing source-selection/window behavior. No provider calls or limiter resets occur. Short irrelevant text and candidates beyond that horizon remain limitations; [M5-04A results and REVISE recommendation](docs/project-brief.md#m5-04a-evidence-relevance-ranking-experiment--2026-11-16) explain the evidence.
+
+The actual run used independent temporary roots/containers/new volumes because the retained project instance was stopped. Ignored orchestration reused the earlier guarded isolation path: `node .cache/m5-04a/verify.mjs prepare`, `setup`, `test`, `finish` (each phase is a separate invocation). After correcting two probe-harness issues, `.cache/m5-04a-security/verify.mjs` ran those same four phases for security only. Neither invocation starts, mounts or connects to retained databases. Both environments were removed; the completed paired measurements were not repeated. These local evidence scripts/results are ignored artifacts, not shipped tooling.
+
+M5-04A2 adds a separate [frozen 12-case ranking holdout](tests/evaluation/evidence-ranking-holdout.ts). Its [registration](tests/evaluation/evidence-ranking-registration.json) fixes source/rule/evaluator hashes; deliberate future experiments need a separate registration rather than silently relabeling this one. The maintained command requires an already-running, identity-verified owned instance and allocates/prepares/removes only one new test database:
+
+```powershell
+npm.cmd test -- tools/database/evidence-ranking-experiment.test.ts tools/database/evidence-ranking-revision.test.ts
+Copy-Item -LiteralPath tests/evaluation/evidence-ranking-registration.json -Destination .cache/m5-ranking-registration.json
+npm.cmd run db:validate:evidence-ranking
+node node_modules/typescript/bin/tsc --noEmit --incremental false
+node node_modules/eslint/bin/eslint.js tools/database/evidence-ranking-experiment.ts tools/database/evidence-ranking-revision.ts tools/database/evidence-ranking-revision.test.ts tools/database/local.mts tests/evaluation/evidence-ranking-holdout.ts tests/database/evidence-ranking-holdout.test.ts --max-warnings=0
+```
+
+Only `tests/database/evidence-ranking-holdout.test.ts` runs. It compares raw baseline, original density ranking and revised local-context ranking on the same fresh target, then checks permissions, revocation, citations and shared budgets. It writes `.cache/m5-ranking-holdout.json` and `.cache/m5-ranking-holdout-security.json` with aliases/metrics/probe counts and no source bodies or account tokens. Horizon diagnostics use only the existing capped candidate query; no larger retrieval or full-match count is introduced. Production and archive behavior stay unchanged. See [results, regression and duplication prerequisites](docs/project-brief.md#m5-04a2-ranking-refinement-and-holdout-validation--2026-11-16).
+
+The actual evaluation used `.cache/m5-04a2/verify.mjs` with separate `prepare`, `setup`, `test`, `finish` invocations in an independent temporary root/container/new volume, reusing the earlier guarded isolation path. It copied the preregistered source/labels, reused the cached pinned image on a free loopback port, and removed its own resources afterward. Retained databases were never mounted, connected to or started. Its sanitized provenance, results and security evidence remain in ignored `.cache/m5-04a2/`; earlier datasets/results were preserved.
+
+M5-04B separately tests post versus comment selection, without using either experimental ranker. Its [10-case corpus](tests/evaluation/evidence-comment-corpus.ts) and [registration](tests/evaluation/evidence-comment-registration.json) fix baseline aliases, useful-source labels/anchors and source/evaluator hashes. On an already-running owned instance:
+
+```powershell
+npm.cmd test -- tools/database/evidence-comment-experiment.test.ts src/server/evidence/service.test.ts src/server/archive/sources.test.ts
+Copy-Item -LiteralPath tests/evaluation/evidence-comment-registration.json -Destination .cache/m5-comment-registration.json
+npm.cmd run db:experiment:evidence-comments
+node node_modules/typescript/bin/tsc --noEmit --incremental false
+node node_modules/eslint/bin/eslint.js src/server/archive/service.ts src/server/evidence/service.ts tools/database/evidence-comment-experiment.ts tools/database/evidence-comment-experiment.test.ts tests/evaluation/evidence-comment-corpus.ts tests/database/evidence-comment.test.ts tools/database/local.mts --max-warnings=0
+```
+
+The maintained fresh-target runner invokes only `tests/database/evidence-comment.test.ts`, applying existing schema/role/identity checks and guarded non-forced cleanup. The evaluator writes `.cache/m5-comment-results.json` and `.cache/m5-comment-security.json` with aliases, per-case metrics and probe counts. Only the experimental entry lets a `QUESTION` parent's earliest matching permitted comment override that parent. It shares canonical SQL permissions, locks and evidence projection; source ordering, five-source cutoff, one source per post and production behavior remain unchanged. The [results and REVISE recommendation](docs/project-brief.md#m5-04b-post-versus-comment-evidence-selection--2026-11-16) record the already-answered-parent regression.
+
+The actual run used ignored `.cache/m5-04b/verify.mjs` with separate `prepare`, `setup`, `test`, `finish` invocations in an independent temporary root/container/new volume. Its cached pinned image/free-loopback-port setup, fresh target and cleanup passed the existing guards. Retained databases were not mounted, connected to or started. Raw evidence, source-preservation checks and before-refactor source snapshots remain in `.cache/m5-04b/`. The shared services gained exports/a pure mapper extraction without behavior changes, so older hash registrations still describe their historical source snapshots; do not rewrite frozen registrations to bypass those checks. No earlier evaluation was rerun.
+
+M5-04C is a pure passage-only experiment; it never changes retrieved sources or calls a database/provider. Its [frozen multilingual cases](tests/evaluation/evidence-passage-corpus.ts) and [registration](tests/evaluation/evidence-passage-registration.json) fix source/rule/evaluator hashes. Run unit/wiring checks first, then the opt-in benchmark separately to avoid concurrent-test latency interference:
+
+```powershell
+npm.cmd test -- tools/database/evidence-passage-experiment.test.ts
+node node_modules/typescript/bin/tsc --noEmit --incremental false
+node node_modules/eslint/bin/eslint.js tools/database/evidence-passage-experiment.ts tools/database/evidence-passage-experiment.test.ts tools/database/evidence-passage-evaluation.test.ts tests/evaluation/evidence-passage-corpus.ts --max-warnings=0
+$env:M5_PASSAGE_EVALUATION = '1'
+try { npm.cmd test -- tools/database/evidence-passage-evaluation.test.ts } finally { Remove-Item Env:M5_PASSAGE_EVALUATION }
+```
+
+The benchmark writes `.cache/m5-04c/results.json` with case IDs, quality/length metrics, exact code-point ranges and helper-only latency samples; it excludes raw source bodies and private fixture text. It preserves the production 1,200-point output bound including explicit internal-gap markers and returns at most two exact source segments plus omission metadata. It measures 15 balanced three-call batches per case/variant; ordinary tests skip the benchmark. Source/access/metadata checks are unit/mocked only. Production retrieval, source projection, fingerprinting and revalidation remain untouched; there is no database/Docker setup for this checkpoint. See [M5-04C results, the middle-explanation regression and REVISE recommendation](docs/project-brief.md#m5-04c-evidence-passage-selection--2026-11-16).
+
 Install Chromium once. All npm browser-test commands automatically reuse `.cache/ms-playwright` when that folder exists and no `PLAYWRIGHT_BROWSERS_PATH` override is supplied. An explicit override is respected; without the project cache, Playwright uses its standard cache (including CI). Direct `npx playwright` calls still follow Playwright's normal environment settings. To install browsers into the project cache:
 
 ```powershell
