@@ -1,6 +1,8 @@
 import "server-only";
 
 export type OperationalEvent =
+  | "feed.http.failed"
+  | "feed.page.failed"
   | "identity.http.get_failed"
   | "identity.http.post_failed"
   | "identity.delivery_failed"

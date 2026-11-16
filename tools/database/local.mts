@@ -283,7 +283,7 @@ async function setup() {
 async function test(m: LocalManifest) {
   verifyResources(m);
   // Two complete-history databases and populated Unicode/M2/community/posts upgrade fixtures.
-  const records: DatabaseRecord[] = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11].map(() => ({
+  const records: DatabaseRecord[] = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12].map(() => ({
     name: `usp_m1b_${m.owner}_test_${randomBytes(6).toString("hex")}`, kind: "test", ready: false,
   }));
   m.databases.push(...records);
@@ -291,11 +291,11 @@ async function test(m: LocalManifest) {
   try {
     for (const [index, record] of records.entries()) {
       await createDatabase(m, record);
-      if (index < 2 || index === 9) await migrate(m, record.name);
+      if (index < 2 || index === 9 || index === 12) await migrate(m, record.name);
     }
     const result = spawnSync(process.execPath, ["node_modules/vitest/vitest.mjs", "run", "--config", "vitest.database.config.mjs"], {
       env: { ...process.env, M1B_TEST_DATABASE: records[0].name, M1B_REPLAY_DATABASE: records[1].name,
-        M1B_UPGRADE_DATABASE: records[2].name, M2_UPGRADE_DATABASE: records[3].name, M3_UPGRADE_DATABASE: records[4].name, M3_POSTS_UPGRADE_DATABASE: records[5].name, M3_COMMENTS_UPGRADE_DATABASE: records[6].name, M3_VOTES_UPGRADE_DATABASE: records[7].name, M3_NOTIFICATIONS_UPGRADE_DATABASE: records[8].name, M4_ARCHIVE_DATABASE: records[9].name, M4_PEOPLE_UPGRADE_DATABASE: records[10].name, M4_MESSAGING_UPGRADE_DATABASE: records[11].name },
+        M1B_UPGRADE_DATABASE: records[2].name, M2_UPGRADE_DATABASE: records[3].name, M3_UPGRADE_DATABASE: records[4].name, M3_POSTS_UPGRADE_DATABASE: records[5].name, M3_COMMENTS_UPGRADE_DATABASE: records[6].name, M3_VOTES_UPGRADE_DATABASE: records[7].name, M3_NOTIFICATIONS_UPGRADE_DATABASE: records[8].name, M4_ARCHIVE_DATABASE: records[9].name, M4_PEOPLE_UPGRADE_DATABASE: records[10].name, M4_MESSAGING_UPGRADE_DATABASE: records[11].name, M4_FEED_DATABASE: records[12].name },
       encoding: "utf8", windowsHide: true,
     });
     process.stdout.write(result.stdout ?? "");
@@ -350,6 +350,26 @@ async function test(m: LocalManifest) {
   }
 }
 
+async function feedTest(m: LocalManifest) {
+  verifyResources(m);
+  const record: DatabaseRecord = { name: `usp_m1b_${m.owner}_test_${randomBytes(6).toString("hex")}`, kind: "test", ready: false };
+  if (m.databases.some(existing => existing.name === record.name)) throw new Error("Feed target already registered; refusing adoption");
+  m.databases.push(record); save(m);
+  try {
+    await createDatabase(m, record); await migrate(m, record.name);
+    await assertDatabaseIdentity(databaseUrl(m, record.name, "runtime"), m, "runtime");
+    const output = resolve(".cache/m4-feed-schema.sql");
+    execute(process.execPath, ["node_modules/prisma/build/index.js", "migrate", "diff", "--from-config-datasource", "--to-schema", "prisma/schema.prisma", "--script", "--output", output], undefined,
+      { ...process.env, M1B_MIGRATION_URL: databaseUrl(m, record.name, "migration"), PRISMA_HIDE_UPDATE_MESSAGE: "1", CHECKPOINT_DISABLE: "1" });
+    if (readFileSync(output, "utf8").replace(/^--.*$/gm, "").trim()) throw new Error("Feed target schema mismatch");
+    const result = spawnSync(process.execPath, ["node_modules/vitest/vitest.mjs", "run", "--config", "vitest.database.config.mjs", "tests/database/feed.test.ts"], {
+      env: { ...process.env, M4_FEED_DATABASE: record.name }, encoding: "utf8", windowsHide: true,
+    });
+    process.stdout.write(result.stdout ?? ""); process.stderr.write(result.stderr ?? "");
+    if (result.error || result.status !== 0) throw new Error("Feed PostgreSQL tests failed");
+  } finally { if (record.ready) await removeTestDatabase(m, record); }
+}
+
 async function manualQa(m: LocalManifest, operation: "start" | "status" | "stop") {
   // Load manual-only code only for these explicit commands. Existing automated
   // commands keep their exact selection, lifecycle and migration-review paths.
@@ -395,9 +415,9 @@ async function manualQa(m: LocalManifest, operation: "start" | "status" | "stop"
 async function identityBrowser(m: LocalManifest) {
   // The empty-discovery checkpoint needs a pristine target even when comments
   // run before communities. Keep all assertions, with separate fixture scopes.
-  for (const group of ["empty", "main", "archive", "messaging"] as const) await identityBrowserGroup(m, group);
+  for (const group of ["empty", "main", "archive", "messaging", "feed"] as const) await identityBrowserGroup(m, group);
 }
-async function identityBrowserGroup(m: LocalManifest, group: "empty" | "main" | "archive" | "messaging" | "zoom") {
+async function identityBrowserGroup(m: LocalManifest, group: "empty" | "main" | "archive" | "messaging" | "zoom" | "feed") {
   verifyResources(m);
   const zoomOnly = group === "zoom";
   const controlPath = resolve(".cache/m2-browser.json");
@@ -629,6 +649,8 @@ try {
     }
     else if (command === "preview-check" || command === "development-check") { await reviewMigration(m); await previewCheck(m, command === "development-check"); }
     else if (command === "review") await reviewMigration(m);
+    else if (command === "feed-test") await feedTest(m);
+    else if (command === "feed-browser") await identityBrowserGroup(m, "feed");
     else if (command === "test") {
       await reviewMigration(m);
       await test(m);

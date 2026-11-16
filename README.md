@@ -19,6 +19,7 @@ A Computer Engineering graduation project for university students and teachers t
 | M4, profiles and People | Editable default names and discovery of all saved verified profiles across communities | Implemented and integration-tested locally; not deployed |
 | M4, local messaging | Protected APIs, People contact, requests/history, recipient decisions, bilateral blocks, safe retries and scoped pagination in EN/AR | Implemented and synthetic/local tested; no realtime provider or deployment; evidence in the project brief |
 | M4, final local verification | 193 unit / 143 database / 10 ordinary Chromium / 228 authenticated Chromium passes; owner reports 29 manual PASS / H06 BLOCKED | Reviewed local scope signed off 2026-11-15; QA session safely closed and retained data verified preserved; exceptions/evidence limits remain; not deployed |
+| M4-F01, additional discovery checkpoint | Your Communities membership-only post feed, signed pagination and EN/AR UI | Implemented and focused-local verified: 5 unit, 7 PostgreSQL, 6 authenticated Chromium and 1 ordinary-startup cases; uncommitted, not deployed; new Next advisory remains unresolved |
 | Local development | Interactive synthetic sign-in through posts with hot reload and persistent data | Implemented and tested locally |
 
 **Nothing is deployed.** Live university email is not connected. Post/comment editing/deletion, a personalized study feed and AI are still pending. Direct text messaging works in the synthetic local application with explicit refresh. See the [profiles/People checkpoint](docs/project-brief.md#profiles-and-people-discovery--planned-before-messaging), [archive checkpoint](docs/project-brief.md#first-archive-slice--implementation-and-verification), [replies and notifications checkpoint](docs/project-brief.md#replies-and-in-app-notifications--local-checkpoint-2026-10-28), [workflow checkpoint](docs/project-brief.md#interactive-development-workflow--2026-10-27), [comments checkpoint](docs/project-brief.md#createread-comments--approved-2026-10-27) and [voting checkpoint](docs/project-brief.md#postcomment-upvotes--approved-2026-10-27) for verification.
@@ -61,7 +62,7 @@ Open [English sign-in](http://localhost:3000/en/signin) or [Arabic sign-in](http
 3. Save a display name, open Communities and create/join a community to publish posts and comments.
 4. Use another browser/incognito window with `bob@university.test` for a separate account.
 
-Posts and comments load more as you scroll, with a **Load more** button for keyboard access and retry. Confirmed comments appear beside the composer immediately, including in long threads; their **Just published** entries join the ordinary list as scrolling reaches them. Comments read oldest first; posts read newest first. Dedicated “For you” and “Your communities” feeds remain a discovery-design decision.
+Posts and comments inside a community load more as you scroll, with a **Load more** button for keyboard access and retry. Confirmed comments appear beside the composer immediately, including in long threads; their **Just published** entries join the ordinary list as scrolling reaches them. Comments read oldest first; posts read newest first. **Your communities** in navigation opens the additional M4-F01 feed: newest-first posts from joined MEMBER communities only, in explicit 20-post pages with community labels, Next posts and Refresh. Public nonmember communities and pending requests are excluded. Returning after tab departure requires Refresh. For You remains an undecided discovery follow-up.
 
 Your profile suggests an editable **Member** / **عضو** name if you have not saved one. The suggestion contains no part of your email and creates no profile until saved. Existing names are preserved. Every saved profile with verified email appears in People for verified signed-in viewers; there is no hide-profile setting. Your email stays private.
 
@@ -134,6 +135,21 @@ npm.cmd run test:e2e
 
 For a local production preview, run `npm.cmd start` after building. This also leaves M2–M3 disabled. GitHub CI runs installation, lint, typecheck, unit tests, build and ordinary browser tests; database and synthetic M2–M3 tests are separate local checks.
 
+### Focused M4-F01 feed verification
+
+Run from the feed worktree with pinned Node/npm and generated Prisma client. The focused database/browser commands require an already-running, identity-verified owned setup. They create, migrate and remove only their own **new disposable test targets**; they do not resume/restart containers or migrate retained development databases. If no suitable explicitly authorized setup exists, prepare a separate disposable instance first; do not adopt another checkout's manifest or use `dev` to bypass this boundary. Keep port 3100 free, and run database/browser commands sequentially.
+
+```powershell
+npm.cmd test -- src/server/feed/policy.test.ts "src/app/[locale]/feed/data.test.ts"
+npm.cmd run typecheck
+npm.cmd run db:test:feed
+npm.cmd run build
+npm.cmd run test:e2e:feed
+npm.cmd run test:e2e -- tests/e2e/feed-disabled.spec.ts
+```
+
+M4-F01's actual isolated verification reused installed dependencies via a junction and ran `node node_modules/next/dist/bin/next build --webpack`; only its ignored operational copies substituted a free loopback port and the same cached pinned PostgreSQL digest. Exact observations and limitations are in the [M4-F01 record](docs/project-brief.md#m4-f01-your-communities-feed--2026-11-17). No dependency, schema or migration change is required. Full `db:test` and authenticated-browser runners include the new feed cases for future campaigns; those full campaigns were not rerun for M4-F01.
+
 ## Test M2–M4 with a local database
 
 You need Docker with a running Linux engine. The scripts use pinned PostgreSQL 18.6 and Prisma 7.10.1; they do not install or start Docker Desktop.
@@ -184,6 +200,7 @@ Replace `{locale}` with `en` or `ar`:
 | --- | --- |
 | `/` | Redirect to `/en` |
 | `/{locale}` | Home and language switching |
+| `/{locale}/feed` | Newest-first posts from the caller's current MEMBER communities |
 | `/{locale}/people` | Verified-user search of confirmed display names |
 | `/{locale}/people/{id}` | Discoverable profile and message request, using its directory ID |
 | `/{locale}/messages` | Incoming requests and existing conversations |
@@ -200,6 +217,9 @@ Replace `{locale}` with `en` or `ar`:
 Protected flows require interactive dev, the explicit localhost preview or a synthetic runner. Check both languages, Arabic RTL, keyboard focus, validation messages and mobile widths. `/fr` should return 404; the current generic 404 page is English.
 
 ## Security and release limits
+
+- M4-F01 uses private/no-store API reads, current MEMBER checks, sorted shared community locks and signed viewer/membership/anchor-scoped cursors. Changing membership can require restarting pagination. Each read consumes its separate 30-attempt/15-minute budget. The page requires JavaScript, clears displayed posts while rechecking and on tab departure, and does not poll for live revocation. Already delivered text cannot be recalled; subsequent reads/destinations reauthorize. Wider load and independent human accessibility/usability are unverified.
+- **2026-11-17 scoped finding:** pinned Next 16.4.3 is affected by moderate [GHSA-mfr8-8qww-v76h](https://github.com/vercel/next.js/security/advisories/GHSA-mfr8-8qww-v76h), patched in 16.4.5. Its required `use cache` through `unstable_cache()` pattern is absent from inspected application/config. Build first exited with a security reminder, then passed while still warning. This is not a fix or owner risk acceptance; a separate supported security upgrade review is recommended. Dependencies/checks were not changed or suppressed. The November 15 audit below is dated history; no fresh full audit is claimed.
 
 - Archive search requires a verified session, with private post/comment access rechecked before excerpts are returned and whenever a result is opened. Use 2–200 characters and at most eight words; all words must occur in post title/body or one comment/reply. Matching uses literal substrings, Latin case folding and common Arabic vowel/tatweel normalization; no translation, stemming or typo correction. Results show one parent post and a labeled excerpt, newest first, 20 per page. Community/type filters are optional; each community has a scoped archive link. The dropdown shows the first 50 readable communities plus an explicitly selected one. Search has its own durable 30-attempt/15-minute budget and bounded query timeout. No new migration, extension, dependency, academic-year field or retention promise was added. Database tests keep the 10,000-post synthetic archive corpus in a separate disposable target. Current measurements are local samples, not a production scale guarantee.
 

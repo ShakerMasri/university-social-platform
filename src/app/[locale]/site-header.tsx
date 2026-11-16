@@ -8,6 +8,7 @@ import { interfaceText } from "@/i18n/interface";
 import { archiveText } from "@/i18n/archive";
 import { peopleText } from "@/i18n/people";
 import { messagingText } from "@/i18n/messaging";
+import { feedText } from "@/i18n/feed";
 
 export function SiteHeader({ locale, path = "", accountNavigation = false }: { locale: Locale; path?: string; accountNavigation?: boolean }) {
   const text = dictionaries[locale];
@@ -21,6 +22,7 @@ export function SiteHeader({ locale, path = "", accountNavigation = false }: { l
       </ul></nav>
     </div>
     {accountNavigation && <nav aria-label={interfaceText[locale].navigation} className="primary-navigation">
+      <Link prefetch={false} href={`/${locale}/feed`} aria-current={path === "feed" ? "page" : undefined}>{feedText[locale].title}</Link>
       <Link prefetch={false} href={`/${locale}/communities`} aria-current={path === "communities" ? "page" : path.startsWith("communities/") ? "location" : undefined}>{communityText[locale].title}</Link>
       <Link prefetch={false} href={`/${locale}/archive`} aria-current={path.split("?")[0] === "archive" ? "page" : undefined}>{archiveText[locale].title}</Link>
       <Link prefetch={false} href={`/${locale}/people`} aria-current={path === "people" ? "page" : path.startsWith("people/") ? "location" : undefined}>{peopleText[locale].title}</Link>
