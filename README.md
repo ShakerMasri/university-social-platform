@@ -135,6 +135,16 @@ npm.cmd run db:test:evidence
 
 It creates one fresh random test database, applies existing migration history and runtime grants only there, verifies both restricted roles/markers and schema agreement, runs only `tests/database/evidence.test.ts`, and removes only its new database without force. It never adopts registered retained targets or starts a stopped container. Do not supply `M5_EVIDENCE_DATABASE` / `M4_ARCHIVE_DATABASE` manually to bypass allocation. Run guarded database commands sequentially. The verified M5-01B run used a separate temporary project root/container/new volume because the retained container was stopped; its original resources were not started or mounted. See [M5-01B isolation, results and preservation limits](docs/project-brief.md#m5-01b-focused-postgresql-verification--2026-11-16).
 
+For the opt-in M5-02 synthetic retrieval-quality evaluation, the same guarded allocation/preparation/cleanup path runs only its evaluation file:
+
+```powershell
+npm.cmd run db:evaluate:evidence
+node node_modules/typescript/bin/tsc --noEmit --incremental false
+node node_modules/eslint/bin/eslint.js tools/database/local.mts tests/database/evidence-quality.test.ts tests/evaluation/evidence-corpus.ts --max-warnings=0
+```
+
+The [versioned corpus](tests/evaluation/evidence-corpus.ts) defines source text, study intents and relevance labels before execution. The [evaluator](tests/database/evidence-quality.test.ts) writes source aliases and metrics to `.cache/m5-evidence-quality.json`, without bodies, session tokens or account IDs. It is skipped in ordinary database campaigns. One warmup and five measured calls per query preserve the real limiter using a fresh synthetic reader per case. Quality misses are measured, not hidden by a passing harness. Current measurements, definitions and limits are in the [M5-02 record](docs/project-brief.md#m5-02-retrieval-quality-evaluation--2026-11-16). As above, use only the runner's fresh target; it will not start stopped retained resources. This checkpoint's actual run used an independent temporary container/new volume and removed them after evaluation.
+
 Install Chromium once. All npm browser-test commands automatically reuse `.cache/ms-playwright` when that folder exists and no `PLAYWRIGHT_BROWSERS_PATH` override is supplied. An explicit override is respected; without the project cache, Playwright uses its standard cache (including CI). Direct `npx playwright` calls still follow Playwright's normal environment settings. To install browsers into the project cache:
 
 ```powershell

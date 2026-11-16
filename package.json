@@ -35,6 +35,7 @@
     "db:migrate": "node tools/database/local.mts migrate",
     "db:test": "node tools/database/local.mts test",
     "db:test:evidence": "node tools/database/local.mts evidence-test",
+    "db:evaluate:evidence": "node tools/database/local.mts evidence-evaluate",
     "db:cleanup": "node tools/database/local.mts cleanup",
     "preview:local": "node tools/database/local.mts preview",
     "preview:stop": "node tools/database/local.mts preview-stop",
