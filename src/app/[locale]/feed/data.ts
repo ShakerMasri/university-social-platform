@@ -1,7 +1,7 @@
 import { postResponse, type PostItem } from "../communities/content-data";
 
-export type FeedPost = PostItem & { communityName: string };
-export type FeedPage = { items: FeedPost[]; next: string | null; viewer: string };
+export type FeedPost = PostItem & { communityName: string; reason?: "joined" | "public" };
+export type FeedPage = { items: FeedPost[]; next: string | null; viewer: string; coldStart?: boolean };
 export function feedPageResponse(value: unknown): FeedPage {
   if (!value || typeof value !== "object" || Array.isArray(value)) throw new Error("Invalid feed response");
   const page = value as Record<string, unknown>;
@@ -15,4 +15,16 @@ export function feedPageResponse(value: unknown): FeedPage {
   });
   if (new Set(items.map(row => row.id)).size !== items.length) throw new Error("Duplicate feed post");
   return { items, next: page.next, viewer: page.viewer };
+}
+
+export function forYouPageResponse(value: unknown): FeedPage {
+  const page = feedPageResponse(value);
+  const source = value as { coldStart?: unknown; items: { reason?: unknown }[] };
+  if (typeof source.coldStart !== "boolean") throw new Error("Invalid discovery state");
+  const items = page.items.map((post, index): FeedPost => {
+    const reason = source.items[index].reason;
+    if (reason !== "joined" && reason !== "public" || source.coldStart && reason !== "public") throw new Error("Invalid feed reason");
+    return { ...post, reason };
+  });
+  return { ...page, items, coldStart: source.coldStart };
 }

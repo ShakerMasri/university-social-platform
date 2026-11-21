@@ -2,29 +2,17 @@ import "server-only";
 import type { Prisma, PrismaClient } from "../../generated/prisma/client.ts";
 import { authorized, CommunityError, reserveAttempt } from "../communities/service.ts";
 import { validInput } from "../communities/http.ts";
-import { digest } from "../identity/policy.ts";
+import { feedMemberships } from "./memberships.ts";
 import { postProjection, projectPost } from "../posts/service.ts";
 import { voteSummaries } from "../votes/service.ts";
 import { feedCursor, feedInput, feedPageSize, feedViewer, verifyFeedCursor } from "./policy.ts";
-
-async function memberships(tx: Prisma.TransactionClient, userId: string) {
-  // Prisma does not expose PostgreSQL row versions. Include xmin only in the
-  // private cursor scope so leave/rejoin within one timestamp tick is detected.
-  // It is not an identity or an authorization credential; live MEMBER checks win.
-  const rows = await tx.$queryRaw<{ communityId: string; createdAt: Date; version: string }[]>`
-    SELECT "communityId", "createdAt", xmin::text AS version FROM "CommunityMembership"
-    WHERE "userId" = ${userId}::uuid AND status = 'MEMBER' ORDER BY "communityId" LIMIT 501`;
-  if (rows.length > 500) throw new CommunityError(429);
-  // A leave/rejoin creates a new membership and invalidates earlier cursors too.
-  return { ids: rows.map(row => row.communityId), scope: digest(JSON.stringify(rows.map(row => [row.communityId, row.createdAt.toISOString(), row.version]))) };
-}
 
 export async function listFeed(db: PrismaClient, token: unknown, parameters: URLSearchParams, key: string) {
   const after = validInput(() => feedInput(parameters));
   await reserveAttempt(db, token, "m4-feed-read");
   return authorized(db, token, async (tx, userId) => {
     await tx.$queryRaw`SELECT set_config('statement_timeout', '3000', true)`;
-    const joined = await memberships(tx, userId);
+    const joined = await feedMemberships(tx, userId);
     const eligible: Prisma.PostWhereInput = { communityId: { in: joined.ids },
       community: { memberships: { some: { userId, status: "MEMBER" } } } };
     const anchor = after ? await tx.post.findFirst({ where: { AND: [eligible, { id: after.slice(0, 36) }] },
@@ -43,7 +31,7 @@ export async function listFeed(db: PrismaClient, token: unknown, parameters: URL
     // Same lock keys as membership changes, sorted and acquired in one round trip.
     if (ids.length) await tx.$queryRaw`SELECT pg_advisory_xact_lock_shared(hashtextextended(id::text, 0))::text
       FROM (SELECT unnest(${ids}::uuid[]) AS id ORDER BY id) communities`;
-    const current = await memberships(tx, userId);
+    const current = await feedMemberships(tx, userId);
     if (current.scope !== joined.scope) throw new CommunityError(409);
     if (anchor && !await tx.post.findFirst({ where: { AND: [eligible, { id: anchor.id, createdAt: anchor.createdAt }] }, select: { id: true } })) throw new CommunityError(404);
     const rows = candidates.length ? await tx.post.findMany({ where: { AND: [eligible, { id: { in: candidates.map(row => row.id) } }] },
