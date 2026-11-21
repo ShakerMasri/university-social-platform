@@ -6,6 +6,9 @@ import { join, resolve } from "node:path";
 import { assertDatabaseIdentity, databaseUrl, readManifest, type DatabaseRecord, type LocalManifest } from "../database/targets.ts";
 import { previewIsInactive } from "../identity/preview-control.ts";
 import { manualDatabase, seedManualFixtures, type ManualFixtureTarget } from "./manual-fixtures.mts";
+import { feedQaAccounts, seedFeedQaFixture, seedWindowsFeedQaFixture } from "./feed-qa-fixture.mts";
+import { verifyFeedSnapshot } from "./feed-qa-snapshot.mts";
+import { withWindowsFeedQaLock } from "./feed-qa-windows.mts";
 
 // Deliberately pinned to the reviewed M4 checkpoint. A different checkout/build
 // requires a new review, not a silent rebuild or reuse of development data.
@@ -15,10 +18,13 @@ const activePath = resolve(".cache/manual-qa.json");
 const controlPath = resolve(".cache/m2-preview-check.json");
 const phases = ["allocated", "creating", "migrating", "seeding", "starting", "running", "cleaning", "closed", "incomplete"] as const;
 type Phase = typeof phases[number];
+export type FeedCampaign = { snapshot: string; fixture?: "empty" | "seeded"; windows?: true };
+type ActiveFeedCampaign = FeedCampaign & { fixture: "empty" | "seeded" };
 type ManualSession = ManualFixtureTarget & {
   version: 1; root: string; owner: string; containerId: string; buildId: string;
   launcherPid: number; childPid: number | null; controlDigest: string | null;
   phase: Phase; createdAt: string; lastFailure: string | null;
+  feed?: ActiveFeedCampaign;
 };
 export type ManualDatabaseTools = {
   verify(): void;
@@ -72,7 +78,12 @@ function readSession(): ManualSession {
   const manifest = readManifest();
   if (!session || typeof session !== "object" || session.version !== 1 || session.root !== realpathSync(".") || session.owner !== manifest.owner ||
       session.containerId !== manifest.containerId || !/^[a-f0-9]{12}$/.test(session.sessionId) ||
-      !/^mqa_[a-f0-9]{32}$/.test(session.databaseMarker) || session.buildId !== checkpoint.buildId ||
+      !/^mqa_[a-f0-9]{32}$/.test(session.databaseMarker) ||
+      (session.feed === undefined ? session.buildId !== checkpoint.buildId :
+        !session.feed || !/^[a-f0-9]{64}$/.test(session.feed.snapshot) ||
+        !["empty", "seeded"].includes(session.feed.fixture) ||
+        session.feed.windows !== (manifest.feedQaWindowsSnapshot ? true : undefined) ||
+        !/^[a-zA-Z0-9_-]{1,128}$/.test(session.buildId)) ||
       session.databaseName !== `usp_m1b_${manifest.owner}_test_${session.sessionId}` ||
       !Array.isArray(session.entryDatabaseNames) || session.entryDatabaseNames.includes(session.databaseName) ||
       !session.entryDatabaseNames.includes(`usp_m1b_${manifest.owner}_dev`) ||
@@ -133,7 +144,7 @@ async function controlCommand(session: ManualSession, operation: "status" | "sto
   });
 }
 
-async function preflight(manifest: LocalManifest, tools: ManualDatabaseTools) {
+async function preflight(manifest: LocalManifest, tools: ManualDatabaseTools, feed?: ActiveFeedCampaign) {
   const pkg = JSON.parse(readFileSync("package.json", "utf8")) as { name: string; engines: { node: string; npm: string } };
   const git = (args: string[]) => {
     const result = spawnSync("git", args, { encoding: "utf8", windowsHide: true, env: { ...process.env, GIT_OPTIONAL_LOCKS: "0" } });
@@ -142,11 +153,17 @@ async function preflight(manifest: LocalManifest, tools: ManualDatabaseTools) {
   };
   if (pkg.name !== "university-social-platform" || process.versions.node !== pkg.engines.node ||
       process.env.npm_config_user_agent?.match(/^npm\/([\d.]+)/)?.[1] !== pkg.engines.npm) fail("Use qa:manual through the repository's required Node/npm versions");
-  if (git(["branch", "--show-current"]).trim() !== checkpoint.branch || git(["rev-parse", "HEAD"]).trim() !== checkpoint.head ||
-      readFileSync(".next/BUILD_ID", "utf8").trim() !== checkpoint.buildId) fail("Reviewed Git/build checkpoint mismatch; no automatic rebuild permitted");
-  const allowed = new Set(["package.json", "tools/database/local.mts", "tests/e2e/ui-zoom.spec.ts", "tools/testing/manual-fixtures.mts", "tools/testing/manual-session.mts"]);
-  const status = git(["status", "--porcelain=v1", "--untracked-files=all", "-z"]);
-  if (status.split("\0").filter(Boolean).some(row => /[RC]/.test(row.slice(0, 2)) || !allowed.has(row.slice(3)))) fail("Unexpected working-tree changes; manual startup refused");
+  if (feed) {
+    verifyFeedSnapshot(feed.snapshot);
+    if (manifest.databases.length !== 1 || manifest.databases[0].kind !== "development" ||
+        !manifest.databases[0].ready) fail("Feed QA requires its fresh engine scaffold with no registered test databases");
+  } else {
+    if (git(["branch", "--show-current"]).trim() !== checkpoint.branch || git(["rev-parse", "HEAD"]).trim() !== checkpoint.head ||
+        readFileSync(".next/BUILD_ID", "utf8").trim() !== checkpoint.buildId) fail("Reviewed Git/build checkpoint mismatch; no automatic rebuild permitted");
+    const allowed = new Set(["package.json", "tools/database/local.mts", "tests/e2e/ui-zoom.spec.ts", "tools/testing/manual-fixtures.mts", "tools/testing/manual-session.mts"]);
+    const status = git(["status", "--porcelain=v1", "--untracked-files=all", "-z"]);
+    if (status.split("\0").filter(Boolean).some(row => /[RC]/.test(row.slice(0, 2)) || !allowed.has(row.slice(3)))) fail("Unexpected working-tree changes; manual startup refused");
+  }
   if (Object.keys(process.env).some(key => /^(M1B_|M2_|USP_|PLAYWRIGHT_|PWDEBUG$|NODE_OPTIONS$|NODE_ENV$|DOCKER_HOST$|DOCKER_CONTEXT$)/i.test(key)) || process.env.CI) fail("Unexpected harness/environment overrides; use a clean interactive shell");
   if (realpathSync(".cache") !== resolve(".cache")) fail("Manual QA requires the checkout's own cache directory");
   if ([activePath, controlPath, resolve(".cache/m2-browser.json")].some(existsSync)) fail("A session/campaign registration already exists; inspect it rather than overwriting it");
@@ -156,7 +173,9 @@ async function preflight(manifest: LocalManifest, tools: ManualDatabaseTools) {
   for (const candidate of [3000, 3100, 3200, port]) await tools.portFree(candidate);
   await listenerAbsent("::1", port);
   if (tools.connections() !== 0) fail("Database clients remain; run manual QA separately from other campaigns");
-  for (const record of manifest.databases) {
+  // Feed QA verifies its new test target after creation. It never opens the
+  // development scaffold with either application role.
+  for (const record of feed ? [] : manifest.databases) {
     if (!record.ready) fail("Incomplete registered database requires inspection");
     await assertDatabaseIdentity(databaseUrl(manifest, record.name, "runtime"), manifest, "runtime");
     await assertDatabaseIdentity(databaseUrl(manifest, record.name, "migration"), manifest, "migration");
@@ -202,19 +221,35 @@ async function cleanup(session: ManualSession, tools: ManualDatabaseTools) {
   }
 }
 
-async function start(manifest: LocalManifest, tools: ManualDatabaseTools) {
-  await preflight(manifest, tools);
-  const sessionId = randomBytes(6).toString("hex");
-  const session: ManualSession = {
-    version: 1, sessionId, root: realpathSync("."), owner: manifest.owner, containerId: manifest.containerId!, buildId: checkpoint.buildId,
-    databaseName: `usp_m1b_${manifest.owner}_test_${sessionId}`, databaseMarker: `mqa_${randomBytes(16).toString("hex")}`,
-    entryDatabaseNames: manifest.databases.map(row => row.name), launcherPid: process.pid, childPid: null, controlDigest: null,
-    phase: "allocated", createdAt: new Date().toISOString(), lastFailure: null,
+async function start(manifest: LocalManifest, tools: ManualDatabaseTools, feed?: ActiveFeedCampaign) {
+  const allocate = async () => {
+    await preflight(manifest, tools, feed);
+    let buildId = checkpoint.buildId;
+    if (feed) {
+      const build = spawnSync(process.execPath, ["node_modules/next/dist/bin/next", "build", ...(feed.windows ? ["--webpack"] : [])], {
+        stdio: "inherit", timeout: 300000,
+        env: { ...process.env, NEXT_TELEMETRY_DISABLED: "1" },
+      });
+      if (build.error || build.status !== 0) fail("Feed QA build failed before database allocation");
+      buildId = readFileSync(".next/BUILD_ID", "utf8").trim();
+      if (!/^[a-zA-Z0-9_-]{1,128}$/.test(buildId)) fail("Feed QA build ID is invalid");
+      await preflight(manifest, tools, feed);
+    }
+    const sessionId = randomBytes(6).toString("hex");
+    const session: ManualSession = {
+      version: 1, sessionId, root: realpathSync("."), owner: manifest.owner, containerId: manifest.containerId!, buildId,
+      ...(feed ? { feed } : {}),
+      databaseName: `usp_m1b_${manifest.owner}_test_${sessionId}`, databaseMarker: `mqa_${randomBytes(16).toString("hex")}`,
+      entryDatabaseNames: manifest.databases.map(row => row.name), launcherPid: process.pid, childPid: null, controlDigest: null,
+      phase: "allocated", createdAt: new Date().toISOString(), lastFailure: null,
+    };
+    if (session.entryDatabaseNames.includes(session.databaseName)) fail("Manual target name collision; nothing adopted");
+    mkdirSync(directory(session), { mode: 0o700 });
+    writeFileSync(activePath, JSON.stringify(session, null, 2), { flag: "wx", mode: 0o600 });
+    persist(session);
+    return session;
   };
-  if (session.entryDatabaseNames.includes(session.databaseName)) fail("Manual target name collision; nothing adopted");
-  mkdirSync(directory(session), { mode: 0o700 });
-  writeFileSync(activePath, JSON.stringify(session, null, 2), { flag: "wx", mode: 0o600 });
-  persist(session);
+  const session = feed?.windows ? await withWindowsFeedQaLock(allocate) : await allocate();
   let stopRequested = false, childExited = false, childCode: number | null = null;
   const requestStop = () => { stopRequested = true; };
   const checkStop = () => { if (stopRequested || existsSync(stopPath(session))) throw new ManualStopRequested("Manual stop requested during setup"); };
@@ -232,7 +267,11 @@ async function start(manifest: LocalManifest, tools: ManualDatabaseTools) {
     await tools.migrate(session.databaseName);
     checkStop();
     session.phase = "seeding"; persist(session);
-    const reference = await seedManualFixtures(session);
+    if (feed?.windows) tools.verify();
+    const reference = !feed ? await seedManualFixtures(session)
+      : feed.fixture === "empty" ? {
+        fixture: "empty", accounts: feedQaAccounts.map(({ alias, email }) => ({ alias, email })),
+      } : feed.windows ? await seedWindowsFeedQaFixture(session, feed.snapshot) : await seedFeedQaFixture(session);
     writeFileSync(join(directory(session), "observer-reference.json"), JSON.stringify(reference, null, 2), { flag: "wx", mode: 0o600 });
     checkStop();
     session.phase = "starting"; persist(session);
@@ -259,7 +298,8 @@ async function start(manifest: LocalManifest, tools: ManualDatabaseTools) {
     console.log(`Manual QA ${session.sessionId} ready: http://localhost:${port}/en/signin and /ar/signin`);
     console.log(`Synthetic aliases and expected results (observer only): ${join(directory(session), "observer-reference.json")}`);
     console.log("Use separate temporary browser profiles. Request a sign-in link → Open local confirmation → Confirm sign-in. No real email is sent.");
-    console.log("Keep this supervisor open. Stop with Ctrl+C or npm.cmd run qa:manual:stop; inspect with npm.cmd run qa:manual:status.");
+    const command = feed?.windows ? "npm.cmd run qa:feed:windows:" : feed ? "npm run qa:feed:" : "npm.cmd run qa:manual:";
+    console.log(`Keep this supervisor open. Stop with Ctrl+C or ${command}stop; inspect with ${command}status.`);
     await waitUntil(() => stopRequested || existsSync(stopPath(session)) || childExited, Infinity, "Manual session wait failed");
     if (childExited) fail(`Manual application exited unexpectedly (code ${childCode ?? "unavailable"})`);
   } catch (error) {
@@ -272,16 +312,21 @@ async function start(manifest: LocalManifest, tools: ManualDatabaseTools) {
       session.lastFailure = `${failure ? `${failure}. ` : ""}${detail}. Resources preserved; inspect status before recovery.`;
       session.phase = "incomplete";
       persist(session);
-      fail(`Manual QA cleanup incomplete. Inspect ${activePath} and use qa:manual:status; no forced cleanup performed`);
+      fail(`Manual QA cleanup incomplete. Inspect ${activePath} and use the campaign status command; no forced cleanup performed`);
     } finally { process.off("SIGINT", requestStop); process.off("SIGTERM", requestStop); }
   }
   if (failure) fail(failure);
 }
 
-export async function runManualSession(operation: "start" | "status" | "stop", manifest: LocalManifest, tools: ManualDatabaseTools) {
-  if (operation === "start") return start(manifest, tools);
+export async function runManualSession(operation: "start" | "status" | "stop", manifest: LocalManifest, tools: ManualDatabaseTools, feed?: FeedCampaign) {
+  if (operation === "start") {
+    if (!feed) return start(manifest, tools);
+    if (!feed.fixture) return fail("Select the empty or seeded feed QA phase");
+    return start(manifest, tools, { ...feed, fixture: feed.fixture });
+  }
   if (!existsSync(activePath)) { console.log("No registered manual QA session; nothing changed"); return; }
   const session = readSession();
+  if (session.feed?.snapshot !== feed?.snapshot || session.feed?.windows !== feed?.windows) fail("Manual QA command does not match the active campaign and snapshot");
   tools.verify();
   if (operation === "status") {
     let databaseVerified = false, applicationControlVerified = false;

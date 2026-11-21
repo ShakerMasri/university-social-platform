@@ -3,7 +3,12 @@ import { resolve } from "node:path";
 import { Client } from "pg";
 
 export const manifestPath = resolve(".cache/m1b/manifest.json");
-export const image = "postgres:18.6-bookworm@sha256:afc7e2d441324c0388fa80c3d24f733b4194a4eb7f47dd8ee2b08eb1a24a647c";
+const imageDigest = "sha256:afc7e2d441324c0388fa80c3d24f733b4194a4eb7f47dd8ee2b08eb1a24a647c";
+export const image = `postgres:18.6-bookworm@${imageDigest}`;
+export const windowsFeedQaDocker = {
+  dockerContext: "desktop-linux", dockerEndpoint: "npipe:////./pipe/dockerDesktopLinuxEngine",
+  port: 55434, image: `postgres@${imageDigest}`, imageDigest,
+};
 export type DatabaseRecord = { name: string; kind: "development" | "test"; ready: boolean };
 export type LocalManifest = {
   version: 1; root: string; owner: string; project: string; container: string;
@@ -11,6 +16,7 @@ export type LocalManifest = {
   containerId: string | null; volume: string; port: number; image: string;
   migrationRole: string; migrationPassword: string; runtimeRole: string; runtimePassword: string;
   databases: DatabaseRecord[];
+  feedQaWindowsSnapshot?: string;
 };
 
 export function validateManifest(value: unknown): LocalManifest {
@@ -18,8 +24,13 @@ export function validateManifest(value: unknown): LocalManifest {
   const m = value as LocalManifest;
   const owner = typeof m.owner === "string" && /^[a-f0-9]{12}$/.test(m.owner) ? m.owner : "";
   const prefix = `usp_m1b_${owner}`;
+  const windows = m.feedQaWindowsSnapshot !== undefined;
   if (
-    !owner || m.version !== 1 || m.root !== resolve(".") || m.image !== image ||
+    !owner || m.version !== 1 || m.root !== resolve(".") ||
+    m.image !== (windows ? windowsFeedQaDocker.image : image) ||
+    (windows && (typeof m.feedQaWindowsSnapshot !== "string" || !/^[a-f0-9]{64}$/.test(m.feedQaWindowsSnapshot) ||
+      m.port !== windowsFeedQaDocker.port || m.dockerContext !== windowsFeedQaDocker.dockerContext ||
+      m.dockerEndpoint !== windowsFeedQaDocker.dockerEndpoint)) ||
     typeof m.dockerContext !== "string" || !/^[a-zA-Z0-9_.-]+$/.test(m.dockerContext) ||
     !["npipe:////./pipe/dockerDesktopLinuxEngine", "npipe:////./pipe/docker_engine", "unix:///var/run/docker.sock"].includes(m.dockerEndpoint) ||
     m.project !== `usp-m1b-${owner}` || m.container !== `${m.project}-postgres` ||

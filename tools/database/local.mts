@@ -8,7 +8,7 @@ import { localPreviewPort } from "../../src/server/identity/local-policy.ts";
 import { previewIsInactive, recoverStalePreview, stopPreview } from "../identity/preview-control.ts";
 import { composeEnvironment, validateComposeConfig } from "./compose.ts";
 import {
-  assertDatabaseIdentity, databaseUrl, image, manifestPath, readManifest, validateManifest,
+  assertDatabaseIdentity, databaseUrl, image, manifestPath, readManifest, validateManifest, windowsFeedQaDocker,
   type LocalManifest, type DatabaseRecord,
 } from "./targets.ts";
 
@@ -86,7 +86,7 @@ function verifyResources(m: LocalManifest) {
   }[];
   const c = containers[0];
   const binding = c?.HostConfig.PortBindings["5432/tcp"];
-  if (containers.length !== 1 || c.Config.Image !== image ||
+  if (containers.length !== 1 || c.Config.Image !== m.image ||
     c.Config.Labels["edu.usp.m1b.owner"] !== m.owner ||
     c.Config.Labels["com.docker.compose.project"] !== m.project ||
     c.Config.Labels["com.docker.compose.service"] !== "postgres" ||
@@ -239,9 +239,15 @@ async function reviewMigration(m: LocalManifest) {
   } finally { if (record.ready) await removeTestDatabase(m, record); }
 }
 
-async function setup() {
+async function setup(feedQaWindowsSnapshot?: string) {
   if (existsSync(manifestPath)) throw new Error("Local manifest already exists; inspect status instead of adopting/resetting resources");
   const docker = localDocker();
+  if (feedQaWindowsSnapshot && (docker.dockerContext !== windowsFeedQaDocker.dockerContext ||
+      docker.dockerEndpoint !== windowsFeedQaDocker.dockerEndpoint ||
+      execute("docker", ["info", "--format", "{{.OSType}}"]).trim() !== "linux" ||
+      execute("docker", ["image", "inspect", windowsFeedQaDocker.image, "--format", "{{.Id}}"]).trim() !== windowsFeedQaDocker.imageDigest)) {
+    throw new Error("Windows Feed QA requires the local Docker Desktop Linux engine and its reviewed cached image");
+  }
   execute("docker", ["info", "--format", "{{.ServerVersion}}"]);
   execute("docker", ["compose", "version"]);
   const owner = randomBytes(6).toString("hex");
@@ -250,7 +256,10 @@ async function setup() {
   const m: LocalManifest = {
     version: 1, root: resolve("."), owner, project, container: `${project}-postgres`, containerId: null,
     ...docker,
-    volume: `${project}-data`, port: 55432, image,
+    volume: `${project}-data`,
+    port: feedQaWindowsSnapshot ? windowsFeedQaDocker.port : 55432,
+    image: feedQaWindowsSnapshot ? windowsFeedQaDocker.image : image,
+    ...(feedQaWindowsSnapshot ? { feedQaWindowsSnapshot } : {}),
     migrationRole: `${prefix}_migrate`, migrationPassword: randomBytes(32).toString("hex"),
     runtimeRole: `${prefix}_runtime`, runtimePassword: randomBytes(32).toString("hex"),
     databases: [{ name: `${prefix}_dev`, kind: "development", ready: false }],
@@ -272,7 +281,8 @@ async function setup() {
     removeOperationalFiles();
     throw error;
   }
-  compose(m, ["up", "-d", "--wait", "--wait-timeout", "90", "postgres"]);
+  compose(m, ["up", "-d", "--wait", "--wait-timeout", "90",
+    ...(feedQaWindowsSnapshot ? ["--pull", "never"] : []), "postgres"]);
   m.containerId = verifyResources(m);
   save(m);
   initializeRoles(m);
@@ -370,10 +380,18 @@ async function feedTest(m: LocalManifest) {
   } finally { if (record.ready) await removeTestDatabase(m, record); }
 }
 
-async function manualQa(m: LocalManifest, operation: "start" | "status" | "stop") {
+async function manualQa(m: LocalManifest, operation: "start" | "status" | "stop", feed?: { snapshot: string; fixture?: "empty" | "seeded"; windows?: true }) {
   // Load manual-only code only for these explicit commands. Existing automated
   // commands keep their exact selection, lifecycle and migration-review paths.
   const { runManualSession } = await import("../testing/manual-session.mts");
+  const guest = feed && !feed.windows ? await import("../testing/feed-qa-guest.mts") : undefined;
+  const windows = feed?.windows ? await import("../testing/feed-qa-windows.mts") : undefined;
+  function checkCampaign(manifest: LocalManifest) {
+    guest?.assertFeedQaGuest();
+    guest?.assertFeedQaEngine(manifest);
+    windows?.assertFeedQaWindows();
+    windows?.assertWindowsFeedQaManifest(manifest, feed!.snapshot);
+  }
   const currentManifest = () => {
     const current = readManifest();
     if (current.owner !== m.owner || current.containerId !== m.containerId || current.root !== m.root) throw new Error("Manual QA manifest identity changed");
@@ -381,7 +399,7 @@ async function manualQa(m: LocalManifest, operation: "start" | "status" | "stop"
   };
   await runManualSession(operation, m, {
     verify() {
-      const current = currentManifest(); verifyResources(current);
+      const current = currentManifest(); checkCampaign(current); verifyResources(current);
       const state = JSON.parse(execute("docker", ["inspect", "--format", "{{json .State}}", current.container])) as { Running: boolean; Health?: { Status: string } };
       if (!current.containerId || !state.Running || state.Health?.Status !== "healthy") throw new Error("Manual QA requires the existing owned PostgreSQL container to be healthy; no automatic resume");
     },
@@ -393,14 +411,16 @@ async function manualQa(m: LocalManifest, operation: "start" | "status" | "stop"
       m.databases.push(record); save(m);
     },
     async create(record, marker) {
+      checkCampaign(currentManifest());
       if (!/^mqa_[a-f0-9]{32}$/.test(marker)) throw new Error("Invalid manual creation marker");
       await createDatabase(m, record); // Refuses an existing database, including unregistered ones.
       psql(m, "postgres", `COMMENT ON DATABASE ${identifier(record.name)} IS ${sqlLiteral(marker)};`);
     },
-    migrate: name => migrate(m, name),
+    migrate: name => { checkCampaign(currentManifest()); return migrate(m, name); },
     async remove(name) {
       // Reload rather than overwriting a stale long-lived manifest snapshot.
       const current = currentManifest(), record = current.databases.find(row => row.name === name && row.kind === "test" && row.ready);
+      checkCampaign(current);
       if (!record) throw new Error("Manual cleanup target is not registered and ready");
       await removeTestDatabase(current, record);
     },
@@ -409,7 +429,58 @@ async function manualQa(m: LocalManifest, operation: "start" | "status" | "stop"
       return Number(psql(current, "postgres", `SELECT count(*) FROM pg_stat_activity WHERE backend_type='client backend' AND pid<>pg_backend_pid()${name ? ` AND datname=${sqlLiteral(name)}` : ""};`).trim());
     },
     portFree: candidate => ensurePortFree(candidate, "Manual QA application"),
-  });
+  }, feed);
+}
+
+async function feedManualQa(command: string) {
+  const { assertFeedQaGuest } = await import("../testing/feed-qa-guest.mts");
+  const { verifyFeedSnapshot } = await import("../testing/feed-qa-snapshot.mts");
+  assertFeedQaGuest(); // Before manifest access or any Docker call.
+  const snapshot = verifyFeedSnapshot(process.env.FEED_QA_MANIFEST_SHA256);
+  const operation = command === "feed-manual-status" ? "status" : command === "feed-manual-stop" ? "stop" : "start";
+  const fixture = operation === "start" ? command === "feed-manual-empty" ? "empty" : "seeded" : undefined;
+  await manualQa(readManifest(), operation, { snapshot, fixture });
+}
+
+async function windowsFeedManualQa(command: string) {
+  const { assertFeedQaWindows, assertWindowsFeedQaManifest, withWindowsFeedQaLock } = await import("../testing/feed-qa-windows.mts");
+  const { verifyFeedSnapshot } = await import("../testing/feed-qa-snapshot.mts");
+  assertFeedQaWindows();
+  const snapshot = verifyFeedSnapshot(process.env.FEED_QA_MANIFEST_SHA256);
+  if (command === "feed-windows-setup") {
+    await withWindowsFeedQaLock(() => setup(snapshot));
+    return;
+  }
+  const manifest = readManifest();
+  assertWindowsFeedQaManifest(manifest, snapshot);
+  verifyResources(manifest);
+  if (command === "feed-windows-cleanup") {
+    await withWindowsFeedQaLock(async () => {
+      const current = readManifest();
+      assertWindowsFeedQaManifest(current, snapshot);
+      if (current.containerId !== manifest.containerId ||
+          current.databases.length !== 1 || !current.databases[0].ready || current.databases[0].kind !== "development" ||
+          [".cache/manual-qa.json", ".cache/m2-preview.json", ".cache/m2-preview-check.json", ".cache/m2-browser.json"].some(existsSync)) {
+        throw new Error("Windows Feed QA cleanup requires the idle owned scaffold; use the phase stop command first");
+      }
+      await ensurePortFree(3201, "Windows Feed QA application");
+      verifyResources(current);
+      if (psql(current, "postgres", "SELECT count(*) FROM pg_stat_activity WHERE backend_type='client backend' AND pid<>pg_backend_pid();").trim() !== "0") {
+        throw new Error("Windows Feed QA has active database clients; cleanup refused");
+      }
+      await cleanup(current);
+    });
+    return;
+  }
+  const operation = command === "feed-windows-status" ? "status" : command === "feed-windows-stop" ? "stop" : "start";
+  const fixture = operation === "start" ? command === "feed-windows-empty" ? "empty" : "seeded" : undefined;
+  await manualQa(manifest, operation, { snapshot, fixture, windows: true });
+}
+
+function readOrdinaryManifest() {
+  const manifest = readManifest();
+  if (manifest.feedQaWindowsSnapshot) throw new Error("Use the dedicated Windows Feed QA commands for this campaign");
+  return manifest;
 }
 
 async function identityBrowser(m: LocalManifest) {
@@ -629,14 +700,16 @@ try {
     if (command === "dev" && process.env.NODE_ENV === "production") throw new Error("npm run dev requires a development shell; unset NODE_ENV=production. Use npm start for production.");
     localPreviewPort(command === "dev" ? "3000" : process.env.USP_LOCAL_PREVIEW_PORT);
     if (!existsSync(manifestPath)) { await previewPreflight(); await setup(); }
-    await preview(readManifest(), command === "dev");
+    await preview(readOrdinaryManifest(), command === "dev");
   }
   else if (command === "preview-stop" && !existsSync(resolve(".cache/m2-preview.json"))) {
     console.log("No registered local interactive server (dev/preview) found; no process was stopped. Development data retained.");
   }
   else if (command === "setup") await setup();
+  else if (["feed-manual-empty", "feed-manual-seeded", "feed-manual-status", "feed-manual-stop"].includes(command)) await feedManualQa(command);
+  else if (["feed-windows-setup", "feed-windows-empty", "feed-windows-seeded", "feed-windows-status", "feed-windows-stop", "feed-windows-cleanup"].includes(command)) await windowsFeedManualQa(command);
   else {
-    const m = readManifest();
+    const m = readOrdinaryManifest();
     if (command === "migrate") {
       await reviewMigration(m);
       await migrate(m, m.databases.find((d) => d.kind === "development")!.name);
