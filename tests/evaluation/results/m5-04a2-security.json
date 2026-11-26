@@ -1,0 +1,12 @@
+{
+  "forbiddenExposures": 0,
+  "citationRevalidations": 231,
+  "authorizationChecks": 15,
+  "revocationChecks": 4,
+  "completedProbes": [
+    "all-variant-access-and-revocation",
+    "input-sql-filters-and-shared-budget",
+    "queued-revocation",
+    "citation-integrity-staleness-logout-creator-policy"
+  ]
+}

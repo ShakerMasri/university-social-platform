@@ -1,0 +1,606 @@
+{
+  "commentCorpusVersion": "m5-04b-v1",
+  "registrationSha256": "5c8d6bc97120ef960441f1c47b46c082b6c51e4ab05352ef7c76416c4eb23271",
+  "method": {
+    "cases": 10,
+    "answerable": 8,
+    "posts": 10,
+    "comments": 13,
+    "warmups": 20,
+    "measurements": 100,
+    "sameTarget": true,
+    "balancedOrder": true,
+    "samplesPerCaseVariant": 5,
+    "realBudgets": true,
+    "candidateLimit": 21,
+    "sourceLimit": 5,
+    "commentLimitPerParent": 1,
+    "relevanceDenominator": "returned sources",
+    "passageDenominator": "answerable cases"
+  },
+  "summary": {
+    "baseline": {
+      "sourceRelevance": 0.2222222222222222,
+      "returnedSources": 9,
+      "sourceRecall": 0.25,
+      "passageRecall": 0.25,
+      "latencyMs": {
+        "samples": 50,
+        "p50": 37.13999999999942,
+        "p95": 42.465400000000045,
+        "max": 47.097499999999854
+      }
+    },
+    "experiment": {
+      "sourceRelevance": 0.5555555555555556,
+      "returnedSources": 9,
+      "sourceRecall": 0.625,
+      "passageRecall": 0.625,
+      "latencyMs": {
+        "samples": 50,
+        "p50": 37.59319999999934,
+        "p95": 48.077800000000025,
+        "max": 49.88539999999989
+      }
+    }
+  },
+  "regressions": [
+    "answered-question"
+  ],
+  "comparisons": [
+    {
+      "id": "en-answer",
+      "recallDelta": 1,
+      "passageRecallDelta": 1,
+      "relevantSourceDelta": 1,
+      "medianLatencyDeltaMs": 4.438999999999851,
+      "p95LatencyDeltaMs": 2.787900000000036
+    },
+    {
+      "id": "ar-reply",
+      "recallDelta": 1,
+      "passageRecallDelta": 1,
+      "relevantSourceDelta": 1,
+      "medianLatencyDeltaMs": 0.8386000000000422,
+      "p95LatencyDeltaMs": 3.6283000000003085
+    },
+    {
+      "id": "discussion-preserved",
+      "recallDelta": 0,
+      "passageRecallDelta": 0,
+      "relevantSourceDelta": 0,
+      "medianLatencyDeltaMs": -0.32360000000016953,
+      "p95LatencyDeltaMs": -0.8240000000000691
+    },
+    {
+      "id": "answered-question",
+      "recallDelta": -1,
+      "passageRecallDelta": -1,
+      "relevantSourceDelta": -1,
+      "medianLatencyDeltaMs": -0.3590999999996711,
+      "p95LatencyDeltaMs": -6.736500000000433
+    },
+    {
+      "id": "unanswered",
+      "recallDelta": null,
+      "passageRecallDelta": null,
+      "relevantSourceDelta": 0,
+      "medianLatencyDeltaMs": -0.33770000000095024,
+      "p95LatencyDeltaMs": 0.21640000000024884
+    },
+    {
+      "id": "discussion-request",
+      "recallDelta": 0,
+      "passageRecallDelta": 0,
+      "relevantSourceDelta": 0,
+      "medianLatencyDeltaMs": 2.761099999999715,
+      "p95LatencyDeltaMs": 13.334200000000237
+    },
+    {
+      "id": "private-member",
+      "recallDelta": 1,
+      "passageRecallDelta": 1,
+      "relevantSourceDelta": 1,
+      "medianLatencyDeltaMs": -0.37409999999999854,
+      "p95LatencyDeltaMs": 0.4271999999991749
+    },
+    {
+      "id": "private-outsider",
+      "recallDelta": null,
+      "passageRecallDelta": null,
+      "relevantSourceDelta": 0,
+      "medianLatencyDeltaMs": -1.1792999999997846,
+      "p95LatencyDeltaMs": -0.8941000000004351
+    },
+    {
+      "id": "title-only",
+      "recallDelta": 1,
+      "passageRecallDelta": 1,
+      "relevantSourceDelta": 1,
+      "medianLatencyDeltaMs": 0.6988999999994121,
+      "p95LatencyDeltaMs": 1.8271999999979016
+    },
+    {
+      "id": "earliest-nonanswer",
+      "recallDelta": 0,
+      "passageRecallDelta": 0,
+      "relevantSourceDelta": 0,
+      "medianLatencyDeltaMs": -0.7015000000010332,
+      "p95LatencyDeltaMs": -0.4116999999987456
+    }
+  ],
+  "rows": [
+    {
+      "id": "en-answer",
+      "gold": [
+        "en-answer-comment"
+      ],
+      "variants": {
+        "baseline": {
+          "retrieved": [
+            "en-answer-post"
+          ],
+          "relevant": 0,
+          "returned": 1,
+          "recall": 0,
+          "support": 0,
+          "latencyMs": {
+            "samples": [
+              47.097499999999854,
+              41.13099999999986,
+              42.465400000000045,
+              42.275300000000016,
+              40.43560000000002
+            ],
+            "p50": 42.275300000000016,
+            "p95": 47.097499999999854
+          }
+        },
+        "experiment": {
+          "retrieved": [
+            "en-answer-comment"
+          ],
+          "relevant": 1,
+          "returned": 1,
+          "recall": 1,
+          "support": 1,
+          "latencyMs": {
+            "samples": [
+              46.71429999999987,
+              41.615600000000086,
+              48.077800000000025,
+              49.88539999999989,
+              37.456899999999905
+            ],
+            "p50": 46.71429999999987,
+            "p95": 49.88539999999989
+          }
+        }
+      }
+    },
+    {
+      "id": "ar-reply",
+      "gold": [
+        "ar-answer-reply"
+      ],
+      "variants": {
+        "baseline": {
+          "retrieved": [
+            "ar-reply-post"
+          ],
+          "relevant": 0,
+          "returned": 1,
+          "recall": 0,
+          "support": 0,
+          "latencyMs": {
+            "samples": [
+              40.74539999999979,
+              38.822200000000066,
+              38.439800000000105,
+              37.94830000000002,
+              37.4380000000001
+            ],
+            "p50": 38.439800000000105,
+            "p95": 40.74539999999979
+          }
+        },
+        "experiment": {
+          "retrieved": [
+            "ar-answer-reply"
+          ],
+          "relevant": 1,
+          "returned": 1,
+          "recall": 1,
+          "support": 1,
+          "latencyMs": {
+            "samples": [
+              44.3737000000001,
+              39.27840000000015,
+              38.877300000000105,
+              39.59389999999985,
+              36.6880000000001
+            ],
+            "p50": 39.27840000000015,
+            "p95": 44.3737000000001
+          }
+        }
+      }
+    },
+    {
+      "id": "discussion-preserved",
+      "gold": [
+        "discussion-preserved-post"
+      ],
+      "variants": {
+        "baseline": {
+          "retrieved": [
+            "discussion-preserved-post"
+          ],
+          "relevant": 1,
+          "returned": 1,
+          "recall": 1,
+          "support": 1,
+          "latencyMs": {
+            "samples": [
+              39.97809999999981,
+              36.58989999999994,
+              39.63859999999977,
+              37.101900000000114,
+              38.096900000000005
+            ],
+            "p50": 38.096900000000005,
+            "p95": 39.97809999999981
+          }
+        },
+        "experiment": {
+          "retrieved": [
+            "discussion-preserved-post"
+          ],
+          "relevant": 1,
+          "returned": 1,
+          "recall": 1,
+          "support": 1,
+          "latencyMs": {
+            "samples": [
+              38.74900000000025,
+              37.216199999999844,
+              39.154099999999744,
+              37.773299999999836,
+              37.71280000000024
+            ],
+            "p50": 37.773299999999836,
+            "p95": 39.154099999999744
+          }
+        }
+      }
+    },
+    {
+      "id": "answered-question",
+      "gold": [
+        "answered-question-post"
+      ],
+      "variants": {
+        "baseline": {
+          "retrieved": [
+            "answered-question-post"
+          ],
+          "relevant": 1,
+          "returned": 1,
+          "recall": 1,
+          "support": 1,
+          "latencyMs": {
+            "samples": [
+              45.023499999999785,
+              35.7804000000001,
+              36.18170000000009,
+              38.39469999999983,
+              39.367700000000696
+            ],
+            "p50": 38.39469999999983,
+            "p95": 45.023499999999785
+          }
+        },
+        "experiment": {
+          "retrieved": [
+            "answered-social"
+          ],
+          "relevant": 0,
+          "returned": 1,
+          "recall": 0,
+          "support": 0,
+          "latencyMs": {
+            "samples": [
+              36.541299999999865,
+              38.02719999999954,
+              38.10559999999987,
+              38.28699999999935,
+              38.03560000000016
+            ],
+            "p50": 38.03560000000016,
+            "p95": 38.28699999999935
+          }
+        }
+      }
+    },
+    {
+      "id": "unanswered",
+      "gold": [],
+      "variants": {
+        "baseline": {
+          "retrieved": [
+            "unanswered-post"
+          ],
+          "relevant": 0,
+          "returned": 1,
+          "recall": null,
+          "support": null,
+          "latencyMs": {
+            "samples": [
+              38.08390000000054,
+              35.694400000000314,
+              40.038399999999456,
+              37.54770000000008,
+              39.47680000000037
+            ],
+            "p50": 38.08390000000054,
+            "p95": 40.038399999999456
+          }
+        },
+        "experiment": {
+          "retrieved": [
+            "unanswered-post"
+          ],
+          "relevant": 0,
+          "returned": 1,
+          "recall": null,
+          "support": null,
+          "latencyMs": {
+            "samples": [
+              38.68399999999929,
+              36.8140999999996,
+              37.67439999999988,
+              40.254799999999705,
+              37.74619999999959
+            ],
+            "p50": 37.74619999999959,
+            "p95": 40.254799999999705
+          }
+        }
+      }
+    },
+    {
+      "id": "discussion-request",
+      "gold": [
+        "discussion-answer"
+      ],
+      "variants": {
+        "baseline": {
+          "retrieved": [
+            "discussion-request-post"
+          ],
+          "relevant": 0,
+          "returned": 1,
+          "recall": 0,
+          "support": 0,
+          "latencyMs": {
+            "samples": [
+              32.924300000000585,
+              31.97440000000006,
+              32.50699999999961,
+              33.67479999999978,
+              34.822400000000016
+            ],
+            "p50": 32.924300000000585,
+            "p95": 34.822400000000016
+          }
+        },
+        "experiment": {
+          "retrieved": [
+            "discussion-request-post"
+          ],
+          "relevant": 0,
+          "returned": 1,
+          "recall": 0,
+          "support": 0,
+          "latencyMs": {
+            "samples": [
+              34.49169999999958,
+              33.83110000000033,
+              35.6854000000003,
+              37.59319999999934,
+              48.15660000000025
+            ],
+            "p50": 35.6854000000003,
+            "p95": 48.15660000000025
+          }
+        }
+      }
+    },
+    {
+      "id": "private-member",
+      "gold": [
+        "private-reply"
+      ],
+      "variants": {
+        "baseline": {
+          "retrieved": [
+            "private-member-post"
+          ],
+          "relevant": 0,
+          "returned": 1,
+          "recall": 0,
+          "support": 0,
+          "latencyMs": {
+            "samples": [
+              33.963300000000345,
+              32.548499999999876,
+              31.419200000000274,
+              33.352200000000266,
+              36.22070000000076
+            ],
+            "p50": 33.352200000000266,
+            "p95": 36.22070000000076
+          }
+        },
+        "experiment": {
+          "retrieved": [
+            "private-reply"
+          ],
+          "relevant": 1,
+          "returned": 1,
+          "recall": 1,
+          "support": 1,
+          "latencyMs": {
+            "samples": [
+              33.00660000000062,
+              32.97810000000027,
+              30.363400000000183,
+              31.34110000000055,
+              36.647899999999936
+            ],
+            "p50": 32.97810000000027,
+            "p95": 36.647899999999936
+          }
+        }
+      }
+    },
+    {
+      "id": "private-outsider",
+      "gold": [],
+      "variants": {
+        "baseline": {
+          "retrieved": [],
+          "relevant": 0,
+          "returned": 0,
+          "recall": null,
+          "support": null,
+          "latencyMs": {
+            "samples": [
+              37.578599999999824,
+              39.08989999999994,
+              35.8154999999997,
+              36.87910000000011,
+              32.686399999999594
+            ],
+            "p50": 36.87910000000011,
+            "p95": 39.08989999999994
+          }
+        },
+        "experiment": {
+          "retrieved": [],
+          "relevant": 0,
+          "returned": 0,
+          "recall": null,
+          "support": null,
+          "latencyMs": {
+            "samples": [
+              36.33669999999984,
+              35.69980000000032,
+              38.19579999999951,
+              35.0654999999997,
+              32.69539999999961
+            ],
+            "p50": 35.69980000000032,
+            "p95": 38.19579999999951
+          }
+        }
+      }
+    },
+    {
+      "id": "title-only",
+      "gold": [
+        "ownership-answer"
+      ],
+      "variants": {
+        "baseline": {
+          "retrieved": [
+            "title-only-post"
+          ],
+          "relevant": 0,
+          "returned": 1,
+          "recall": 0,
+          "support": 0,
+          "latencyMs": {
+            "samples": [
+              34.393599999999424,
+              37.13999999999942,
+              39.52480000000105,
+              38.392400000000634,
+              38.13940000000002
+            ],
+            "p50": 38.13940000000002,
+            "p95": 39.52480000000105
+          }
+        },
+        "experiment": {
+          "retrieved": [
+            "ownership-answer"
+          ],
+          "relevant": 1,
+          "returned": 1,
+          "recall": 1,
+          "support": 1,
+          "latencyMs": {
+            "samples": [
+              35.48840000000018,
+              41.35199999999895,
+              40.374799999999595,
+              38.838299999999435,
+              35.34090000000106
+            ],
+            "p50": 38.838299999999435,
+            "p95": 41.35199999999895
+          }
+        }
+      }
+    },
+    {
+      "id": "earliest-nonanswer",
+      "gold": [
+        "later-answer"
+      ],
+      "variants": {
+        "baseline": {
+          "retrieved": [
+            "earliest-nonanswer-post"
+          ],
+          "relevant": 0,
+          "returned": 1,
+          "recall": 0,
+          "support": 0,
+          "latencyMs": {
+            "samples": [
+              35.66579999999885,
+              34.61519999999837,
+              36.34169999999904,
+              33.410399999998845,
+              34.853000000000975
+            ],
+            "p50": 34.853000000000975,
+            "p95": 36.34169999999904
+          }
+        },
+        "experiment": {
+          "retrieved": [
+            "early-social"
+          ],
+          "relevant": 0,
+          "returned": 1,
+          "recall": 0,
+          "support": 0,
+          "latencyMs": {
+            "samples": [
+              33.96810000000005,
+              34.045500000000175,
+              35.93000000000029,
+              35.75049999999828,
+              34.15149999999994
+            ],
+            "p50": 34.15149999999994,
+            "p95": 35.93000000000029
+          }
+        }
+      }
+    }
+  ]
+}

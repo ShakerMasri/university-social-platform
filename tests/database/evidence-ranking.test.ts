@@ -1,0 +1,222 @@
+import { afterAll, beforeAll, describe, expect, it } from "vitest";
+import { createHash, randomUUID } from "node:crypto";
+import { readFileSync, writeFileSync } from "node:fs";
+import { Client } from "pg";
+import { createLocalDatabase } from "../../src/server/database/client";
+import { digest, newToken } from "../../src/server/identity/policy";
+import { logout } from "../../src/server/identity/service";
+import { changeMembership } from "../../src/server/communities/service";
+import { InputError } from "../../src/server/communities/http";
+import { retrieveEvidence, revalidateEvidence } from "../../src/server/evidence/service";
+import { evidenceCitationPath } from "../../src/server/evidence/policy";
+import { retrieveRankedEvidence, rankingCandidateLimit } from "../../tools/database/evidence-ranking-experiment";
+import { assertDatabaseIdentity, databaseUrl, readManifest } from "../../tools/database/targets";
+import { corpusComments, corpusPosts, evaluationQueries, supportingAnchors, privateMarker } from "../evaluation/evidence-corpus";
+
+const enabled = process.env.M5_RANKING_EXPERIMENT === "1", manifest = enabled ? readManifest() : null;
+const name = process.env.M5_EVIDENCE_DATABASE;
+if (enabled && !manifest?.databases.some(row => row.name === name && row.kind === "test" && row.ready)) throw new Error("Fresh owned ranking target required");
+const variants = ["baseline", "ranking"] as const;
+type Variant = typeof variants[number];
+type Outcome = { status: number; retrieved: string[]; recall: number | null; top: number | null; support: number | null };
+type Measurement = Outcome & { latencyMs: { samples: number[]; p50: number; p95: number } };
+const fixedId = (index: number) => `00000000-0000-4000-a000-${String(index).padStart(12, "0")}`;
+const publicCommunity = fixedId(1), privateCommunity = fixedId(2);
+const postIds = new Map(corpusPosts.map((post, index) => [post.key, fixedId(index + 100)]));
+const commentIds = new Map(corpusComments.map((comment, index) => [comment.key, fixedId(index + 200)]));
+const sourceKeys = new Map<string, string>([...postIds].map(([key, id]) => [`post:${id}`, key]));
+for (const [key, id] of commentIds) sourceKeys.set(`comment:${id}`, key);
+const sha = (text: string) => createHash("sha256").update(text.replace(/\r\n/g, "\n")).digest("hex");
+const average = (values: number[]) => values.reduce((sum, value) => sum + value, 0) / values.length;
+const percentile = (values: number[], q: number) => [...values].sort((a, b) => a - b)[Math.ceil(values.length * q) - 1];
+let db: Awaited<ReturnType<typeof createLocalDatabase>>, migration: Client, owner: { id: string; token: string };
+async function actor() {
+  const id = randomUUID(), token = newToken(), email = `${id}@university.test`;
+  await migration.query('INSERT INTO "User" (id,email,"emailKey","emailVerifiedAt","updatedAt") VALUES ($1,$2,$2,now(),now())', [id, email]);
+  await db.session.create({ data: { userId: id, tokenDigest: digest(token), expiresAt: new Date(Date.now() + 3600000) } });
+  return { id, token };
+}
+const retrieve = (variant: Variant, token: string, input: URLSearchParams) =>
+  variant === "baseline" ? retrieveEvidence(db, token, input) : retrieveRankedEvidence(db, token, input);
+
+describe.skipIf(!enabled)("M5-04A paired ranking experiment on fresh PostgreSQL", () => {
+  beforeAll(async () => {
+    if (!manifest) throw new Error("Focused runner required");
+    db = await createLocalDatabase(databaseUrl(manifest, name!, "runtime"));
+    const url = databaseUrl(manifest, name!, "migration"); await assertDatabaseIdentity(url, manifest, "migration");
+    migration = new Client({ connectionString: url }); await migration.connect();
+    if ((await migration.query<{ count: number }>('SELECT count(*)::int AS count FROM "User"')).rows[0].count !== 0) throw new Error("Fresh empty target required; no adoption or clearing");
+    if (process.env.M5_RANKING_SECURITY_ONLY === "1") await seedCorpus();
+  });
+  async function seedCorpus() {
+    owner = await actor();
+    for (const [id, visibility] of [[publicCommunity, "PUBLIC"], [privateCommunity, "PRIVATE"]]) {
+      await migration.query('INSERT INTO "Community" (id,"ownerId",name,description,visibility) VALUES ($1,$2,\'Synthetic ranking\',\'\',$3::"CommunityVisibility")', [id, owner.id, visibility]);
+      await migration.query('INSERT INTO "CommunityMembership" ("communityId","userId",status) VALUES ($1,$2,\'MEMBER\')', [id, owner.id]);
+    }
+    for (const [index, post] of corpusPosts.entries()) await migration.query('INSERT INTO "Post" (id,"communityId","authorId",type,title,body,"createdAt") VALUES ($1,$2,$3,\'DISCUSSION\',$4,$5,$6)',
+      [postIds.get(post.key), post.private ? privateCommunity : publicCommunity, owner.id, post.title, post.body, post.createdAt ?? `2026-10-${String(index + 1).padStart(2, "0")}T12:00:00Z`]);
+    for (const [index, comment] of corpusComments.entries()) {
+      const root = "root" in comment && comment.root ? commentIds.get(comment.root) : null;
+      await migration.query('INSERT INTO "Comment" (id,"postId","authorId","submissionKey",body,"createdAt","rootId","replyToId") VALUES ($1,$2,$3,$4,$5,$6,$7,$7)',
+        [commentIds.get(comment.key), postIds.get(comment.post), owner.id, sha(`m5-02:${comment.key}`), comment.body, `2026-10-${24 + index}T12:00:00Z`, root]);
+    }
+  }
+  afterAll(async () => { await db?.$disconnect(); await migration?.end(); });
+
+  it.skipIf(process.env.M5_RANKING_SECURITY_ONLY === "1")("measures both variants on frozen text/labels with balanced order and unchanged real budgets", async () => {
+    const frozenText = readFileSync(".cache/m5-query-baseline.json", "utf8");
+    const frozen = JSON.parse(frozenText) as { corpusSha256: string; applicationSha256: string; rows: { id: string; gold: string[] }[] };
+    expect(sha(frozenText)).toBe("397a079cd08d8196149357a38eeb1dac382348e6ac4422418c22ff8d77f81bd4");
+    expect(sha(readFileSync("tests/evaluation/evidence-corpus.ts", "utf8"))).toBe(frozen.corpusSha256);
+    const applicationFiles = ["src/server/archive/service.ts", "src/server/archive/policy.ts", "src/server/evidence/service.ts", "src/server/evidence/policy.ts", "src/server/communities/service.ts"];
+    expect(sha(applicationFiles.map(path => readFileSync(path, "utf8").replace(/\r\n/g, "\n")).join("\n"))).toBe(frozen.applicationSha256);
+    expect(frozen.rows.map(row => ({ id: row.id, gold: row.gold }))).toEqual(evaluationQueries.map(row => ({ id: row.id, gold: row.gold })));
+    await seedCorpus();
+    const rows: { id: string; gold: string[]; variants: Record<Variant, Measurement> }[] = [];
+    const latencies: Record<Variant, number[]> = { baseline: [], ranking: [] };
+    let forbiddenExposures = 0, revocationChecks = 0, citationChecks = 0;
+    for (const [caseIndex, query] of evaluationQueries.entries()) {
+      const reader = await actor();
+      if (query.actor) await migration.query('INSERT INTO "CommunityMembership" ("communityId","userId",status) VALUES ($1,$2,$3::"MembershipStatus")', [privateCommunity, reader.id, query.actor === "pending" ? "PENDING" : "MEMBER"]);
+      const input = new URLSearchParams({ q: query.query, ...(query.privateFilter ? { community: privateCommunity } : {}) });
+      if (query.actor === "revoked") {
+        const before = await Promise.all(variants.map(variant => retrieve(variant, reader.token, input)));
+        for (const result of before) expect(result.evidence.some(source => source.citation.communityId === privateCommunity)).toBe(true);
+        await changeMembership(db, owner.token, privateCommunity, { action: "remove", userId: reader.id });
+        for (const result of before) { await expect(revalidateEvidence(db, reader.token, result.evidence)).rejects.toMatchObject({ status: 404 }); revocationChecks++; }
+      }
+      async function attempt(variant: Variant) {
+        const started = performance.now();
+        try {
+          const result = await retrieve(variant, reader.token, input), elapsed = performance.now() - started;
+          expect(result.evidence.length).toBeLessThanOrEqual(5); expect(result.interrupted).toBe(false);
+          if (query.actor !== "member") {
+            const text = JSON.stringify(result), exposed = text.includes(privateCommunity) || text.includes(postIds.get("routing-private")!) || text.includes(privateMarker);
+            if (exposed) forbiddenExposures++; expect(exposed).toBe(false);
+          }
+          const retrieved = result.evidence.map(source => {
+            const key = sourceKeys.get(source.sourceId); if (!key) throw new Error("Unexpected source");
+            const comment = corpusComments.find(row => row.key === key);
+            expect(source.citation).toEqual({ communityId: key === "routing-private" ? privateCommunity : publicCommunity,
+              postId: comment ? postIds.get(comment.post) : postIds.get(key), commentId: comment ? commentIds.get(key) : null });
+            return key;
+          });
+          // Untimed current-source verification also checks experimental fingerprints
+          // and exact content against production. Never equate it with entailment.
+          await revalidateEvidence(db, reader.token, result.evidence); citationChecks++;
+          const relevant = query.gold.filter(key => retrieved.includes(key));
+          const support = query.gold.filter(key => result.evidence.some(source => sourceKeys.get(source.sourceId) === key && source.text.includes(supportingAnchors[key])));
+          return { elapsed, outcome: { status: 200, retrieved, recall: query.gold.length ? relevant.length / query.gold.length : null,
+            top: query.gold.length ? Number(query.gold.includes(retrieved[0])) : null, support: query.gold.length ? support.length / query.gold.length : null } };
+        } catch (error) {
+          const status = error instanceof InputError ? 400 : error && typeof error === "object" && "status" in error ? error.status : undefined;
+          if (status !== query.expectedStatus || (status !== 400 && status !== 404)) throw error;
+          return { elapsed: performance.now() - started, outcome: { status, retrieved: [], recall: query.gold.length ? 0 : null, top: query.gold.length ? 0 : null, support: query.gold.length ? 0 : null } };
+        }
+      }
+      const outcomes = new Map<Variant, Outcome>(), timings: Record<Variant, number[]> = { baseline: [], ranking: [] };
+      const order = (round: number) => (caseIndex + round) % 2 ? [...variants].reverse() : [...variants];
+      for (const variant of order(0)) { const current = await attempt(variant); outcomes.set(variant, current.outcome); expect(current.outcome.status).toBe(query.expectedStatus ?? 200); }
+      for (let round = 0; round < 5; round++) for (const variant of order(round)) {
+        const current = await attempt(variant); expect(current.outcome).toEqual(outcomes.get(variant));
+        timings[variant].push(current.elapsed); if (current.outcome.status === 200) latencies[variant].push(current.elapsed);
+      }
+      rows.push({ id: query.id, gold: query.gold, variants: Object.fromEntries(variants.map(variant => [variant,
+        { ...outcomes.get(variant)!, latencyMs: { samples: timings[variant], p50: percentile(timings[variant], 0.5), p95: percentile(timings[variant], 0.95) } }])) as Record<Variant, Measurement> });
+    }
+    const summary = Object.fromEntries(variants.map(variant => {
+      const positive = rows.filter(row => row.gold.length).map(row => row.variants[variant]);
+      return [variant, { recallAt5: average(positive.map(row => row.recall!)), topRelevance: average(positive.map(row => row.top!)),
+        supportingPassageRecall: average(positive.map(row => row.support!)), successfulSamples: latencies[variant].length,
+        latencyMs: { p50: percentile(latencies[variant], 0.5), p95: percentile(latencies[variant], 0.95), max: Math.max(...latencies[variant]) } }];
+    }));
+    const comparisons = rows.map(row => ({ id: row.id, recallDelta: row.gold.length ? row.variants.ranking.recall! - row.variants.baseline.recall! : null,
+      topDelta: row.gold.length ? row.variants.ranking.top! - row.variants.baseline.top! : null,
+      supportDelta: row.gold.length ? row.variants.ranking.support! - row.variants.baseline.support! : null,
+      medianLatencyDeltaMs: row.variants.ranking.latencyMs.p50 - row.variants.baseline.latencyMs.p50,
+      p95LatencyDeltaMs: row.variants.ranking.latencyMs.p95 - row.variants.baseline.latencyMs.p95 }));
+    const regressions = comparisons.filter(row => (row.recallDelta ?? 0) < 0 || (row.topDelta ?? 0) < 0 || (row.supportDelta ?? 0) < 0).map(row => row.id);
+    writeFileSync(".cache/m5-ranking-results.json", JSON.stringify({ frozenReportSha256: sha(frozenText), corpusSha256: frozen.corpusSha256,
+      experimentSha256: sha(readFileSync("tools/database/evidence-ranking-experiment.ts", "utf8")),
+      method: { queries: rows.length, answerable: rows.filter(row => row.gold.length).length, candidateLimit: rankingCandidateLimit,
+        rawInputs: true, sameTarget: true, balancedOrder: true, warmups: 44, measurements: 220, samplesPerVariantCase: 5 },
+      summary, regressions, forbiddenExposures, revocationChecks, citationChecks, comparisons, rows }, null, 2));
+    console.log(JSON.stringify({ summary, regressions, forbiddenExposures, revocationChecks, citationChecks }));
+  }, 60000);
+
+  it("keeps filters, original input limits, literal SQL, and shared durable budgets", async () => {
+    const reader = await actor(), key = digest(`m5-evidence-retrieval:${reader.id}`);
+    const invalid = [new URLSearchParams({ q: "x".repeat(201) }), new URLSearchParams({ q: "a b c d e f g h i" }),
+      new URLSearchParams({ q: "ab\u200b" }), new URLSearchParams("q=cache&q=locality"), new URLSearchParams({ q: "cache", after: "" }),
+      new URLSearchParams({ q: "cache", type: "INVALID" }), new URLSearchParams({ q: "cache", community: "not-uuid" })];
+    for (const input of invalid) await expect(retrieveRankedEvidence(db, reader.token, input)).rejects.toBeInstanceOf(InputError);
+    expect(await db.identityRateLimit.findUnique({ where: { keyDigest: key } })).toBeNull();
+    const sql = new URLSearchParams({ q: "cache' OR1=1--" });
+    expect((await retrieveRankedEvidence(db, reader.token, sql)).evidence).toEqual([]);
+    expect((await retrieveRankedEvidence(db, reader.token, new URLSearchParams({ q: "cache", community: publicCommunity, type: "QUESTION" }))).evidence).toEqual([]);
+    expect((await retrieveRankedEvidence(db, reader.token, new URLSearchParams({ q: "cache", community: publicCommunity, type: "DISCUSSION" }))).evidence[0].sourceId).toBe(`post:${postIds.get("cache-en")}`);
+    const unknown = randomUUID();
+    for (let i = 0; i < 27; i++) await expect(retrieve(i % 2 ? "baseline" : "ranking", reader.token, new URLSearchParams({ q: "cache", community: unknown }))).rejects.toMatchObject({ status: 404 });
+    for (const variant of variants) await expect(retrieve(variant, reader.token, new URLSearchParams({ q: "cache" }))).rejects.toMatchObject({ status: 429 });
+    expect((await db.identityRateLimit.findUniqueOrThrow({ where: { keyDigest: key } })).hits).toBe(30);
+  });
+
+  it("rejects forged parents, stale source text, cross-user private citations, and logged-out sessions", async () => {
+    const reader = await actor();
+    await migration.query('INSERT INTO "CommunityMembership" ("communityId","userId",status) VALUES ($1,$2,\'MEMBER\')', [privateCommunity, reader.id]);
+    const result = await retrieveRankedEvidence(db, reader.token, new URLSearchParams({ q: "routing sentinel", community: privateCommunity }));
+    expect(result.evidence).toHaveLength(1);
+    const outsider = await actor(); await expect(revalidateEvidence(db, outsider.token, result.evidence)).rejects.toMatchObject({ status: 404 });
+    const reply = await retrieveRankedEvidence(db, reader.token, new URLSearchParams({ q: "جدولة roundrobin" }));
+    expect(reply.evidence[0].kind).toBe("reply");
+    expect(evidenceCitationPath(reply.evidence[0].citation, "ar")).toContain(`?comment=${commentIds.get("scheduler-reply")}`);
+    await expect(revalidateEvidence(db, reader.token, [{ ...reply.evidence[0], citation: { ...reply.evidence[0].citation, postId: postIds.get("cache-en") } }])).rejects.toMatchObject({ status: 404 });
+    await migration.query('UPDATE "Post" SET body=$1 WHERE id=$2', ["routing sentinel changed synthetic explanation.", postIds.get("routing-private")]);
+    await expect(revalidateEvidence(db, reader.token, result.evidence)).rejects.toMatchObject({ status: 404 });
+    await logout(db, reader.token);
+    await expect(retrieveRankedEvidence(db, reader.token, new URLSearchParams({ q: "routing sentinel" }))).rejects.toMatchObject({ status: 401 });
+  });
+
+  it("rechecks permission after removal wins the actual retrieval lock queue", async () => {
+    const reader = await actor();
+    await migration.query('INSERT INTO "CommunityMembership" ("communityId","userId",status) VALUES ($1,$2,\'MEMBER\')', [privateCommunity, reader.id]);
+    const lock = new Client({ connectionString: databaseUrl(manifest!, name!, "migration") }); await lock.connect();
+    await lock.query("BEGIN"); await lock.query("SELECT pg_advisory_xact_lock(hashtextextended($1::text,0))", [privateCommunity]);
+    async function waitForLocks(minimum: number) {
+      const deadline = performance.now() + 2000;
+      while (performance.now() < deadline) {
+        const rows = await migration.query<{ count: number }>("SELECT count(*)::int AS count FROM pg_locks l JOIN pg_stat_activity a ON a.pid=l.pid WHERE a.datname=current_database() AND l.locktype='advisory' AND NOT l.granted");
+        if (rows.rows[0].count >= minimum) return;
+        await new Promise(resolve => setTimeout(resolve, 20));
+      }
+      throw new Error("Expected fresh-target lock queue did not form");
+    }
+    let removal: Promise<unknown> | undefined, pending: Promise<unknown> | undefined;
+    try {
+      removal = changeMembership(db, owner.token, privateCommunity, { action: "remove", userId: reader.id }); await waitForLocks(1);
+      pending = retrieveRankedEvidence(db, reader.token, new URLSearchParams({ q: "routing sentinel" })).then(result => {
+        expect(result.evidence.map(source => source.sourceId)).toEqual([`post:${postIds.get("routing-public")}`]);
+        expect(result.interrupted).toBe(true);
+      });
+      await waitForLocks(2); await lock.query("COMMIT"); await removal; await pending;
+    } finally { await lock.query("ROLLBACK"); await lock.end(); await Promise.allSettled([removal, pending].filter(Boolean)); }
+  });
+
+  it("keeps the 21-candidate horizon and creator/comment policy explicit", async () => {
+    // Supplemental synthetic fixtures run AFTER frozen metrics; no corpus edits.
+    const marker = "HORIZON42", oldest = randomUUID();
+    await migration.query('INSERT INTO "Post" (id,"communityId","authorId",type,title,body,"createdAt") VALUES ($1,$2,$3,\'DISCUSSION\',$4,$4,\'2020-01-01\')', [oldest, publicCommunity, owner.id, marker]);
+    for (let index = 0; index < rankingCandidateLimit; index++) await migration.query('INSERT INTO "Post" (id,"communityId","authorId",type,title,body,"createdAt") VALUES ($1,$2,$3,\'DISCUSSION\',$4,$5,\'2026-11-15\')',
+      [randomUUID(), publicCommunity, owner.id, `${marker} repeated background`, `${marker} ${"background ".repeat(index + 1)}`]);
+    const reader = await actor(), result = await retrieveRankedEvidence(db, reader.token, new URLSearchParams({ q: marker }));
+    expect(result.evidence).toHaveLength(5); expect(result.evidence.some(source => source.citation.postId === oldest)).toBe(false);
+    const commentId = randomUUID(), privatePost = postIds.get("routing-private")!;
+    await migration.query('INSERT INTO "Comment" (id,"postId","authorId","submissionKey",body) VALUES ($1,$2,$3,$4,\'OWNERCOMMENT42 synthetic explanation\')', [commentId, privatePost, owner.id, sha(commentId)]);
+    const before = await retrieveRankedEvidence(db, owner.token, new URLSearchParams({ q: "OWNERCOMMENT42" })); expect(before.evidence).toHaveLength(1);
+    await migration.query('DELETE FROM "CommunityMembership" WHERE "communityId"=$1 AND "userId"=$2', [privateCommunity, owner.id]);
+    expect((await retrieveRankedEvidence(db, owner.token, new URLSearchParams({ q: "OWNERCOMMENT42" }))).evidence).toEqual([]);
+    await expect(revalidateEvidence(db, owner.token, before.evidence)).rejects.toMatchObject({ status: 404 });
+    expect((await retrieveRankedEvidence(db, owner.token, new URLSearchParams({ q: "routing sentinel", community: privateCommunity }))).evidence).toHaveLength(1);
+  });
+});

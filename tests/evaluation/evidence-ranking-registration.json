@@ -1,0 +1,22 @@
+{
+  "holdoutFrozenBeforeScorer": true,
+  "freezeSha256": "9ff3281fc6b9db6e019988c41a7c6b409cb8a03a4642092a62f5bd72fa47d5a6",
+  "originalScoringFunctionsUnchanged": true,
+  "design": "Rank body literal term coverage, then capped distinct non-query context tokens within 320 code points around earliest body hit (80 before), then recency/ID; unchanged 21-candidate cap, five-source cutoff. No label/answer-word features.",
+  "normalizedHashes": {
+    "src/server/archive/policy.ts": "f764eb784c004a1fe66860d578f2ef2317986772fa586985484197925c91c634",
+    "src/server/archive/service.ts": "f3b0060522950dd81791f6413461bd39ad961299cd75abcdadf3ece7561048fd",
+    "src/server/communities/service.ts": "946f05aa84c453c577c1b7fc4b371db609456f87caf2cc32d97be38e2edfe129",
+    "src/server/evidence/policy.ts": "a069ec8d02ef85392e422c16598d3b87217f178cb2a0af5d402786f0514a945e",
+    "src/server/evidence/query-preparation.ts": "09d23e70d03fc37697c9a6925c6b69cc9d9724e83a8b53056a9b5470b932c4eb",
+    "src/server/evidence/questions.ts": "2160e2fc3b3747c33d1a921761dbfb558803951dfc3ea7a9b1bc3c1906f778c0",
+    "src/server/evidence/service.ts": "d2a5e1e582393c24a2cc364fc76f14d6d7502438376514a02e184a3861bae38e",
+    "tests/database/evidence-ranking-holdout.test.ts": "f77aa77e8a53e141476af25bcde5650be17ac32ad720b6a573a9b75470102b88",
+    "tests/evaluation/evidence-corpus.ts": "c703d9dfa9c3cc651c01d4287069c9bd732e0690fc08a527b48dfa4c227cc15d",
+    "tests/evaluation/evidence-query-holdout.ts": "a9d82864602c895325de6ce67c3f717b42b7deed3a4a6b18f4e67104c9e24af4",
+    "tests/evaluation/evidence-ranking-holdout.ts": "14a64fd34c2c838a34293e60ed743adacfc256da4b01109a2d93326ca103e294",
+    "tools/database/evidence-ranking-experiment.ts": "3873149a23e17a78d9eafd863d751d98c795b789a2a0d08d827df9356dced082",
+    "tools/database/evidence-ranking-revision.test.ts": "56023bb748df460b08890320c3b37a0f23a2d3629e9a833c4fe4c189e3c05814",
+    "tools/database/evidence-ranking-revision.ts": "d0c1fb3f3758cca2bb0b9f6124664fd58990b465a458dfc7a0ad88ee9c6609ff"
+  }
+}

@@ -1,0 +1,1258 @@
+{
+  "frozenReportSha256": "397a079cd08d8196149357a38eeb1dac382348e6ac4422418c22ff8d77f81bd4",
+  "corpusSha256": "c703d9dfa9c3cc651c01d4287069c9bd732e0690fc08a527b48dfa4c227cc15d",
+  "experimentSha256": "c948e08de577da3333d8c66277068cdc4e77d1fde123bf55f33fb928caf95b7b",
+  "method": {
+    "queries": 22,
+    "answerable": 20,
+    "candidateLimit": 21,
+    "rawInputs": true,
+    "sameTarget": true,
+    "balancedOrder": true,
+    "warmups": 44,
+    "measurements": 220,
+    "samplesPerVariantCase": 5
+  },
+  "summary": {
+    "baseline": {
+      "recallAt5": 0.6,
+      "topRelevance": 0.6,
+      "supportingPassageRecall": 0.55,
+      "successfulSamples": 100,
+      "latencyMs": {
+        "p50": 34.77610000000004,
+        "p95": 40.71769999999992,
+        "max": 44.58189999999922
+      }
+    },
+    "ranking": {
+      "recallAt5": 0.65,
+      "topRelevance": 0.65,
+      "supportingPassageRecall": 0.6,
+      "successfulSamples": 100,
+      "latencyMs": {
+        "p50": 35.9224999999999,
+        "p95": 41.99330000000009,
+        "max": 67.03700000000026
+      }
+    }
+  },
+  "regressions": [],
+  "forbiddenExposures": 0,
+  "revocationChecks": 2,
+  "citationChecks": 240,
+  "comparisons": [
+    {
+      "id": "en-keyword",
+      "recallDelta": 0,
+      "topDelta": 0,
+      "supportDelta": 0,
+      "medianLatencyDeltaMs": 0.7373999999999796,
+      "p95LatencyDeltaMs": 1.3162999999999556
+    },
+    {
+      "id": "en-question",
+      "recallDelta": 0,
+      "topDelta": 0,
+      "supportDelta": 0,
+      "medianLatencyDeltaMs": -0.18540000000029977,
+      "p95LatencyDeltaMs": -1.0558999999996104
+    },
+    {
+      "id": "ar-keyword",
+      "recallDelta": 0,
+      "topDelta": 0,
+      "supportDelta": 0,
+      "medianLatencyDeltaMs": 3.0196999999998297,
+      "p95LatencyDeltaMs": 2.821899999999914
+    },
+    {
+      "id": "ar-question",
+      "recallDelta": 0,
+      "topDelta": 0,
+      "supportDelta": 0,
+      "medianLatencyDeltaMs": 0.9320000000002437,
+      "p95LatencyDeltaMs": -4.2893999999996595
+    },
+    {
+      "id": "mixed",
+      "recallDelta": 0,
+      "topDelta": 0,
+      "supportDelta": 0,
+      "medianLatencyDeltaMs": 2.1184999999995853,
+      "p95LatencyDeltaMs": 10.378099999999904
+    },
+    {
+      "id": "comment",
+      "recallDelta": 0,
+      "topDelta": 0,
+      "supportDelta": 0,
+      "medianLatencyDeltaMs": 3.180699999999888,
+      "p95LatencyDeltaMs": 3.810899999999492
+    },
+    {
+      "id": "reply",
+      "recallDelta": 0,
+      "topDelta": 0,
+      "supportDelta": 0,
+      "medianLatencyDeltaMs": 1.0830000000005384,
+      "p95LatencyDeltaMs": -3.1357000000007247
+    },
+    {
+      "id": "conflict",
+      "recallDelta": 0,
+      "topDelta": 0,
+      "supportDelta": 0,
+      "medianLatencyDeltaMs": 1.5331000000005588,
+      "p95LatencyDeltaMs": 2.4932000000007974
+    },
+    {
+      "id": "insufficient",
+      "recallDelta": null,
+      "topDelta": null,
+      "supportDelta": null,
+      "medianLatencyDeltaMs": -0.13779999999860593,
+      "p95LatencyDeltaMs": 0.6827000000012049
+    },
+    {
+      "id": "cpp-literal",
+      "recallDelta": 0,
+      "topDelta": 0,
+      "supportDelta": 0,
+      "medianLatencyDeltaMs": 0.02540000000044529,
+      "p95LatencyDeltaMs": 2.2322000000003754
+    },
+    {
+      "id": "morphology",
+      "recallDelta": 0,
+      "topDelta": 0,
+      "supportDelta": 0,
+      "medianLatencyDeltaMs": 0.5318999999999505,
+      "p95LatencyDeltaMs": -0.6702999999979511
+    },
+    {
+      "id": "synonym",
+      "recallDelta": 0,
+      "topDelta": 0,
+      "supportDelta": 0,
+      "medianLatencyDeltaMs": 2.048799999998664,
+      "p95LatencyDeltaMs": -3.926499999999578
+    },
+    {
+      "id": "cross-language",
+      "recallDelta": 0,
+      "topDelta": 0,
+      "supportDelta": 0,
+      "medianLatencyDeltaMs": 0.7127999999993335,
+      "p95LatencyDeltaMs": 2.371099999998478
+    },
+    {
+      "id": "crowded-old-answer",
+      "recallDelta": 1,
+      "topDelta": 1,
+      "supportDelta": 1,
+      "medianLatencyDeltaMs": 1.6471999999994296,
+      "p95LatencyDeltaMs": -3.1785999999992782
+    },
+    {
+      "id": "parent-precedence",
+      "recallDelta": 0,
+      "topDelta": 0,
+      "supportDelta": 0,
+      "medianLatencyDeltaMs": -1.1324000000004162,
+      "p95LatencyDeltaMs": 2.5821000000014465
+    },
+    {
+      "id": "split-passage",
+      "recallDelta": 0,
+      "topDelta": 0,
+      "supportDelta": 0,
+      "medianLatencyDeltaMs": -1.8954999999987194,
+      "p95LatencyDeltaMs": 2.0741000000016356
+    },
+    {
+      "id": "long-question",
+      "recallDelta": 0,
+      "topDelta": 0,
+      "supportDelta": 0,
+      "medianLatencyDeltaMs": 0.004899999999906868,
+      "p95LatencyDeltaMs": -0.012000000000625732
+    },
+    {
+      "id": "public-outsider",
+      "recallDelta": 0,
+      "topDelta": 0,
+      "supportDelta": 0,
+      "medianLatencyDeltaMs": 2.8321000000014465,
+      "p95LatencyDeltaMs": 26.358500000000276
+    },
+    {
+      "id": "private-pending",
+      "recallDelta": 0,
+      "topDelta": 0,
+      "supportDelta": 0,
+      "medianLatencyDeltaMs": 1.1282999999984895,
+      "p95LatencyDeltaMs": 2.253600000000006
+    },
+    {
+      "id": "private-member",
+      "recallDelta": 0,
+      "topDelta": 0,
+      "supportDelta": 0,
+      "medianLatencyDeltaMs": -0.4658999999992375,
+      "p95LatencyDeltaMs": -3.2432000000007974
+    },
+    {
+      "id": "private-revoked",
+      "recallDelta": 0,
+      "topDelta": 0,
+      "supportDelta": 0,
+      "medianLatencyDeltaMs": 2.666400000001886,
+      "p95LatencyDeltaMs": 5.505600000000413
+    },
+    {
+      "id": "private-filter-denied",
+      "recallDelta": null,
+      "topDelta": null,
+      "supportDelta": null,
+      "medianLatencyDeltaMs": 0.24659999999857973,
+      "p95LatencyDeltaMs": -0.5375000000021828
+    }
+  ],
+  "rows": [
+    {
+      "id": "en-keyword",
+      "gold": [
+        "cache-en"
+      ],
+      "variants": {
+        "baseline": {
+          "status": 200,
+          "retrieved": [
+            "cache-en"
+          ],
+          "recall": 1,
+          "top": 1,
+          "support": 1,
+          "latencyMs": {
+            "samples": [
+              40.71769999999992,
+              35.43159999999989,
+              40.01209999999992,
+              36.11699999999996,
+              38.1733999999999
+            ],
+            "p50": 38.1733999999999,
+            "p95": 40.71769999999992
+          }
+        },
+        "ranking": {
+          "status": 200,
+          "retrieved": [
+            "cache-en"
+          ],
+          "recall": 1,
+          "top": 1,
+          "support": 1,
+          "latencyMs": {
+            "samples": [
+              35.9224999999999,
+              35.6097000000002,
+              42.03399999999988,
+              40.123600000000124,
+              38.91079999999988
+            ],
+            "p50": 38.91079999999988,
+            "p95": 42.03399999999988
+          }
+        }
+      }
+    },
+    {
+      "id": "en-question",
+      "gold": [
+        "cache-en"
+      ],
+      "variants": {
+        "baseline": {
+          "status": 200,
+          "retrieved": [],
+          "recall": 0,
+          "top": 0,
+          "support": 0,
+          "latencyMs": {
+            "samples": [
+              35.91569999999979,
+              31.919200000000274,
+              32.85660000000007,
+              30.28749999999991,
+              33.52549999999974
+            ],
+            "p50": 32.85660000000007,
+            "p95": 35.91569999999979
+          }
+        },
+        "ranking": {
+          "status": 200,
+          "retrieved": [],
+          "recall": 0,
+          "top": 0,
+          "support": 0,
+          "latencyMs": {
+            "samples": [
+              34.85980000000018,
+              31.04379999999992,
+              31.894800000000032,
+              34.75350000000026,
+              32.67119999999977
+            ],
+            "p50": 32.67119999999977,
+            "p95": 34.85980000000018
+          }
+        }
+      }
+    },
+    {
+      "id": "ar-keyword",
+      "gold": [
+        "normalization-ar"
+      ],
+      "variants": {
+        "baseline": {
+          "status": 200,
+          "retrieved": [
+            "normalization-ar"
+          ],
+          "recall": 1,
+          "top": 1,
+          "support": 1,
+          "latencyMs": {
+            "samples": [
+              34.39429999999993,
+              33.845800000000054,
+              34.17059999999992,
+              36.44860000000017,
+              35.11709999999994
+            ],
+            "p50": 34.39429999999993,
+            "p95": 36.44860000000017
+          }
+        },
+        "ranking": {
+          "status": 200,
+          "retrieved": [
+            "normalization-ar"
+          ],
+          "recall": 1,
+          "top": 1,
+          "support": 1,
+          "latencyMs": {
+            "samples": [
+              37.74399999999969,
+              35.659400000000005,
+              39.270500000000084,
+              37.41399999999976,
+              34.990800000000036
+            ],
+            "p50": 37.41399999999976,
+            "p95": 39.270500000000084
+          }
+        }
+      }
+    },
+    {
+      "id": "ar-question",
+      "gold": [
+        "normalization-ar"
+      ],
+      "variants": {
+        "baseline": {
+          "status": 200,
+          "retrieved": [],
+          "recall": 0,
+          "top": 0,
+          "support": 0,
+          "latencyMs": {
+            "samples": [
+              34.44270000000006,
+              39.252700000000004,
+              31.769600000000082,
+              33.459299999999985,
+              31.951500000000124
+            ],
+            "p50": 33.459299999999985,
+            "p95": 39.252700000000004
+          }
+        },
+        "ranking": {
+          "status": 200,
+          "retrieved": [],
+          "recall": 0,
+          "top": 0,
+          "support": 0,
+          "latencyMs": {
+            "samples": [
+              34.963300000000345,
+              34.294900000000325,
+              34.39130000000023,
+              31.33010000000013,
+              34.87970000000041
+            ],
+            "p50": 34.39130000000023,
+            "p95": 34.963300000000345
+          }
+        }
+      }
+    },
+    {
+      "id": "mixed",
+      "gold": [
+        "pointers-mixed"
+      ],
+      "variants": {
+        "baseline": {
+          "status": 200,
+          "retrieved": [
+            "pointers-mixed"
+          ],
+          "recall": 1,
+          "top": 1,
+          "support": 1,
+          "latencyMs": {
+            "samples": [
+              34.77610000000004,
+              34.05749999999989,
+              32.9994999999999,
+              34.20300000000043,
+              35.96720000000005
+            ],
+            "p50": 34.20300000000043,
+            "p95": 35.96720000000005
+          }
+        },
+        "ranking": {
+          "status": 200,
+          "retrieved": [
+            "pointers-mixed"
+          ],
+          "recall": 1,
+          "top": 1,
+          "support": 1,
+          "latencyMs": {
+            "samples": [
+              46.34529999999995,
+              41.41370000000006,
+              36.321500000000015,
+              35.35530000000017,
+              35.370600000000195
+            ],
+            "p50": 36.321500000000015,
+            "p95": 46.34529999999995
+          }
+        }
+      }
+    },
+    {
+      "id": "comment",
+      "gold": [
+        "deadlock-answer"
+      ],
+      "variants": {
+        "baseline": {
+          "status": 200,
+          "retrieved": [
+            "deadlock-answer"
+          ],
+          "recall": 1,
+          "top": 1,
+          "support": 1,
+          "latencyMs": {
+            "samples": [
+              33.21129999999994,
+              34.37209999999959,
+              37.739300000000185,
+              38.1824000000006,
+              34.43459999999959
+            ],
+            "p50": 34.43459999999959,
+            "p95": 38.1824000000006
+          }
+        },
+        "ranking": {
+          "status": 200,
+          "retrieved": [
+            "deadlock-answer"
+          ],
+          "recall": 1,
+          "top": 1,
+          "support": 1,
+          "latencyMs": {
+            "samples": [
+              37.28279999999995,
+              41.99330000000009,
+              38.36419999999998,
+              37.61529999999948,
+              34.68159999999989
+            ],
+            "p50": 37.61529999999948,
+            "p95": 41.99330000000009
+          }
+        }
+      }
+    },
+    {
+      "id": "reply",
+      "gold": [
+        "scheduler-reply"
+      ],
+      "variants": {
+        "baseline": {
+          "status": 200,
+          "retrieved": [
+            "scheduler-reply"
+          ],
+          "recall": 1,
+          "top": 1,
+          "support": 1,
+          "latencyMs": {
+            "samples": [
+              33.336599999999635,
+              33.64710000000014,
+              41.743900000000394,
+              38.04940000000079,
+              35.29809999999998
+            ],
+            "p50": 35.29809999999998,
+            "p95": 41.743900000000394
+          }
+        },
+        "ranking": {
+          "status": 200,
+          "retrieved": [
+            "scheduler-reply"
+          ],
+          "recall": 1,
+          "top": 1,
+          "support": 1,
+          "latencyMs": {
+            "samples": [
+              36.381100000000515,
+              35.0630000000001,
+              38.60819999999967,
+              37.52009999999973,
+              35.01140000000032
+            ],
+            "p50": 36.381100000000515,
+            "p95": 38.60819999999967
+          }
+        }
+      }
+    },
+    {
+      "id": "conflict",
+      "gold": [
+        "conflict-a",
+        "conflict-b"
+      ],
+      "variants": {
+        "baseline": {
+          "status": 200,
+          "retrieved": [
+            "conflict-b",
+            "conflict-a"
+          ],
+          "recall": 1,
+          "top": 1,
+          "support": 1,
+          "latencyMs": {
+            "samples": [
+              34.408300000000054,
+              33.44709999999941,
+              38.730899999999565,
+              36.11689999999999,
+              35.86369999999988
+            ],
+            "p50": 35.86369999999988,
+            "p95": 38.730899999999565
+          }
+        },
+        "ranking": {
+          "status": 200,
+          "retrieved": [
+            "conflict-b",
+            "conflict-a"
+          ],
+          "recall": 1,
+          "top": 1,
+          "support": 1,
+          "latencyMs": {
+            "samples": [
+              37.39680000000044,
+              36.555199999999786,
+              35.788400000000365,
+              39.06750000000011,
+              41.22410000000036
+            ],
+            "p50": 37.39680000000044,
+            "p95": 41.22410000000036
+          }
+        }
+      }
+    },
+    {
+      "id": "insufficient",
+      "gold": [],
+      "variants": {
+        "baseline": {
+          "status": 200,
+          "retrieved": [],
+          "recall": null,
+          "top": null,
+          "support": null,
+          "latencyMs": {
+            "samples": [
+              30.528800000000047,
+              31.41949999999997,
+              32.88709999999992,
+              33.08419999999933,
+              32.78519999999844
+            ],
+            "p50": 32.78519999999844,
+            "p95": 33.08419999999933
+          }
+        },
+        "ranking": {
+          "status": 200,
+          "retrieved": [],
+          "recall": null,
+          "top": null,
+          "support": null,
+          "latencyMs": {
+            "samples": [
+              30.90730000000076,
+              32.647399999999834,
+              31.272399999999834,
+              33.365999999999985,
+              33.76690000000053
+            ],
+            "p50": 32.647399999999834,
+            "p95": 33.76690000000053
+          }
+        }
+      }
+    },
+    {
+      "id": "cpp-literal",
+      "gold": [
+        "cpp"
+      ],
+      "variants": {
+        "baseline": {
+          "status": 200,
+          "retrieved": [
+            "cpp"
+          ],
+          "recall": 1,
+          "top": 1,
+          "support": 1,
+          "latencyMs": {
+            "samples": [
+              35.511899999999514,
+              36.29579999999987,
+              33.67320000000109,
+              35.77809999999954,
+              34.01460000000043
+            ],
+            "p50": 35.511899999999514,
+            "p95": 36.29579999999987
+          }
+        },
+        "ranking": {
+          "status": 200,
+          "retrieved": [
+            "cpp"
+          ],
+          "recall": 1,
+          "top": 1,
+          "support": 1,
+          "latencyMs": {
+            "samples": [
+              36.892400000000634,
+              34.07729999999901,
+              38.52800000000025,
+              35.53729999999996,
+              35.166699999999764
+            ],
+            "p50": 35.53729999999996,
+            "p95": 38.52800000000025
+          }
+        }
+      }
+    },
+    {
+      "id": "morphology",
+      "gold": [
+        "schedule"
+      ],
+      "variants": {
+        "baseline": {
+          "status": 200,
+          "retrieved": [],
+          "recall": 0,
+          "top": 0,
+          "support": 0,
+          "latencyMs": {
+            "samples": [
+              37.613399999998364,
+              33.118899999999485,
+              29.995600000000195,
+              31.639600000000428,
+              29.453700000000026
+            ],
+            "p50": 31.639600000000428,
+            "p95": 37.613399999998364
+          }
+        },
+        "ranking": {
+          "status": 200,
+          "retrieved": [],
+          "recall": 0,
+          "top": 0,
+          "support": 0,
+          "latencyMs": {
+            "samples": [
+              32.17150000000038,
+              36.94310000000041,
+              32.218299999998635,
+              30.98580000000038,
+              29.91309999999976
+            ],
+            "p50": 32.17150000000038,
+            "p95": 36.94310000000041
+          }
+        }
+      }
+    },
+    {
+      "id": "synonym",
+      "gold": [
+        "pipeline-old"
+      ],
+      "variants": {
+        "baseline": {
+          "status": 200,
+          "retrieved": [],
+          "recall": 0,
+          "top": 0,
+          "support": 0,
+          "latencyMs": {
+            "samples": [
+              31.87040000000161,
+              32.38270000000011,
+              33.9393,
+              40.31680000000051,
+              30.383299999999508
+            ],
+            "p50": 32.38270000000011,
+            "p95": 40.31680000000051
+          }
+        },
+        "ranking": {
+          "status": 200,
+          "retrieved": [],
+          "recall": 0,
+          "top": 0,
+          "support": 0,
+          "latencyMs": {
+            "samples": [
+              31.297500000000582,
+              34.43149999999878,
+              32.85820000000058,
+              36.390300000000934,
+              35.310199999999895
+            ],
+            "p50": 34.43149999999878,
+            "p95": 36.390300000000934
+          }
+        }
+      }
+    },
+    {
+      "id": "cross-language",
+      "gold": [
+        "normalization-ar"
+      ],
+      "variants": {
+        "baseline": {
+          "status": 200,
+          "retrieved": [],
+          "recall": 0,
+          "top": 0,
+          "support": 0,
+          "latencyMs": {
+            "samples": [
+              31.24159999999938,
+              30.788000000000466,
+              30.439400000001115,
+              34.41480000000047,
+              30.718699999999444
+            ],
+            "p50": 30.788000000000466,
+            "p95": 34.41480000000047
+          }
+        },
+        "ranking": {
+          "status": 200,
+          "retrieved": [],
+          "recall": 0,
+          "top": 0,
+          "support": 0,
+          "latencyMs": {
+            "samples": [
+              30.87249999999949,
+              31.9304000000011,
+              31.107299999999668,
+              31.5007999999998,
+              36.785899999998946
+            ],
+            "p50": 31.5007999999998,
+            "p95": 36.785899999998946
+          }
+        }
+      }
+    },
+    {
+      "id": "crowded-old-answer",
+      "gold": [
+        "pipeline-old"
+      ],
+      "variants": {
+        "baseline": {
+          "status": 200,
+          "retrieved": [
+            "pipeline-social-5",
+            "pipeline-social-4",
+            "pipeline-social-3",
+            "pipeline-social-2",
+            "pipeline-social-1"
+          ],
+          "recall": 0,
+          "top": 0,
+          "support": 0,
+          "latencyMs": {
+            "samples": [
+              33.82159999999931,
+              33.123600000000806,
+              32.72389999999905,
+              32.22580000000016,
+              38.749399999998786
+            ],
+            "p50": 33.123600000000806,
+            "p95": 38.749399999998786
+          }
+        },
+        "ranking": {
+          "status": 200,
+          "retrieved": [
+            "pipeline-old",
+            "pipeline-social-5",
+            "pipeline-social-4",
+            "pipeline-social-3",
+            "pipeline-social-2"
+          ],
+          "recall": 1,
+          "top": 1,
+          "support": 1,
+          "latencyMs": {
+            "samples": [
+              35.57079999999951,
+              34.158299999999144,
+              35.19980000000032,
+              34.64300000000003,
+              34.770800000000236
+            ],
+            "p50": 34.770800000000236,
+            "p95": 35.57079999999951
+          }
+        }
+      }
+    },
+    {
+      "id": "parent-precedence",
+      "gold": [
+        "race-answer"
+      ],
+      "variants": {
+        "baseline": {
+          "status": 200,
+          "retrieved": [
+            "race-thread"
+          ],
+          "recall": 0,
+          "top": 0,
+          "support": 0,
+          "latencyMs": {
+            "samples": [
+              36.80400000000009,
+              36.545500000000175,
+              37.77049999999872,
+              33.33809999999903,
+              34.18239999999969
+            ],
+            "p50": 36.545500000000175,
+            "p95": 37.77049999999872
+          }
+        },
+        "ranking": {
+          "status": 200,
+          "retrieved": [
+            "race-thread"
+          ],
+          "recall": 0,
+          "top": 0,
+          "support": 0,
+          "latencyMs": {
+            "samples": [
+              40.352600000000166,
+              39.62669999999889,
+              34.47979999999916,
+              34.22890000000007,
+              35.41309999999976
+            ],
+            "p50": 35.41309999999976,
+            "p95": 40.352600000000166
+          }
+        }
+      }
+    },
+    {
+      "id": "split-passage",
+      "gold": [
+        "split-passage"
+      ],
+      "variants": {
+        "baseline": {
+          "status": 200,
+          "retrieved": [
+            "split-passage"
+          ],
+          "recall": 1,
+          "top": 1,
+          "support": 0,
+          "latencyMs": {
+            "samples": [
+              42.88850000000093,
+              44.58189999999922,
+              42.73829999999907,
+              37.62620000000061,
+              38.478399999999965
+            ],
+            "p50": 42.73829999999907,
+            "p95": 44.58189999999922
+          }
+        },
+        "ranking": {
+          "status": 200,
+          "retrieved": [
+            "split-passage"
+          ],
+          "recall": 1,
+          "top": 1,
+          "support": 0,
+          "latencyMs": {
+            "samples": [
+              39.350900000001275,
+              46.65600000000086,
+              40.84280000000035,
+              41.19720000000052,
+              40.42450000000099
+            ],
+            "p50": 40.84280000000035,
+            "p95": 46.65600000000086
+          }
+        }
+      }
+    },
+    {
+      "id": "long-question",
+      "gold": [
+        "race-answer"
+      ],
+      "variants": {
+        "baseline": {
+          "status": 400,
+          "retrieved": [],
+          "recall": 0,
+          "top": 0,
+          "support": 0,
+          "latencyMs": {
+            "samples": [
+              0.057500000000800355,
+              0.040000000000873115,
+              0.034299999999348074,
+              0.03930000000036671,
+              0.035200000000259024
+            ],
+            "p50": 0.03930000000036671,
+            "p95": 0.057500000000800355
+          }
+        },
+        "ranking": {
+          "status": 400,
+          "retrieved": [],
+          "recall": 0,
+          "top": 0,
+          "support": 0,
+          "latencyMs": {
+            "samples": [
+              0.04550000000017462,
+              0.037599999999656575,
+              0.045100000001184526,
+              0.044200000000273576,
+              0.04039999999986321
+            ],
+            "p50": 0.044200000000273576,
+            "p95": 0.04550000000017462
+          }
+        }
+      }
+    },
+    {
+      "id": "public-outsider",
+      "gold": [
+        "routing-public"
+      ],
+      "variants": {
+        "baseline": {
+          "status": 200,
+          "retrieved": [
+            "routing-public"
+          ],
+          "recall": 1,
+          "top": 1,
+          "support": 1,
+          "latencyMs": {
+            "samples": [
+              36.422599999999875,
+              40.19290000000001,
+              40.678499999999985,
+              37.48239999999896,
+              36.23739999999998
+            ],
+            "p50": 37.48239999999896,
+            "p95": 40.678499999999985
+          }
+        },
+        "ranking": {
+          "status": 200,
+          "retrieved": [
+            "routing-public"
+          ],
+          "recall": 1,
+          "top": 1,
+          "support": 1,
+          "latencyMs": {
+            "samples": [
+              40.708700000001045,
+              67.03700000000026,
+              40.31450000000041,
+              35.919299999999566,
+              36.17989999999918
+            ],
+            "p50": 40.31450000000041,
+            "p95": 67.03700000000026
+          }
+        }
+      }
+    },
+    {
+      "id": "private-pending",
+      "gold": [
+        "routing-public"
+      ],
+      "variants": {
+        "baseline": {
+          "status": 200,
+          "retrieved": [
+            "routing-public"
+          ],
+          "recall": 1,
+          "top": 1,
+          "support": 1,
+          "latencyMs": {
+            "samples": [
+              36.58270000000084,
+              37.637400000001435,
+              38.59050000000025,
+              35.89460000000145,
+              35.59569999999985
+            ],
+            "p50": 36.58270000000084,
+            "p95": 38.59050000000025
+          }
+        },
+        "ranking": {
+          "status": 200,
+          "retrieved": [
+            "routing-public"
+          ],
+          "recall": 1,
+          "top": 1,
+          "support": 1,
+          "latencyMs": {
+            "samples": [
+              35.67349999999897,
+              37.71099999999933,
+              36.90899999999965,
+              40.84410000000025,
+              37.92789999999877
+            ],
+            "p50": 37.71099999999933,
+            "p95": 40.84410000000025
+          }
+        }
+      }
+    },
+    {
+      "id": "private-member",
+      "gold": [
+        "routing-public",
+        "routing-private"
+      ],
+      "variants": {
+        "baseline": {
+          "status": 200,
+          "retrieved": [
+            "routing-private",
+            "routing-public"
+          ],
+          "recall": 1,
+          "top": 1,
+          "support": 1,
+          "latencyMs": {
+            "samples": [
+              35.806400000001304,
+              35.7502999999997,
+              38.44890000000305,
+              40.78369999999995,
+              37.82749999999942
+            ],
+            "p50": 37.82749999999942,
+            "p95": 40.78369999999995
+          }
+        },
+        "ranking": {
+          "status": 200,
+          "retrieved": [
+            "routing-public",
+            "routing-private"
+          ],
+          "recall": 1,
+          "top": 1,
+          "support": 1,
+          "latencyMs": {
+            "samples": [
+              37.365200000000186,
+              37.36160000000018,
+              36.67250000000058,
+              37.540499999999156,
+              36.25749999999971
+            ],
+            "p50": 37.36160000000018,
+            "p95": 37.540499999999156
+          }
+        }
+      }
+    },
+    {
+      "id": "private-revoked",
+      "gold": [
+        "routing-public"
+      ],
+      "variants": {
+        "baseline": {
+          "status": 200,
+          "retrieved": [
+            "routing-public"
+          ],
+          "recall": 1,
+          "top": 1,
+          "support": 1,
+          "latencyMs": {
+            "samples": [
+              36.119699999999284,
+              34.722099999999045,
+              36.92269999999917,
+              34.72520000000077,
+              37.23219999999856
+            ],
+            "p50": 36.119699999999284,
+            "p95": 37.23219999999856
+          }
+        },
+        "ranking": {
+          "status": 200,
+          "retrieved": [
+            "routing-public"
+          ],
+          "recall": 1,
+          "top": 1,
+          "support": 1,
+          "latencyMs": {
+            "samples": [
+              37.37750000000233,
+              37.22179999999935,
+              38.78610000000117,
+              40.33899999999994,
+              42.73779999999897
+            ],
+            "p50": 38.78610000000117,
+            "p95": 42.73779999999897
+          }
+        }
+      }
+    },
+    {
+      "id": "private-filter-denied",
+      "gold": [],
+      "variants": {
+        "baseline": {
+          "status": 404,
+          "retrieved": [],
+          "recall": null,
+          "top": null,
+          "support": null,
+          "latencyMs": {
+            "samples": [
+              24.906999999999243,
+              25.279900000001362,
+              25.62159999999858,
+              26.398600000000442,
+              24.658400000000256
+            ],
+            "p50": 25.279900000001362,
+            "p95": 26.398600000000442
+          }
+        },
+        "ranking": {
+          "status": 404,
+          "retrieved": [],
+          "recall": null,
+          "top": null,
+          "support": null,
+          "latencyMs": {
+            "samples": [
+              25.65650000000096,
+              25.3211999999985,
+              25.86109999999826,
+              24.995599999998376,
+              25.526499999999942
+            ],
+            "p50": 25.526499999999942,
+            "p95": 25.86109999999826
+          }
+        }
+      }
+    }
+  ]
+}

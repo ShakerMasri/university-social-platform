@@ -1,0 +1,5 @@
+{
+  "corpusSha256": "4742da175071133976f2dcfec0cfb668b8b7dac0ec3c0100705c25c6d74e6475",
+  "beforeExperimentImplementation": true,
+  "rule": "Keep chronological five posts; for QUESTION posts allow the earliest currently permitted literal-matching comment/reply even when the parent matches. Other types retain parent precedence. One source per post; no content ranking."
+}

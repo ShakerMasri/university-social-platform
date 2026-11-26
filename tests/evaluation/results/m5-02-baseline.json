@@ -1,0 +1,577 @@
+{
+  "corpusVersion": "m5-02-v1",
+  "corpusSha256": "c703d9dfa9c3cc651c01d4287069c9bd732e0690fc08a527b48dfa4c227cc15d",
+  "applicationSha256": "b1e78a415ad4cce2e46572dc74b01988e82aa0d199acb6b9d7f893e6db2f3291",
+  "environment": {
+    "node": "v24.21.0",
+    "postgres": "18.6 (Debian 18.6-1.pgdg12+2)"
+  },
+  "dataset": {
+    "posts": 20,
+    "commentsAndReplies": 4,
+    "queries": 22,
+    "answerableQueries": 20
+  },
+  "method": {
+    "samplesPerQuery": 5,
+    "warmupCalls": 22,
+    "measuredCalls": 110,
+    "sequential": true,
+    "successfulLatencySamples": 100,
+    "revocationChecks": 1
+  },
+  "summary": {
+    "macroRecallAt5": 0.6,
+    "topResultRelevance": 0.6,
+    "supportingPassageRecallAt5": 0.55,
+    "invalidQueries": 1,
+    "correctInsufficientEmpty": true,
+    "privateFilterDenied": true,
+    "forbiddenExposures": 0,
+    "successfulLatencyMs": {
+      "p50": 35.42560000000003,
+      "p95": 43.10699999999997,
+      "max": 49.13850000000002
+    }
+  },
+  "rows": [
+    {
+      "id": "en-keyword",
+      "category": "English",
+      "status": 200,
+      "gold": [
+        "cache-en"
+      ],
+      "retrieved": [
+        "cache-en"
+      ],
+      "recallAt5": 1,
+      "topRelevant": true,
+      "supportingPassageRecallAt5": 1,
+      "latencyMs": {
+        "samples": [
+          44.74180000000001,
+          40.09619999999995,
+          41.5299,
+          41.196300000000065,
+          49.13850000000002
+        ],
+        "p50": 41.5299,
+        "p95": 49.13850000000002
+      }
+    },
+    {
+      "id": "en-question",
+      "category": "natural question",
+      "status": 200,
+      "gold": [
+        "cache-en"
+      ],
+      "retrieved": [],
+      "recallAt5": 0,
+      "topRelevant": false,
+      "supportingPassageRecallAt5": 0,
+      "latencyMs": {
+        "samples": [
+          37.793300000000045,
+          38.29320000000007,
+          34.97919999999999,
+          38.02089999999998,
+          39.955799999999954
+        ],
+        "p50": 38.02089999999998,
+        "p95": 39.955799999999954
+      }
+    },
+    {
+      "id": "ar-keyword",
+      "category": "Arabic",
+      "status": 200,
+      "gold": [
+        "normalization-ar"
+      ],
+      "retrieved": [
+        "normalization-ar"
+      ],
+      "recallAt5": 1,
+      "topRelevant": true,
+      "supportingPassageRecallAt5": 1,
+      "latencyMs": {
+        "samples": [
+          41.94749999999999,
+          37.68959999999993,
+          40.053499999999985,
+          38.462200000000166,
+          39.06050000000005
+        ],
+        "p50": 39.06050000000005,
+        "p95": 41.94749999999999
+      }
+    },
+    {
+      "id": "ar-question",
+      "category": "natural question",
+      "status": 200,
+      "gold": [
+        "normalization-ar"
+      ],
+      "retrieved": [],
+      "recallAt5": 0,
+      "topRelevant": false,
+      "supportingPassageRecallAt5": 0,
+      "latencyMs": {
+        "samples": [
+          37.78590000000008,
+          35.76070000000004,
+          35.44579999999996,
+          38.56280000000015,
+          37.5948999999996
+        ],
+        "p50": 37.5948999999996,
+        "p95": 38.56280000000015
+      }
+    },
+    {
+      "id": "mixed",
+      "category": "mixed language",
+      "status": 200,
+      "gold": [
+        "pointers-mixed"
+      ],
+      "retrieved": [
+        "pointers-mixed"
+      ],
+      "recallAt5": 1,
+      "topRelevant": true,
+      "supportingPassageRecallAt5": 1,
+      "latencyMs": {
+        "samples": [
+          44.62079999999969,
+          37.32360000000017,
+          41.80629999999974,
+          36.47980000000007,
+          36.157900000000154
+        ],
+        "p50": 37.32360000000017,
+        "p95": 44.62079999999969
+      }
+    },
+    {
+      "id": "comment",
+      "category": "comment",
+      "status": 200,
+      "gold": [
+        "deadlock-answer"
+      ],
+      "retrieved": [
+        "deadlock-answer"
+      ],
+      "recallAt5": 1,
+      "topRelevant": true,
+      "supportingPassageRecallAt5": 1,
+      "latencyMs": {
+        "samples": [
+          35.96770000000015,
+          38.88350000000037,
+          37.26800000000003,
+          40.23330000000033,
+          39.723599999999806
+        ],
+        "p50": 38.88350000000037,
+        "p95": 40.23330000000033
+      }
+    },
+    {
+      "id": "reply",
+      "category": "reply",
+      "status": 200,
+      "gold": [
+        "scheduler-reply"
+      ],
+      "retrieved": [
+        "scheduler-reply"
+      ],
+      "recallAt5": 1,
+      "topRelevant": true,
+      "supportingPassageRecallAt5": 1,
+      "latencyMs": {
+        "samples": [
+          43.865099999999984,
+          39.23350000000028,
+          43.10699999999997,
+          38.53560000000016,
+          39.805399999999736
+        ],
+        "p50": 39.805399999999736,
+        "p95": 43.865099999999984
+      }
+    },
+    {
+      "id": "conflict",
+      "category": "conflicting evidence",
+      "status": 200,
+      "gold": [
+        "conflict-a",
+        "conflict-b"
+      ],
+      "retrieved": [
+        "conflict-b",
+        "conflict-a"
+      ],
+      "recallAt5": 1,
+      "topRelevant": true,
+      "supportingPassageRecallAt5": 1,
+      "latencyMs": {
+        "samples": [
+          38.375600000000304,
+          38.640300000000025,
+          37.193399999999656,
+          35.9670000000001,
+          37.496200000000044
+        ],
+        "p50": 37.496200000000044,
+        "p95": 38.640300000000025
+      }
+    },
+    {
+      "id": "insufficient",
+      "category": "insufficient evidence",
+      "status": 200,
+      "gold": [],
+      "retrieved": [],
+      "recallAt5": null,
+      "topRelevant": null,
+      "supportingPassageRecallAt5": null,
+      "latencyMs": {
+        "samples": [
+          33.903299999999945,
+          32.53670000000011,
+          31.408500000000004,
+          34.422399999999925,
+          31.05309999999963
+        ],
+        "p50": 32.53670000000011,
+        "p95": 34.422399999999925
+      }
+    },
+    {
+      "id": "cpp-literal",
+      "category": "punctuation",
+      "status": 200,
+      "gold": [
+        "cpp"
+      ],
+      "retrieved": [
+        "cpp"
+      ],
+      "recallAt5": 1,
+      "topRelevant": true,
+      "supportingPassageRecallAt5": 1,
+      "latencyMs": {
+        "samples": [
+          34.859300000000076,
+          34.73120000000017,
+          33.46810000000005,
+          35.0612000000001,
+          37.48860000000013
+        ],
+        "p50": 34.859300000000076,
+        "p95": 37.48860000000013
+      }
+    },
+    {
+      "id": "morphology",
+      "category": "morphology",
+      "status": 200,
+      "gold": [
+        "schedule"
+      ],
+      "retrieved": [],
+      "recallAt5": 0,
+      "topRelevant": false,
+      "supportingPassageRecallAt5": 0,
+      "latencyMs": {
+        "samples": [
+          34.35730000000012,
+          33.991599999999835,
+          35.42560000000003,
+          31.91000000000031,
+          32.37729999999965
+        ],
+        "p50": 33.991599999999835,
+        "p95": 35.42560000000003
+      }
+    },
+    {
+      "id": "synonym",
+      "category": "synonym",
+      "status": 200,
+      "gold": [
+        "pipeline-old"
+      ],
+      "retrieved": [],
+      "recallAt5": 0,
+      "topRelevant": false,
+      "supportingPassageRecallAt5": 0,
+      "latencyMs": {
+        "samples": [
+          34.15149999999994,
+          30.685399999999845,
+          31.797900000000027,
+          30.875500000000102,
+          34.15530000000035
+        ],
+        "p50": 31.797900000000027,
+        "p95": 34.15530000000035
+      }
+    },
+    {
+      "id": "cross-language",
+      "category": "cross-language",
+      "status": 200,
+      "gold": [
+        "normalization-ar"
+      ],
+      "retrieved": [],
+      "recallAt5": 0,
+      "topRelevant": false,
+      "supportingPassageRecallAt5": 0,
+      "latencyMs": {
+        "samples": [
+          31.268999999999778,
+          32.002700000000004,
+          34.39980000000014,
+          33.85750000000053,
+          33.980499999999665
+        ],
+        "p50": 33.85750000000053,
+        "p95": 34.39980000000014
+      }
+    },
+    {
+      "id": "crowded-old-answer",
+      "category": "ranking",
+      "status": 200,
+      "gold": [
+        "pipeline-old"
+      ],
+      "retrieved": [
+        "pipeline-social-5",
+        "pipeline-social-4",
+        "pipeline-social-3",
+        "pipeline-social-2",
+        "pipeline-social-1"
+      ],
+      "recallAt5": 0,
+      "topRelevant": false,
+      "supportingPassageRecallAt5": 0,
+      "latencyMs": {
+        "samples": [
+          33.16539999999986,
+          33.88799999999992,
+          35.45210000000043,
+          36.47110000000066,
+          32.925500000000284
+        ],
+        "p50": 33.88799999999992,
+        "p95": 36.47110000000066
+      }
+    },
+    {
+      "id": "parent-precedence",
+      "category": "source selection",
+      "status": 200,
+      "gold": [
+        "race-answer"
+      ],
+      "retrieved": [
+        "race-thread"
+      ],
+      "recallAt5": 0,
+      "topRelevant": false,
+      "supportingPassageRecallAt5": 0,
+      "latencyMs": {
+        "samples": [
+          32.9396999999999,
+          33.59029999999984,
+          32.64060000000063,
+          33.08640000000014,
+          32.80789999999979
+        ],
+        "p50": 32.9396999999999,
+        "p95": 33.59029999999984
+      }
+    },
+    {
+      "id": "split-passage",
+      "category": "passage selection",
+      "status": 200,
+      "gold": [
+        "split-passage"
+      ],
+      "retrieved": [
+        "split-passage"
+      ],
+      "recallAt5": 1,
+      "topRelevant": true,
+      "supportingPassageRecallAt5": 0,
+      "latencyMs": {
+        "samples": [
+          33.93539999999939,
+          34.45100000000002,
+          34.349600000000464,
+          37.786700000000565,
+          39.444000000000415
+        ],
+        "p50": 34.45100000000002,
+        "p95": 39.444000000000415
+      }
+    },
+    {
+      "id": "long-question",
+      "category": "natural question",
+      "status": 400,
+      "gold": [
+        "race-answer"
+      ],
+      "retrieved": [],
+      "recallAt5": 0,
+      "topRelevant": false,
+      "supportingPassageRecallAt5": 0,
+      "latencyMs": {
+        "samples": [
+          0.05289999999968131,
+          0.03690000000005966,
+          0.033800000000155705,
+          0.040899999999965075,
+          0.032000000000152795
+        ],
+        "p50": 0.03690000000005966,
+        "p95": 0.05289999999968131
+      }
+    },
+    {
+      "id": "public-outsider",
+      "category": "permission",
+      "status": 200,
+      "gold": [
+        "routing-public"
+      ],
+      "retrieved": [
+        "routing-public"
+      ],
+      "recallAt5": 1,
+      "topRelevant": true,
+      "supportingPassageRecallAt5": 1,
+      "latencyMs": {
+        "samples": [
+          33.535899999999856,
+          32.85649999999987,
+          33.470000000000255,
+          46.39900000000034,
+          39.010699999999815
+        ],
+        "p50": 33.535899999999856,
+        "p95": 46.39900000000034
+      }
+    },
+    {
+      "id": "private-pending",
+      "category": "permission",
+      "status": 200,
+      "gold": [
+        "routing-public"
+      ],
+      "retrieved": [
+        "routing-public"
+      ],
+      "recallAt5": 1,
+      "topRelevant": true,
+      "supportingPassageRecallAt5": 1,
+      "latencyMs": {
+        "samples": [
+          39.96610000000055,
+          34.077800000000025,
+          33.76580000000013,
+          35.117699999999786,
+          32.90489999999954
+        ],
+        "p50": 34.077800000000025,
+        "p95": 39.96610000000055
+      }
+    },
+    {
+      "id": "private-member",
+      "category": "permission",
+      "status": 200,
+      "gold": [
+        "routing-public",
+        "routing-private"
+      ],
+      "retrieved": [
+        "routing-private",
+        "routing-public"
+      ],
+      "recallAt5": 1,
+      "topRelevant": true,
+      "supportingPassageRecallAt5": 1,
+      "latencyMs": {
+        "samples": [
+          37.45539999999983,
+          36.38379999999961,
+          35.09680000000026,
+          32.58729999999923,
+          36.5014000000001
+        ],
+        "p50": 36.38379999999961,
+        "p95": 37.45539999999983
+      }
+    },
+    {
+      "id": "private-revoked",
+      "category": "permission",
+      "status": 200,
+      "gold": [
+        "routing-public"
+      ],
+      "retrieved": [
+        "routing-public"
+      ],
+      "recallAt5": 1,
+      "topRelevant": true,
+      "supportingPassageRecallAt5": 1,
+      "latencyMs": {
+        "samples": [
+          32.26270000000022,
+          30.247600000000602,
+          32.34549999999945,
+          34.49919999999929,
+          31.248900000000503
+        ],
+        "p50": 32.26270000000022,
+        "p95": 34.49919999999929
+      }
+    },
+    {
+      "id": "private-filter-denied",
+      "category": "permission",
+      "status": 404,
+      "gold": [],
+      "retrieved": [],
+      "recallAt5": null,
+      "topRelevant": null,
+      "supportingPassageRecallAt5": null,
+      "latencyMs": {
+        "samples": [
+          23.6295999999993,
+          23.823100000000522,
+          25.49109999999928,
+          24.879700000000412,
+          25.17489999999998
+        ],
+        "p50": 24.879700000000412,
+        "p95": 25.49109999999928
+      }
+    }
+  ]
+}

@@ -1,2 +1,5 @@
 # Preserve the original bytes used by the license evidence hashes on every OS.
 /docs/third-party-licenses/** -text
+# Preserve measured reports and non-executable historical source bytes.
+/tests/evaluation/results/** -text
+/tests/evaluation/history/** -text
