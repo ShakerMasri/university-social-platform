@@ -27,10 +27,18 @@ The existing pages were built to exercise the server features, not as the produc
 ## Layout (home feed, desktop)
 
 - Header: logo, wide search field, theme toggle, language switch, notifications button with unread dot, user avatar.
-- Three columns, max width about 1360px, 24px gaps: main navigation on the start side (about 230px), feed in the middle (flexible), side panel on the end side (about 340px: assistant card, recent notifications).
-- Main navigation: Home, Communities, Messages (unread badge), People, Archive, Assistant; then a "My communities" list.
+- Three columns, max width about 1360px, 24px gaps:
+  - main navigation on the start side (about 230px)
+  - feed in the middle (flexible)
+  - side panel on the end side (about 340px): recent notifications, built as a stack of cards so more cards can be added later
+- Main navigation: Home, Communities, Messages (unread badge); then a "My communities" list. The list must accept one more item later (for example Assistant) without a redesign.
+- People and Archive are not navigation items. Search lives in the header field and one search page, `/search`, with tabs All, Posts, People, Communities. `/archive` and `/people` open the matching tab (plan decision 4).
 - Feed: post composer card (input and four post-type chips), feed tabs ("Your communities" / "For you"), then post cards.
-- Narrow screens: columns stack; navigation becomes compact (exact mobile navigation pattern to be decided in the plan).
+- Narrow screens:
+  - Columns stack, and the side panel is hidden.
+  - A bottom bar holds Home, Communities, Search, Messages and More. More opens Saved, and Profile and settings.
+  - The header keeps logo, notifications and avatar.
+- **The mockups differ from this section**: they show People, Archive and Assistant in the navigation and an assistant card in the side panel. Follow this section, not the mockups, for navigation and the side panel.
 
 ## Design tokens
 
@@ -93,11 +101,12 @@ Contrast must stay at least 4.5:1 for text and 3:1 for icons and focus indicator
 
 The owner wants the new UI to look like the mockups and to add the small features they need, alongside the redesign. These are new features, not styling: each needs its own permission rules, server work and tests, and is planned in the stage where its page is built.
 
-- **Unified search**: one search field in the header replaces the separate search bars. Results grouped or filtered by kind (posts and discussions, people, communities). It reuses the existing permission-checked archive and People search; no private titles, snippets or counts leak to non-members.
+- **Unified search**: one search field in the header replaces the separate search bars. It opens `/search`, which has tabs All, Posts, People and Communities. It reuses the existing permission-checked archive and People search; no private titles, snippets or counts leak to non-members.
 - **Share**: at minimum, copy a link to a post. Optionally send it in a direct message. A shared link never grants access: someone who cannot see the community gets the normal denied page, and link previews must not reveal private titles or text. Email sharing stays in the later backlog.
 - **Save / bookmarks**: save a post and see saved posts in one place. Access is rechecked on every read; posts the user can no longer see disappear from their saved list.
 - **Per-community "N new" counts** in the navigation: requires tracking when the user last viewed each community; counts only content the user can see.
-- **Assistant card in the side panel**: entry point to the M5 assistant; scope follows the M5 plan.
+- **Messages unread badge**: per-conversation read tracking, with an unread count on Messages (plan decision 8, Stage 5).
+- **Assistant: on hold.** The owner, partner and instructor will decide how to implement it. Build no assistant card, page or navigation item until then; the layout only leaves room for it.
 - **Replies action**: icon plus count, as in the mockup. This replaces the 2026-11-03 icon-only Comments decision.
 
 For each, the plan defines exact behavior, who may do what, data/schema changes, and acceptance tests, and the owner approves before implementation.

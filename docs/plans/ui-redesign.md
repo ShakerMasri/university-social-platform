@@ -10,9 +10,8 @@ Replace the test-harness UI with a product interface that students and teachers 
 - save
 - messages unread
 - community new counts
-- assistant card
 
-The target is WCAG 2.2 AA, EN/AR/RTL and widths from 320px to desktop.
+The assistant is **on hold** (decision 12), and no assistant UI is built in this branch. The target is WCAG 2.2 AA, EN/AR/RTL and widths from 320px to desktop.
 
 ## Owner decisions (approved 2026-11-26)
 
@@ -31,7 +30,7 @@ All twelve decisions were answered by the owner on 2026-11-26:
 | 9 | Avatars | As recommended: initials only |
 | 10 | Share | As recommended: copy link plus Web Share; "send in a message" is a stretch goal |
 | 11 | Saved posts after access loss | As recommended: hide them, restore if access returns |
-| 12 | Assistant | As recommended: an evidence finder over existing retrieval; generated answers wait for the provider and privacy decision |
+| 12 | Assistant | **On hold (owner, 2026-11-26):** the owner, their partner and the instructor will decide how to implement it. Until then there is no assistant UI: no card, no page, no navigation item, and no assistant API route. The layout only keeps room to add it later. This replaces the earlier "evidence finder" approval. |
 
 **Priority if time runs short:** unified search > share > save > messages unread > community new counts.
 
@@ -57,7 +56,7 @@ The original recommendations and their tradeoffs are kept below for the record.
 **In scope:**
 - New tokens, fonts, theme and components.
 - A rebuilt page for every existing feature: identity, home/feed, communities, posts, comments, replies, votes, people, profile, messages, archive and notifications.
-- The six requested features (C1–C6).
+- Five requested features: C1–C4 and C6. C5 (the assistant) is on hold.
 - Browser tests rewritten stage by stage.
 - Self-hosted IBM Plex, recorded in `THIRD-PARTY-NOTICES.md`.
 
@@ -66,7 +65,7 @@ The original recommendations and their tradeoffs are kept below for the record.
 - Profile pictures and bio.
 - Read receipts shown to the other participant. Read tracking (C6) is private to each user.
 - Email sharing.
-- Generated AI answers and the AI provider.
+- All assistant UI and assistant API work (on hold, decision 12), including the AI provider.
 - Teacher roles or course authority.
 - User ratings.
 - Realtime push or polling for counts.
@@ -121,18 +120,21 @@ Teachers currently have no extra global privileges. Any special teacher authorit
 | Profile and settings | `/profile` | Name, theme, language, notification preferences | Rebuilt (preferences move here) |
 | Messages | `/messages`, `/messages/[id]` | Two panes on desktop, one on mobile; unread markers per conversation | Rebuilt (+ read tracking, C6) |
 | Notifications | `/notifications` | List, mark all read | Rebuilt (+ header preview of the latest 5) |
-| Assistant | `/assistant` | Evidence finder | **New** (decision 12) |
 | 404 / denied | — | Localized EN/AR | Rebuilt |
 
 **Navigation (desktop, start side):**
-- Home, Communities, Messages (unread badge), Assistant.
+- Home, Communities, Messages (unread badge).
 - Then "My communities", showing the first 10 with "N new" and a "See all" link.
-- People and Archive are not nav items: they are tabs of `/search` (decision 4). This differs from the mockup's nav list by owner decision.
+- People and Archive are not nav items: they are tabs of `/search` (decision 4).
+- No Assistant item while decision 12 is on hold. The nav list must accept one more item later without a redesign.
+- This differs from the mockup's nav list by owner decision.
+
+**Home side panel (end side):** recent notifications (latest 5, with "See all"). The panel is a stack of cards, so a future assistant card can be added without changing the layout. On narrow screens the panel is hidden, and notifications stay reachable from the header.
 - Saved sits in the avatar menu along with Profile, Settings and Sign out.
 
 **Header:** logo, unified search field, theme toggle, language switch, notifications button (unread dot; opens the preview), avatar menu.
 
-**Mobile:** bottom bar with Home, Communities, Search, Messages (badge), More. More opens a sheet with Assistant, Saved, and Profile and settings.
+**Mobile:** bottom bar with Home, Communities, Search, Messages (badge), More. More opens a sheet with Saved, and Profile and settings.
 
 **Where each feature lives:**
 
@@ -143,7 +145,7 @@ Teachers currently have no extra global privileges. Any special teacher authorit
 | Share | Post card action row and post page |
 | Save | Post card and post page (toggle); list at `/saved` |
 | New counts | "My communities" in nav, and on the Communities page |
-| Assistant card | Side panel on Home (end side); hidden on mobile, where Assistant is reached from "More" |
+| Assistant | On hold (decision 12). Not built; the nav and side panel leave room for it. |
 
 **URL compatibility:** every existing URL keeps working, either rendering the new page or redirecting with its query preserved:
 - `/archive?q&community&type` → `/search?tab=posts&…`
@@ -154,7 +156,7 @@ Community pages link to `/search?tab=posts&community=<id>` instead of the old sc
 
 ## C. Requested features — behavior, permissions, data, tests
 
-Implementation priority if time runs short: **unified search > share > save > messages unread > community new counts**. The assistant card follows decision 12.
+Implementation priority if time runs short: **unified search > share > save > messages unread > community new counts**. The assistant (C5) is on hold.
 
 ### C1. Unified search (Stage 1 page with All, Posts and People tabs; Stage 2 Communities tab)
 
@@ -299,8 +301,11 @@ Implementation priority if time runs short: **unified search > share > save > me
     - EN/AR, including locale number formatting.
     - The existing messaging participant, block and retry suites still pass.
 
-### C5. Assistant card (Stage 2 placement; Stage 7 page)
+### C5. Assistant (on hold)
 
+**On hold, waiting for the instructor discussion (decision 12).** Nothing in this section is to be built. It is kept only as a record of the earlier proposal for that discussion. The owner, partner and instructor decide the assistant's design, and it will get its own plan.
+
+Earlier proposal, not approved:
 - **Behavior:**
   - A side-panel card with a short description and an "Open assistant" link.
   - `/assistant` takes a question and shows up to 5 cited sources (post or comment, community, date) with excerpts. It states when no sufficient sources were found.
@@ -327,9 +332,10 @@ Implementation priority if time runs short: **unified search > share > save > me
   - read markers on `DirectConversation` (Stage 5), with a backfill that only sets the new columns
 
   None of them changes existing columns or rows.
-- New routes: `/search`, `/saved`, `/assistant`.
+- New routes: `/search`, `/saved`.
 - `/archive` and `/people` become redirects into `/search`.
-- New APIs: save, saved list, community viewed, community search, conversation read, assistant evidence.
+- New APIs: save, saved list, community viewed, community search, conversation read.
+- No assistant route or API (on hold).
 - No existing permission, budget, cursor or API contract changes.
 - Every new read goes through the existing `authorized`/membership checks and deny-by-default access rules.
 
@@ -341,7 +347,7 @@ Implementation priority if time runs short: **unified search > share > save > me
 4. Every page has loading, empty, error and denied states with EN and AR text. Arabic renders mirrored with logical properties only; a lint check finds no `left`/`right` physical properties in new CSS.
 5. Keyboard use reaches every action. Focus is visible in both themes (at least 3:1) and returns to its trigger after menus and dialogs close. The skip link works. Pages work at 400% zoom and at 320px wide without horizontal scrolling.
 6. Text contrast is at least 4.5:1 for every token pair in both themes, checked by an automated script.
-7. The C1–C6 permission tests pass: cross-user, non-member, removed member, non-participant and unauthenticated link cases.
+7. The C1–C4 and C6 permission tests pass: cross-user, non-member, removed member, non-participant and unauthenticated link cases.
 8. Rewritten browser suites keep every existing security case (cross-user, denied, revocation) and pass in Chromium.
 9. Fonts are self-hosted, with no runtime requests to Google, and IBM Plex (SIL OFL) is recorded in `THIRD-PARTY-NOTICES.md`.
 10. Client JavaScript does not grow beyond a recorded Stage 0 baseline without a written reason, and no UI library is added.
@@ -373,13 +379,13 @@ Each stage is one checkpoint: review, then commit on `feat/ui-redesign`. Main is
 - Checks to run: lint, typecheck, unit tests, build; rewritten `identity`, `locales`, `ui-layout`, `ui-zoom` and `archive`/`people` search suites; the C1 browser tests for posts and people, including the redirects; the e2e CI suite.
 - Done when: a user can sign in, onboard and move around the whole app in the new shell, even though inner pages are still unstyled.
 
-### Stage 2 — Home, feed, communities (+ new counts, community search, assistant card placement)
+### Stage 2 — Home, feed, communities (+ new counts, community search)
 - Steps:
   - Home feed tabs and composer (decisions 1 and 6), keeping the existing feed scheduler and session revalidation behavior.
   - Communities list, discover and create; community page with membership and requests.
   - `CommunityVisit` migration and counts (C4).
   - `searchCommunities` and the Communities tab (C1).
-  - Assistant card with a link to an `/assistant` placeholder that shows "not available yet" honestly.
+  - Home side panel with recent notifications. No assistant card or placeholder.
 - Checks to run:
   - Unit tests.
   - `db:test` and `db:test:feed`, plus the new database tests.
@@ -421,8 +427,8 @@ Each stage is one checkpoint: review, then commit on `feat/ui-redesign`. Main is
 - Done when: the archive access rechecks and notification recipient rechecks still pass.
 
 ### Stage 7 — Assistant UI
-- Steps: the `/assistant` evidence finder and API (C5), or the full assistant if the provider/privacy decision is made by then and planned separately.
-- Checks to run: the C5 tests, plus reuse of the M5 database permission cases.
+
+**On hold: waiting for the instructor discussion.** No steps are planned. When the owner, partner and instructor have decided the assistant's design, it gets its own plan, and this stage is rewritten from it. Stage 8 does not wait for Stage 7.
 - Done when: sources are cited, permission-checked and labelled honestly, and insufficient evidence is shown.
 
 ### Stage 8 — Polish
@@ -438,7 +444,7 @@ Each stage is one checkpoint: review, then commit on `feat/ui-redesign`. Main is
 
 - **Unit (Vitest):** input validation, URL builders, theme and cookie parsing, count capping.
 - **Database (disposable PostgreSQL):** the two migrations, save and visit constraints, concurrency, community search normalization and bounds, all access-removal cases.
-- **Browser (Playwright, Chromium):** every rewritten suite, plus the C1–C6 security cases, the redirects, no-flash, RTL and zoom.
+- **Browser (Playwright, Chromium):** every rewritten suite, plus the C1–C4 and C6 security cases, the redirects, no-flash, RTL and zoom.
 - **Manual:** EN/AR, both themes, mobile widths, NVDA, usability sessions.
 - **Remains unverified:** non-Chromium browsers (unless added), real email delivery, production load and scale, AI answer quality (none generated), deployment.
 
@@ -450,11 +456,12 @@ Each stage is one checkpoint: review, then commit on `feat/ui-redesign`. Main is
 - **Search budgets:** an All-tab search costs three budget attempts; a single tab costs one. Monitor this; revisit if users hit limits.
 - **Read-marker backfill** runs over every conversation. It is cheap on local synthetic data. Re-measure before any deployment migration.
 - **Fonts:** self-hosting adds about 200–400 KB of woff2. Mitigation: subset to Latin and Arabic, limit to weights 400/500/600/700, and load Arabic only when needed if measurement shows it matters.
-- **Mockup and approved decisions differ:** the nav drops People and Archive (decision 4), and avatars have no pictures (decision 9). These follow the decisions, not the mockup.
+- **Mockup and approved decisions differ:** the nav drops People, Archive and Assistant (decisions 4 and 12), the side panel has no assistant card, and avatars have no pictures (decision 9). These follow the decisions, not the mockup.
 
 ## Progress log
 
 Newest first; filled by /handoff and /review-checkpoint.
 
+- 2026-11-26: Owner put the assistant on hold (decision 12) pending a discussion with the partner and instructor. All assistant UI and API work is removed from the stages, Stage 7 is marked on hold, and `ui-direction.md` is aligned with decisions 4 and 12.
 - 2026-11-26: Owner approved all twelve decisions. Decisions 4 and 8 differ from the recommendations: `/search` is the only search page, with tabs, and Messages read tracking is added in Stage 5. Priority is now unified search > share > save > messages unread > community new counts. Next step: Stage 0.
 - 2026-11-26: Plan written. No application code changed. Entry state: `feat/ui-redesign` at `07830ec`, clean.
