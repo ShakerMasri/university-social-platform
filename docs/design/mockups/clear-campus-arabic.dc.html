@@ -1,0 +1,160 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<title>الواجهة الواضحة — الصفحة الرئيسية</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+a{color:#3730A3;text-decoration:none}a:hover{color:#1E1B4B}
+button{font-family:inherit;cursor:pointer}
+</style>
+</helmet>
+<div dir="rtl" style="min-height: 100vh; background: #F5F6F8; font-family: 'IBM Plex Sans Arabic', 'IBM Plex Sans', system-ui, sans-serif; color: #101828; font-size: 15px">
+  <header style="background: #FFFFFF; border-bottom: 1px solid #E4E7EC">
+    <div style="max-width: 1360px; margin: 0 auto; padding: 12px 24px; display: flex; flex-wrap: wrap; align-items: center; gap: 16px">
+      <a href="#" style="display: flex; align-items: center; gap: 10px; color: #101828; font-weight: 700; font-size: 18px">
+        <span style="width: 34px; height: 34px; border-radius: 10px; background: {{accent}}; color: #FFFFFF; display: flex; align-items: center; justify-content: center; font-size: 16px">U</span>
+        كامبس
+      </a>
+      <label style="flex: 1 1 320px; display: flex; align-items: center; gap: 10px; background: #F2F4F7; border-radius: 10px; padding: 0 14px; height: 44px; color: #475467">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+        <span style="position: absolute; left: -9999px">بحث</span>
+        <input type="search" placeholder="ابحث في النقاشات والمصادر والأشخاص" style="border: 0; background: transparent; outline: none; flex: 1; font: inherit; color: #101828; min-width: 0">
+      </label>
+      <div style="display: flex; align-items: center; gap: 8px">
+        <button aria-label="التبديل إلى الوضع الداكن" style="width: 44px; height: 44px; border: 1px solid #D0D5DD; background: #FFFFFF; border-radius: 10px; color: #344054; display: flex; align-items: center; justify-content: center"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 14.5A8 8 0 0 1 9.5 4a8 8 0 1 0 10.5 10.5z"/></svg></button>
+        <a href="#" style="height: 44px; padding: 0 14px; display: flex; align-items: center; border: 1px solid #D0D5DD; border-radius: 10px; color: #344054; font-weight: 500">English</a>
+        <button aria-label="الإشعارات، 3 غير مقروءة" style="position: relative; width: 44px; height: 44px; border: 1px solid #D0D5DD; background: #FFFFFF; border-radius: 10px; color: #344054; display: flex; align-items: center; justify-content: center">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M6 8a6 6 0 1 1 12 0c0 7 3 8 3 8H3s3-1 3-8"/><path d="M10 20a2 2 0 0 0 4 0"/></svg>
+          <span style="position: absolute; top: 8px; inset-inline-end: 9px; width: 8px; height: 8px; border-radius: 50%; background: #D92D20"></span>
+        </button>
+        <span aria-hidden="true" style="width: 40px; height: 40px; border-radius: 50%; background: #E0E7FF; color: #3730A3; display: flex; align-items: center; justify-content: center; font-weight: 600">SM</span>
+      </div>
+    </div>
+  </header>
+
+  <div style="max-width: 1360px; margin: 0 auto; padding: 24px; display: flex; flex-wrap: wrap; gap: 24px; align-items: flex-start">
+    <nav aria-label="القائمة الرئيسية" style="flex: 1 1 200px; max-width: 230px; display: flex; flex-direction: column; gap: 4px">
+      <a href="#" style="display: flex; align-items: center; gap: 12px; height: 44px; padding: 0 14px; border-radius: 10px; background: #EEF0FF; color: #3730A3; font-weight: 600">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M3 11 12 4l9 7v9H3z"/></svg>الرئيسية</a>
+      <a href="#" style="display: flex; align-items: center; gap: 12px; height: 44px; padding: 0 14px; border-radius: 10px; color: #344054">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="9" cy="8" r="3"/><circle cx="17" cy="10" r="2.5"/><path d="M3 19c0-3 3-5 6-5s6 2 6 5M15 19c0-2 1.5-3.5 4-3.5"/></svg>المجتمعات</a>
+      <a href="#" style="display: flex; align-items: center; gap: 12px; height: 44px; padding: 0 14px; border-radius: 10px; color: #344054">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M4 5h16v11H8l-4 4z"/></svg>الرسائل<span style="margin-inline-start: auto; background: {{accent}}; color: #FFFFFF; font-size: 12px; font-weight: 600; padding: 2px 8px; border-radius: 99px">2</span></a>
+      <a href="#" style="display: flex; align-items: center; gap: 12px; height: 44px; padding: 0 14px; border-radius: 10px; color: #344054">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 4-6 8-6s8 2 8 6"/></svg>الأشخاص</a>
+      <a href="#" style="display: flex; align-items: center; gap: 12px; height: 44px; padding: 0 14px; border-radius: 10px; color: #344054">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="3" y="4" width="18" height="5" rx="1"/><path d="M5 9v11h14V9M10 13h4"/></svg>الأرشيف</a>
+      <a href="#" style="display: flex; align-items: center; gap: 12px; height: 44px; padding: 0 14px; border-radius: 10px; color: #344054">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M12 3v4M12 17v4M3 12h4M17 12h4M6 6l2.5 2.5M15.5 15.5 18 18M18 6l-2.5 2.5M8.5 15.5 6 18"/></svg>اسأل المساعد</a>
+      <div style="margin-top: 20px; padding: 0 14px; font-size: 12px; font-weight: 600; color: #667085">مجتمعاتي</div>
+      <a href="#" style="display: flex; justify-content: space-between; align-items: center; height: 40px; padding: 0 14px; color: #344054">هياكل البيانات · CS 231<span style="font-size: 12px; color: #667085">3 جديدة</span></a>
+      <a href="#" style="display: flex; justify-content: space-between; align-items: center; height: 40px; padding: 0 14px; color: #344054">شبكات الحاسوب<span style="font-size: 12px; color: #667085">1 جديد</span></a>
+      <a href="#" style="display: flex; align-items: center; height: 40px; padding: 0 14px; color: #344054">مختبر الأنظمة المدمجة</a>
+      <a href="#" style="display: flex; align-items: center; height: 40px; padding: 0 14px; color: #344054">مشاريع التخرج</a>
+    </nav>
+
+    <main style="flex: 999 1 560px; min-width: 0; display: flex; flex-direction: column; gap: 16px">
+      <section aria-label="منشور جديد" style="background: #FFFFFF; border: 1px solid #E4E7EC; border-radius: 14px; padding: 16px; display: flex; flex-direction: column; gap: 12px">
+        <div style="display: flex; gap: 12px; align-items: center">
+          <span aria-hidden="true" style="width: 40px; height: 40px; flex: none; border-radius: 50%; background: #E0E7FF; color: #3730A3; display: flex; align-items: center; justify-content: center; font-weight: 600">SM</span>
+          <label style="flex: 1"><span style="position: absolute; left: -9999px">اكتب منشوراً</span>
+            <input placeholder="اطرح سؤالاً أو شارك شيئاً مع مجتمعاتك…" style="width: 100%; box-sizing: border-box; height: 44px; border: 1px solid #D0D5DD; border-radius: 10px; padding: 0 14px; font: inherit">
+          </label>
+        </div>
+        <div style="display: flex; flex-wrap: wrap; gap: 8px; padding-inline-start: 52px">
+          <button style="height: 34px; padding: 0 12px; border-radius: 99px; border: 1px solid #C7D2FE; background: #EEF2FF; color: #3730A3; font-weight: 500">سؤال</button>
+          <button style="height: 34px; padding: 0 12px; border-radius: 99px; border: 1px solid #BAE6FD; background: #F0F9FF; color: #075985; font-weight: 500">نقاش</button>
+          <button style="height: 34px; padding: 0 12px; border-radius: 99px; border: 1px solid #ABEFC6; background: #ECFDF3; color: #05603A; font-weight: 500">مصدر</button>
+          <button style="height: 34px; padding: 0 12px; border-radius: 99px; border: 1px solid #FED7AA; background: #FFF4ED; color: #9A3412; font-weight: 500">إعلان</button>
+        </div>
+      </section>
+
+      <div role="tablist" aria-label="الموجز" style="display: flex; gap: 4px; border-bottom: 1px solid #E4E7EC">
+        <button role="tab" aria-selected="true" style="height: 44px; padding: 0 16px; border: 0; background: transparent; font-weight: 600; color: #101828; border-bottom: 2px solid {{accent}}">مجتمعاتك</button>
+        <button role="tab" aria-selected="false" style="height: 44px; padding: 0 16px; border: 0; background: transparent; font-weight: 500; color: #475467">مقترح لك</button>
+      </div>
+
+      <sc-for list="{{posts}}" as="post" hint-placeholder-count="4">
+        <article style="background: #FFFFFF; border: 1px solid #E4E7EC; border-radius: 14px; padding: 18px 20px; display: flex; gap: 16px">
+          <div style="flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 8px">
+            <div style="display: flex; align-items: center; gap: 12px">
+              <a href="#" aria-hidden="true" tabindex="-1" style="width: 44px; height: 44px; flex: none; border-radius: 50%; background: {{post.avatarBg}}; color: {{post.avatarFg}}; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 15px">{{post.initials}}</a>
+              <div style="display: flex; flex-direction: column; gap: 2px; min-width: 0; flex: 1">
+                <a href="#" style="color: #101828; font-weight: 600; font-size: 15px">{{post.author}}</a>
+                <span style="font-size: 13px; color: #475467">في <a href="#" style="font-weight: 600">{{post.community}}</a> · {{post.time}}</span>
+              </div>
+              <span style="flex: none; padding: 4px 10px; border-radius: 99px; font-size: 13px; font-weight: 600; background: {{post.typeBg}}; color: {{post.typeFg}}">{{post.type}}</span>
+            </div>
+            <h3 style="margin: 0; font-size: 18px; line-height: 1.35; font-weight: 600">{{post.title}}</h3>
+            <p style="margin: 0; color: #475467; line-height: 1.55">{{post.excerpt}}</p>
+            <div style="display: flex; flex-wrap: wrap; align-items: center; gap: 6px; margin-top: 4px; padding-top: 12px; border-top: 1px solid #F2F4F7">
+              <div role="group" aria-label="التصويت" style="display: flex; align-items: center; height: 40px; border-radius: 99px; background: #F2F4F7">
+                <button aria-label="تصويت إيجابي" aria-pressed="{{post.upPressed}}" style="height: 40px; padding: 0 12px; border: 0; background: transparent; border-radius: 99px; color: {{post.upFg}}; display: flex; align-items: center; gap: 6px; font-size: 14px; font-weight: 600"><svg width="18" height="18" viewBox="0 0 24 24" fill="{{post.upFill}}" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" aria-hidden="true"><path d="M12 4l7 8h-4v8H9v-8H5z"/></svg>{{post.up}}</button>
+                <span aria-hidden="true" style="width: 1px; height: 20px; background: #D0D5DD"></span>
+                <button aria-label="تصويت سلبي" aria-pressed="{{post.downPressed}}" style="height: 40px; padding: 0 12px; border: 0; background: transparent; border-radius: 99px; color: {{post.downFg}}; display: flex; align-items: center; gap: 6px; font-size: 14px; font-weight: 600"><svg width="18" height="18" viewBox="0 0 24 24" fill="{{post.downFill}}" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" aria-hidden="true"><path d="M12 20l-7-8h4V4h6v8h4z"/></svg>{{post.down}}</button>
+              </div>
+              <a href="#" style="height: 40px; padding: 0 14px; border-radius: 99px; display: flex; align-items: center; gap: 8px; color: #344054; font-size: 14px; font-weight: 500"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12a8 8 0 0 1-11.6 7.1L4 20l1-4.6A8 8 0 1 1 21 12z"/></svg>{{post.comments}} ردود</a>
+              <button style="margin-inline-start: auto; height: 40px; padding: 0 14px; border: 0; background: transparent; border-radius: 99px; display: flex; align-items: center; gap: 8px; color: #344054; font-size: 14px; font-weight: 500"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 3h12v18l-6-4-6 4z"/></svg>حفظ</button>
+            </div>
+          </div>
+        </article>
+      </sc-for>
+    </main>
+
+    <aside style="flex: 1 1 280px; max-width: 340px; display: flex; flex-direction: column; gap: 16px">
+      <section style="background: #FFFFFF; border: 1px solid #E4E7EC; border-radius: 14px; padding: 18px; display: flex; flex-direction: column; gap: 12px">
+        <h2 style="margin: 0; font-size: 16px">اسأل المساعد</h2>
+        <div style="background: #F2F4F7; border-radius: 10px; padding: 10px 12px; font-size: 14px">متى امتحان منتصف الفصل لمادة CS 231؟</div>
+        <p style="margin: 0; font-size: 14px; line-height: 1.55">يوم الخميس في القاعة B204، ويشمل الأشجار والكومة والتجزئة (الفصول 6–9) <a href="#" style="font-weight: 600">[1]</a>.</p>
+        <div style="border-top: 1px solid #E4E7EC; padding-top: 10px; font-size: 13px; color: #475467">
+          <div style="font-weight: 600; color: #344054; margin-bottom: 4px">المصادر</div>
+          <a href="#">[1] هياكل البيانات · إعلان من د. لينا حداد</a>
+        </div>
+        <p style="margin: 0; font-size: 12px; color: #667085">الإجابات تعتمد فقط على المحتوى المسموح لك بالوصول إليه، وتوضّح متى لا تكفي المعلومات.</p>
+        <label><span style="position: absolute; left: -9999px">اطرح سؤالاً</span>
+          <input placeholder="اسأل عن موادك…" style="width: 100%; box-sizing: border-box; height: 44px; border: 1px solid #D0D5DD; border-radius: 10px; padding: 0 14px; font: inherit">
+        </label>
+      </section>
+      <section style="background: #FFFFFF; border: 1px solid #E4E7EC; border-radius: 14px; padding: 18px; display: flex; flex-direction: column; gap: 10px">
+        <h2 style="margin: 0; font-size: 16px">الإشعارات</h2>
+        <a href="#" style="color: #344054; font-size: 14px; line-height: 1.45"><b>د. لينا حداد</b> نشرت إعلاناً في هياكل البيانات</a>
+        <a href="#" style="color: #344054; font-size: 14px; line-height: 1.45"><b>عمر ن.</b> ردّ على سؤالك عن TCP</a>
+        <a href="#" style="font-size: 14px; font-weight: 600">عرض الكل</a>
+      </section>
+    </aside>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"accent":{"editor":"color","default":"#4F46E5","options":["#4F46E5","#2563EB","#0E7490","#7C3AED"]},"$preview":{"width":1440,"height":1260}}'>
+class Component extends DCLogic {
+  renderVals() {
+    const accent = this.props.accent ?? '#4F46E5';
+    const voted = { upFg: accent, upFill: 'currentColor', upPressed: 'true' };
+    const idle = { upFg: '#475467', upFill: 'none', upPressed: 'false' };
+    const noDown = { downFg: '#475467', downFill: 'none', downPressed: 'false' };
+    const types = {
+      'إعلان': { typeBg: '#FFF4ED', typeFg: '#9A3412' },
+      'سؤال': { typeBg: '#EEF2FF', typeFg: '#3730A3' },
+      'مصدر': { typeBg: '#ECFDF3', typeFg: '#05603A' },
+      'نقاش': { typeBg: '#F0F9FF', typeFg: '#075985' }
+    };
+    const posts = [
+      { type: 'إعلان', community: 'هياكل البيانات · CS 231', author: 'د. لينا حداد', initials: 'لح', avatarBg: '#FDE2D3', avatarFg: '#8A3A12', time: 'قبل ساعة', up: 45, down: 3, comments: 18, title: 'تأجيل امتحان منتصف الفصل إلى الخميس، القاعة B204', excerpt: 'يشمل الامتحان الأشجار والكومة والتجزئة (الفصول 6–9). أحضروا البطاقة الجامعية وتعالوا قبل عشر دقائق.' },
+      { type: 'سؤال', community: 'شبكات الحاسوب', author: 'أحمد ك.', initials: 'أك', avatarBg: '#DBEAFE', avatarFg: '#1E40AF', time: 'قبل ساعتين', up: 18, down: 3, comments: 6, title: 'ليش TCP بحاجة لمصافحة ثلاثية بدل ثنائية؟', excerpt: 'فاهم SYN و SYN-ACK، بس شو المشكلة إذا العميل بلّش يبعث بيانات مباشرة بعد رد السيرفر؟' },
+      { type: 'مصدر', community: 'مختبر الأنظمة المدمجة', author: 'سارة م.', initials: 'سم', avatarBg: '#DCFCE7', avatarFg: '#166534', time: 'قبل 5 ساعات', up: 28, down: 1, comments: 4, title: 'ملخصي عن مقاطعات المؤقت في STM32', excerpt: 'يشرح قيم الـ prescaler والـ auto-reload مع مثالين محلولين من مختبر الأسبوع الماضي.' },
+      { type: 'نقاش', community: 'مشاريع التخرج', author: 'يوسف أ.', initials: 'يأ', avatarBg: '#F3E8FF', avatarFg: '#6B21A8', time: 'أمس', up: 11, down: 2, comments: 12, title: 'كيف مخططين تعملوا اختبار المستخدمين لمشاريعكم؟', excerpt: 'بدنا خمس لثمان طلاب يجربوا تطبيقنا. كيف الفرق التانية بتجيب مشاركين وبتسجّل ملاحظاتهم؟' }
+    ].map((p, i) => ({ ...p, ...types[p.type], ...(i === 0 ? voted : idle), ...noDown }));
+    return { accent, posts };
+  }
+}
+</script>
+</body>
+</html>

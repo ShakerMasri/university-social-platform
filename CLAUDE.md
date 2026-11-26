@@ -38,3 +38,7 @@ For substantial tasks outside these commands, give a short plan with acceptance 
 
 - Never commit, push, merge or open a PR unless the owner asks in this session. Suggest the branch name and commit message instead.
 - No tool or agent branding in branch names, commit messages or PR text. Attribution is disabled in `.claude/settings.json`; don't add it by hand either.
+
+## Replies
+
+Keep replies short: start with a one-line result (done / blocked / needs a decision), then at most 5 bullets. Put details in files or give them only when asked. Ask questions as a short numbered list.

@@ -1,0 +1,160 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Clear Campus — home feed, dark</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+body{margin:0;background:#0F1218}
+a{color:#A5B4FC;text-decoration:none}a:hover{color:#C7D2FE}
+button{font-family:inherit;cursor:pointer}
+</style>
+</helmet>
+<div style="color-scheme: dark; min-height: 100vh; background: #0F1218; font-family: 'IBM Plex Sans', 'IBM Plex Sans Arabic', system-ui, sans-serif; color: #E8ECF2; font-size: 15px">
+  <header style="background: #171B23; border-bottom: 1px solid #262C36">
+    <div style="max-width: 1360px; margin: 0 auto; padding: 12px 24px; display: flex; flex-wrap: wrap; align-items: center; gap: 16px">
+      <a href="#" style="display: flex; align-items: center; gap: 10px; color: #E8ECF2; font-weight: 700; font-size: 18px">
+        <span style="width: 34px; height: 34px; border-radius: 10px; background: {{accent}}; color: #0F1218; display: flex; align-items: center; justify-content: center; font-size: 16px">U</span>
+        Campus
+      </a>
+      <label style="flex: 1 1 320px; display: flex; align-items: center; gap: 10px; background: #1F2530; border-radius: 10px; padding: 0 14px; height: 44px; color: #A3ADBA">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+        <span style="position: absolute; left: -9999px">Search</span>
+        <input type="search" placeholder="Search discussions, resources and people" style="border: 0; background: transparent; outline: none; flex: 1; font: inherit; color: #E8ECF2; min-width: 0">
+      </label>
+      <div style="display: flex; align-items: center; gap: 8px">
+        <button aria-label="Switch to light theme" style="width: 44px; height: 44px; border: 1px solid #353C48; background: #171B23; border-radius: 10px; color: #C9D1DC; display: flex; align-items: center; justify-content: center"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg></button>
+        <a href="#" style="height: 44px; padding: 0 14px; display: flex; align-items: center; border: 1px solid #353C48; border-radius: 10px; color: #C9D1DC; font-weight: 500">العربية</a>
+        <button aria-label="Notifications, 3 unread" style="position: relative; width: 44px; height: 44px; border: 1px solid #353C48; background: #171B23; border-radius: 10px; color: #C9D1DC; display: flex; align-items: center; justify-content: center">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M6 8a6 6 0 1 1 12 0c0 7 3 8 3 8H3s3-1 3-8"/><path d="M10 20a2 2 0 0 0 4 0"/></svg>
+          <span style="position: absolute; top: 8px; right: 9px; width: 8px; height: 8px; border-radius: 50%; background: #F97066"></span>
+        </button>
+        <span aria-hidden="true" style="width: 40px; height: 40px; border-radius: 50%; background: #22264A; color: #A5B4FC; display: flex; align-items: center; justify-content: center; font-weight: 600">SM</span>
+      </div>
+    </div>
+  </header>
+
+  <div style="max-width: 1360px; margin: 0 auto; padding: 24px; display: flex; flex-wrap: wrap; gap: 24px; align-items: flex-start">
+    <nav aria-label="Main" style="flex: 1 1 200px; max-width: 230px; display: flex; flex-direction: column; gap: 4px">
+      <a href="#" style="display: flex; align-items: center; gap: 12px; height: 44px; padding: 0 14px; border-radius: 10px; background: #252A4A; color: #A5B4FC; font-weight: 600">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M3 11 12 4l9 7v9H3z"/></svg>Home</a>
+      <a href="#" style="display: flex; align-items: center; gap: 12px; height: 44px; padding: 0 14px; border-radius: 10px; color: #C9D1DC">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="9" cy="8" r="3"/><circle cx="17" cy="10" r="2.5"/><path d="M3 19c0-3 3-5 6-5s6 2 6 5M15 19c0-2 1.5-3.5 4-3.5"/></svg>Communities</a>
+      <a href="#" style="display: flex; align-items: center; gap: 12px; height: 44px; padding: 0 14px; border-radius: 10px; color: #C9D1DC">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M4 5h16v11H8l-4 4z"/></svg>Messages<span style="margin-left: auto; background: {{accent}}; color: #0F1218; font-size: 12px; font-weight: 600; padding: 2px 8px; border-radius: 99px">2</span></a>
+      <a href="#" style="display: flex; align-items: center; gap: 12px; height: 44px; padding: 0 14px; border-radius: 10px; color: #C9D1DC">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 4-6 8-6s8 2 8 6"/></svg>People</a>
+      <a href="#" style="display: flex; align-items: center; gap: 12px; height: 44px; padding: 0 14px; border-radius: 10px; color: #C9D1DC">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="3" y="4" width="18" height="5" rx="1"/><path d="M5 9v11h14V9M10 13h4"/></svg>Archive</a>
+      <a href="#" style="display: flex; align-items: center; gap: 12px; height: 44px; padding: 0 14px; border-radius: 10px; color: #C9D1DC">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M12 3v4M12 17v4M3 12h4M17 12h4M6 6l2.5 2.5M15.5 15.5 18 18M18 6l-2.5 2.5M8.5 15.5 6 18"/></svg>Ask the assistant</a>
+      <div style="margin-top: 20px; padding: 0 14px; font-size: 12px; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; color: #8B95A3">My communities</div>
+      <a href="#" style="display: flex; justify-content: space-between; align-items: center; height: 40px; padding: 0 14px; color: #C9D1DC">Data Structures · CS 231<span style="font-size: 12px; color: #8B95A3">3 new</span></a>
+      <a href="#" style="display: flex; justify-content: space-between; align-items: center; height: 40px; padding: 0 14px; color: #C9D1DC">Computer Networks<span style="font-size: 12px; color: #8B95A3">1 new</span></a>
+      <a href="#" style="display: flex; align-items: center; height: 40px; padding: 0 14px; color: #C9D1DC">Embedded Systems Lab</a>
+      <a href="#" style="display: flex; align-items: center; height: 40px; padding: 0 14px; color: #C9D1DC">Graduation Projects</a>
+    </nav>
+
+    <main style="flex: 999 1 560px; min-width: 0; display: flex; flex-direction: column; gap: 16px">
+      <section aria-label="New post" style="background: #171B23; border: 1px solid #262C36; border-radius: 14px; padding: 16px; display: flex; flex-direction: column; gap: 12px">
+        <div style="display: flex; gap: 12px; align-items: center">
+          <span aria-hidden="true" style="width: 40px; height: 40px; flex: none; border-radius: 50%; background: #22264A; color: #A5B4FC; display: flex; align-items: center; justify-content: center; font-weight: 600">SM</span>
+          <label style="flex: 1"><span style="position: absolute; left: -9999px">Write a post</span>
+            <input placeholder="Ask a question or share something with your communities…" style="width: 100%; box-sizing: border-box; height: 44px; border: 1px solid #353C48; border-radius: 10px; padding: 0 14px; font: inherit; background: #0F1218; color: #E8ECF2">
+          </label>
+        </div>
+        <div style="display: flex; flex-wrap: wrap; gap: 8px; padding-left: 52px">
+          <button style="height: 34px; padding: 0 12px; border-radius: 99px; border: 1px solid #3A3F7A; background: #22264A; color: #A5B4FC; font-weight: 500">Question</button>
+          <button style="height: 34px; padding: 0 12px; border-radius: 99px; border: 1px solid #1E4A63; background: #0F2A3A; color: #7DD3FC; font-weight: 500">Discussion</button>
+          <button style="height: 34px; padding: 0 12px; border-radius: 99px; border: 1px solid #1F5236; background: #12301F; color: #86EFAC; font-weight: 500">Resource</button>
+          <button style="height: 34px; padding: 0 12px; border-radius: 99px; border: 1px solid #5A3A1E; background: #3A2414; color: #FDBA74; font-weight: 500">Announcement</button>
+        </div>
+      </section>
+
+      <div role="tablist" aria-label="Feed" style="display: flex; gap: 4px; border-bottom: 1px solid #262C36">
+        <button role="tab" aria-selected="true" style="height: 44px; padding: 0 16px; border: 0; background: transparent; font-weight: 600; color: #E8ECF2; border-bottom: 2px solid {{accent}}">Your communities</button>
+        <button role="tab" aria-selected="false" style="height: 44px; padding: 0 16px; border: 0; background: transparent; font-weight: 500; color: #A3ADBA">For you</button>
+      </div>
+
+      <sc-for list="{{posts}}" as="post" hint-placeholder-count="4">
+        <article style="background: #171B23; border: 1px solid #262C36; border-radius: 14px; padding: 18px 20px; display: flex; gap: 16px">
+          <div style="flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 8px">
+            <div style="display: flex; align-items: center; gap: 12px">
+              <a href="#" aria-hidden="true" tabindex="-1" style="width: 44px; height: 44px; flex: none; border-radius: 50%; background: {{post.avatarBg}}; color: {{post.avatarFg}}; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 15px">{{post.initials}}</a>
+              <div style="display: flex; flex-direction: column; gap: 2px; min-width: 0; flex: 1">
+                <a href="#" style="color: #E8ECF2; font-weight: 600; font-size: 15px">{{post.author}}</a>
+                <span style="font-size: 13px; color: #A3ADBA">in <a href="#" style="font-weight: 600">{{post.community}}</a> · {{post.time}}</span>
+              </div>
+              <span style="flex: none; padding: 4px 10px; border-radius: 99px; font-size: 13px; font-weight: 600; background: {{post.typeBg}}; color: {{post.typeFg}}">{{post.type}}</span>
+            </div>
+            <h3 style="margin: 0; font-size: 18px; line-height: 1.35; font-weight: 600">{{post.title}}</h3>
+            <p style="margin: 0; color: #A3ADBA; line-height: 1.55">{{post.excerpt}}</p>
+            <div style="display: flex; flex-wrap: wrap; align-items: center; gap: 6px; margin-top: 4px; padding-top: 12px; border-top: 1px solid #1F2530">
+              <div role="group" aria-label="Votes" style="display: flex; align-items: center; height: 40px; border-radius: 99px; background: #1F2530">
+                <button aria-label="Upvote" aria-pressed="{{post.upPressed}}" style="height: 40px; padding: 0 12px; border: 0; background: transparent; border-radius: 99px; color: {{post.upFg}}; display: flex; align-items: center; gap: 6px; font-size: 14px; font-weight: 600"><svg width="18" height="18" viewBox="0 0 24 24" fill="{{post.upFill}}" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" aria-hidden="true"><path d="M12 4l7 8h-4v8H9v-8H5z"/></svg>{{post.up}}</button>
+                <span aria-hidden="true" style="width: 1px; height: 20px; background: #353C48"></span>
+                <button aria-label="Downvote" aria-pressed="{{post.downPressed}}" style="height: 40px; padding: 0 12px; border: 0; background: transparent; border-radius: 99px; color: {{post.downFg}}; display: flex; align-items: center; gap: 6px; font-size: 14px; font-weight: 600"><svg width="18" height="18" viewBox="0 0 24 24" fill="{{post.downFill}}" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" aria-hidden="true"><path d="M12 20l-7-8h4V4h6v8h4z"/></svg>{{post.down}}</button>
+              </div>
+              <a href="#" style="height: 40px; padding: 0 14px; border-radius: 99px; display: flex; align-items: center; gap: 8px; color: #C9D1DC; font-size: 14px; font-weight: 500"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12a8 8 0 0 1-11.6 7.1L4 20l1-4.6A8 8 0 1 1 21 12z"/></svg>{{post.comments}} replies</a>
+              <button style="margin-inline-start: auto; height: 40px; padding: 0 14px; border: 0; background: transparent; border-radius: 99px; display: flex; align-items: center; gap: 8px; color: #C9D1DC; font-size: 14px; font-weight: 500"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 3h12v18l-6-4-6 4z"/></svg>Save</button>
+            </div>
+          </div>
+        </article>
+      </sc-for>
+    </main>
+
+    <aside style="flex: 1 1 280px; max-width: 340px; display: flex; flex-direction: column; gap: 16px">
+      <section style="background: #171B23; border: 1px solid #262C36; border-radius: 14px; padding: 18px; display: flex; flex-direction: column; gap: 12px">
+        <h2 style="margin: 0; font-size: 16px">Ask the assistant</h2>
+        <div style="background: #1F2530; border-radius: 10px; padding: 10px 12px; font-size: 14px">When is the CS 231 midterm?</div>
+        <p style="margin: 0; font-size: 14px; line-height: 1.55">Thursday, in room B204. It covers trees, heaps and hashing (chapters 6–9) <a href="#" style="font-weight: 600">[1]</a>.</p>
+        <div style="border-top: 1px solid #262C36; padding-top: 10px; font-size: 13px; color: #A3ADBA">
+          <div style="font-weight: 600; color: #C9D1DC; margin-bottom: 4px">Sources</div>
+          <a href="#">[1] Data Structures · Announcement by Dr. Lina Haddad</a>
+        </div>
+        <p style="margin: 0; font-size: 12px; color: #8B95A3">Answers only use content you can access, and say when there isn’t enough information.</p>
+        <label><span style="position: absolute; left: -9999px">Ask a question</span>
+          <input placeholder="Ask about your courses…" style="width: 100%; box-sizing: border-box; height: 44px; border: 1px solid #353C48; border-radius: 10px; padding: 0 14px; font: inherit; background: #0F1218; color: #E8ECF2">
+        </label>
+      </section>
+      <section style="background: #171B23; border: 1px solid #262C36; border-radius: 14px; padding: 18px; display: flex; flex-direction: column; gap: 10px">
+        <h2 style="margin: 0; font-size: 16px">Notifications</h2>
+        <a href="#" style="color: #C9D1DC; font-size: 14px; line-height: 1.45"><b>Dr. Lina Haddad</b> posted an announcement in Data Structures</a>
+        <a href="#" style="color: #C9D1DC; font-size: 14px; line-height: 1.45"><b>Omar N.</b> replied to your question about TCP</a>
+        <a href="#" style="font-size: 14px; font-weight: 600">See all</a>
+      </section>
+    </aside>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"accent":{"editor":"color","default":"#818CF8","options":["#818CF8","#60A5FA","#22D3EE","#C084FC"]},"$preview":{"width":1440,"height":1260}}'>
+class Component extends DCLogic {
+  renderVals() {
+    const accent = this.props.accent ?? '#818CF8';
+    const voted = { upFg: accent, upFill: 'currentColor', upPressed: 'true' };
+    const idle = { upFg: '#A3ADBA', upFill: 'none', upPressed: 'false' };
+    const noDown = { downFg: '#A3ADBA', downFill: 'none', downPressed: 'false' };
+    const types = {
+      Announcement: { typeBg: '#3A2414', typeFg: '#FDBA74' },
+      Question: { typeBg: '#22264A', typeFg: '#A5B4FC' },
+      Resource: { typeBg: '#12301F', typeFg: '#86EFAC' },
+      Discussion: { typeBg: '#0F2A3A', typeFg: '#7DD3FC' }
+    };
+    const posts = [
+      { type: 'Announcement', community: 'Data Structures · CS 231', author: 'Dr. Lina Haddad', initials: 'LH', avatarBg: '#4A2A1C', avatarFg: '#FDBA8C', time: '1h', up: 45, down: 3, comments: 18, title: 'Midterm moved to Thursday, room B204', excerpt: 'The exam covers trees, heaps and hashing (chapters 6–9). Bring your student ID and arrive ten minutes early.' },
+      { type: 'Question', community: 'Computer Networks', author: 'Ahmad K.', initials: 'AK', avatarBg: '#1E2F55', avatarFg: '#93C5FD', time: '2h', up: 18, down: 3, comments: 6, title: 'Why does TCP need a three-way handshake instead of two?', excerpt: 'I understand SYN and SYN-ACK, but what goes wrong if the client starts sending data right after the server replies?' },
+      { type: 'Resource', community: 'Embedded Systems Lab', author: 'Sara M.', initials: 'SM', avatarBg: '#173A26', avatarFg: '#86EFAC', time: '5h', up: 28, down: 1, comments: 4, title: 'My summary of timer interrupts on STM32', excerpt: 'Covers prescaler and auto-reload values with two worked examples from last week’s lab.' },
+      { type: 'Discussion', community: 'Graduation Projects', author: 'Yousef A.', initials: 'YA', avatarBg: '#352049', avatarFg: '#D8B4FE', time: 'Yesterday', up: 11, down: 2, comments: 12, title: 'How are you planning user testing for your projects?', excerpt: 'We want five to eight students to try our app. How are other teams recruiting people and recording feedback?' }
+    ].map((p, i) => ({ ...p, ...types[p.type], ...(i === 0 ? voted : idle), ...noDown }));
+    return { accent, posts };
+  }
+}
+</script>
+</body>
+</html>
