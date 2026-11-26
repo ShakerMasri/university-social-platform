@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { resolve } from "node:path";
-import { assertDistinctTargets, databaseUrl, image, validateManifest, validateTarget, type LocalManifest } from "./targets";
+import { assertDistinctTargets, databaseUrl, image, validateManifest, validateTarget, windowsFeedQaDocker, type LocalManifest } from "./targets";
+import { assertWindowsFeedQaManifest } from "../testing/feed-qa-windows.mts";
 
 function fixture(): LocalManifest {
   const owner = "abcdef123456";
@@ -52,5 +53,21 @@ describe("local targets rejected before network access", () => {
     const main = databaseUrl(m, m.databases[0].name, "migration");
     expect(() => assertDistinctTargets(main, main, m)).toThrow();
     expect(() => assertDistinctTargets(main, databaseUrl(m, m.databases[1].name, "migration"), m)).not.toThrow();
+  });
+
+  it("binds Windows Feed QA to its reviewed image, loopback port, Docker context and source digest", () => {
+    const snapshot = "a".repeat(64);
+    const ordinary = fixture();
+    const windows = { ...ordinary, image: windowsFeedQaDocker.image, port: windowsFeedQaDocker.port,
+      feedQaWindowsSnapshot: snapshot };
+    expect(validateManifest(windows)).toBe(windows);
+    expect(() => assertWindowsFeedQaManifest(windows, snapshot)).not.toThrow();
+    expect(() => assertWindowsFeedQaManifest(ordinary, snapshot)).toThrow();
+    expect(() => assertWindowsFeedQaManifest(windows, "c".repeat(64))).toThrow();
+    for (const manifest of [{ ...windows, feedQaWindowsSnapshot: undefined }, { ...windows, feedQaWindowsSnapshot: "invalid" },
+      { ...windows, image }, { ...windows, port: 5433 }, { ...windows, dockerContext: "remote" },
+      { ...windows, dockerEndpoint: "npipe:////./pipe/docker_engine" }]) {
+      expect(() => validateManifest(manifest)).toThrow();
+    }
   });
 });

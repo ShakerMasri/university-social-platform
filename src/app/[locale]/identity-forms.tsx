@@ -7,6 +7,7 @@ import { identityText } from "@/i18n/identity";
 import { peopleText } from "@/i18n/people";
 import { capturePendingConfirmation, clearPendingConfirmation, pendingConfirmationToken } from "./pending-confirmation";
 import { useHydrated } from "@/app/use-hydrated";
+import { announceSessionChange } from "./session-change";
 
 async function post(operation: string, data: object) {
   try {
@@ -91,8 +92,10 @@ export function ConfirmationForm({ locale }: { locale: Locale }) {
     const result = await post("confirm", { token: pendingConfirmationToken(), locale });
     setBusy(false);
     if (result.ok || result.status === 400) clearPendingConfirmation();
-    if (result.ok) window.location.assign(`/${locale}/profile`);
-    else feedback.show(text.linkError);
+    if (result.ok) {
+      announceSessionChange();
+      window.location.assign(`/${locale}/profile`);
+    } else feedback.show(text.linkError);
   }
   return <>
     <h1>{text.confirm}</h1><p>{text.confirmHint}</p>
@@ -132,7 +135,10 @@ export function ProfileForm({ locale, profile }: { locale: Locale; profile: { em
     setBusy(true);
     const result = await post("logout", {});
     setBusy(false);
-    if (result.ok) window.location.assign(`/${locale}/signin`); else feedback.show(text.failed);
+    if (result.ok) {
+      announceSessionChange();
+      window.location.assign(`/${locale}/signin`);
+    } else feedback.show(text.failed);
   }
   return <>
     <h1>{text.profile}</h1><p>{text.email}: <bdi dir="ltr">{profile.email}</bdi></p><p>{text.private}</p>

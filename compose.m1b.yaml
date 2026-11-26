@@ -1,7 +1,7 @@
 # Managed only through tools/database/local.mts; no ambient DATABASE_URL is used.
 services:
   postgres:
-    image: postgres:18.6-bookworm@sha256:afc7e2d441324c0388fa80c3d24f733b4194a4eb7f47dd8ee2b08eb1a24a647c
+    image: ${M1B_IMAGE:?}
     container_name: ${M1B_CONTAINER:?}
     network_mode: bridge
     ports:

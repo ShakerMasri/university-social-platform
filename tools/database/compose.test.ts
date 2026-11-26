@@ -37,10 +37,10 @@ describe("Compose provisioning preflight", () => {
   it("makes validated manifest values authoritative over all inherited overrides", () => {
     const inherited = { NODE_ENV: "test" as const, PATH: "synthetic-path", DOCKER_CONTEXT: "desktop-linux", M1B_OWNER: "other",
       M1B_CONTAINER: "synthetic-unowned-container", M1B_VOLUME: "synthetic-unowned-volume", M1B_PORT: "65432",
-      m1b_volume: "synthetic-lowercase-volume", COMPOSE_FILE: "other.yaml", compose_project_name: "other",
+      m1b_volume: "synthetic-lowercase-volume", m1b_image: "postgres:latest", COMPOSE_FILE: "other.yaml", compose_project_name: "other",
       COMPOSE_PROFILES: "other", COMPOSE_ENV_FILES: "other.env", M1B_FUTURE_VARIABLE: "other" };
     expect(composeEnvironment(m, inherited)).toEqual({ NODE_ENV: "test", PATH: inherited.PATH, DOCKER_CONTEXT: inherited.DOCKER_CONTEXT,
-      M1B_OWNER: m.owner, M1B_CONTAINER: m.container, M1B_VOLUME: m.volume, M1B_PORT: String(m.port) });
+      M1B_OWNER: m.owner, M1B_CONTAINER: m.container, M1B_VOLUME: m.volume, M1B_PORT: String(m.port), M1B_IMAGE: m.image });
     expect(inherited.M1B_VOLUME).toBe("synthetic-unowned-volume");
     expect(() => composeEnvironment({ ...m, volume: "synthetic-unowned-volume" }, inherited)).toThrow();
   });
@@ -55,6 +55,7 @@ describe("Compose provisioning preflight", () => {
     const changes: ((c: ReturnType<typeof config>) => void)[] = [
       (c) => { c.name = "synthetic-unowned-project"; },
       (c) => { c.services.postgres.container_name = "synthetic-unowned-container"; },
+      (c) => { c.services.postgres.image = "postgres:latest"; },
       (c) => { c.services.postgres.labels["edu.usp.m1b.owner"] = "synthetic-unowned-owner"; },
       (c) => { c.services.postgres.ports[0].published = "65432"; },
       (c) => { c.services.postgres.ports[0].host_ip = "0.0.0.0"; },
