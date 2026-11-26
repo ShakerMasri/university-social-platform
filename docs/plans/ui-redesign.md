@@ -1,6 +1,6 @@
 # UI rebuild — "Clear Campus"
 
-Status: Planned, decisions approved (2026-11-26) · Branch: feat/ui-redesign · Milestone: UI rebuild (after M5-04 closure)
+Status: Stage 0 done (2026-11-26); Stage 1 next · Branch: feat/ui-redesign · Milestone: UI rebuild (after M5-04 closure)
 
 ## Goal
 
@@ -356,7 +356,7 @@ Earlier proposal, not approved:
 
 Each stage is one checkpoint: review, then commit on `feat/ui-redesign`. Main is merged in regularly. Rewritten tests for a page land in the same stage as the page.
 
-### Stage 0 — Foundations
+### Stage 0 — Foundations (done 2026-11-26, `e12c629`)
 - Steps:
   - Add a tokens CSS file with light and dark values, plus post-type and avatar tokens.
   - Self-host IBM Plex Sans and Plex Sans Arabic as woff2 files from IBM's official release via `next/font/local`, and add `THIRD-PARTY-NOTICES.md`.
@@ -482,6 +482,47 @@ After Stage 0 every existing route's figure is unchanged, because the new compon
 ## Progress log
 
 Newest first; filled by /handoff and /review-checkpoint.
+
+### 2026-11-26 — Session 1 — Stage 0 foundations
+- **State:** done · branch `feat/ui-redesign` at `e12c629` (pushed) · uncommitted: this log entry, the brief entry and the `ui-direction.md` wording fix
+- **Done:**
+  - Tokens and base styles: [src/ui/tokens.css](../../src/ui/tokens.css) holds light, dark and system-dark sets; [src/ui/base.css](../../src/ui/base.css) is scoped to `.ui-root` until Stage 1.
+  - Three tokens added: `danger-text`, `control-border` and `backdrop`, recorded in [ui-direction.md](../design/ui-direction.md).
+  - Fonts: IBM Plex Sans and Plex Sans Arabic are self-hosted from IBM's npm tarballs in [src/ui/fonts/](../../src/ui/fonts/). [src/ui/fonts.ts](../../src/ui/fonts.ts) defines three families limited by unicode-range, with no preload. The OFL text and file hashes are in `THIRD-PARTY-NOTICES.md` and the licence manifest.
+  - Theme cookie (decision 7): the layout reads it in [src/ui/server-theme.ts](../../src/ui/server-theme.ts) and sets `data-theme` on `<html>`.
+  - Components in [src/ui/components/](../../src/ui/components/), with our own icons in [src/ui/icons.tsx](../../src/ui/icons.tsx): Button/ButtonLink/IconButton, TextField, Select, Chip/ChoiceChips, Badge/CountBadge/DotBadge, Avatar (initials), Card, link-based Tabs, Menu, Dialog (native `<dialog>`), Toast, VoteControl, EmptyState/ErrorState, Skeleton and ThemeToggle. Strings are in `src/i18n/ui.ts`.
+  - Dev-only preview at [/[locale]/dev/components](../../src/app/[locale]/dev/components/page.tsx). It is guarded by the synthetic local context, so ordinary `next start` returns 404.
+  - Tooling: the `test:e2e:components` group and the `size:client-js` script ([tools/ui/client-js-size.mts](../../tools/ui/client-js-size.mts)). The baseline is recorded under "Client JS baseline (AC 10)".
+  - Review fixes after `/review-checkpoint`:
+    - Dialog reports each close once and survives a fast Escape-then-reopen.
+    - Toast moves focus on dismiss, its pause can't get stuck, and each toast keeps its own countdown.
+    - Preview toasts render inside `.ui-root`.
+    - Skeleton's label sits outside the busy region and is filled after mount.
+    - Font preload removed.
+    - Telemetry wording in the notices corrected.
+- **Decisions:** Owner: "Fix the medium one and minor 1, 2, 3, 4 and 6 (use the safer markup for 6). Record minor 5 at /handoff." Earlier: "start stage 0". The three added tokens have not yet been explicitly approved by the owner.
+- **Checks (final code unless noted):**
+  - `npm run lint` -> pass, 0 warnings
+  - `npm run typecheck` -> pass
+  - `npm test` -> 44 files passed, 1 skipped; 458 tests passed, 1 skipped (112 new in `src/ui`: contrast, logical properties, helpers)
+  - `npm run db:validate` -> valid (before the review fixes; `prisma/` unchanged)
+  - `npm run build` -> success; `.next/server/next-font-manifest.json` lists no preloaded woff2
+  - `npm run test:e2e:components` -> 12/12 passed (themes × locales, no-flash with JS off, toggle persistence, keyboard/focus return, close counter, toast focus, 320px, same-origin fonts)
+  - `npm run test:e2e` -> 12/12 passed, including `dev-preview-disabled` (404 under ordinary start)
+  - `npm run size:client-js` -> every existing route equals the baseline (largest `/[locale]/communities/[id]` 144.4 KiB gzip)
+  - `npm run test:e2e:identity` -> passed before the review fixes: empty 1; main 185 passed, 1 skipped; archive 14; messaging 40; feed 18
+  - Not run: `test:e2e:identity` after the review fixes; `db:test`; manual NVDA, forced-colors and non-Chromium checks; visual EN/AR × light/dark pass
+- **Review minor 5, recorded here:**
+  - The Stage 0 evidence is the check list above.
+  - The `ui-direction.md` sentence now says the contrast test covers the main pairs. It names the two hover pairs not yet in the test (both computed at 6.6:1 or more).
+- **Open issues / risks:**
+  - The owner has not explicitly approved the three added tokens.
+  - Fonts have no preload. In Stage 1, measure whether to preload the Regular Latin file.
+  - During the Latin swap period, English text may render in the Arabic family's metric-adjusted Arial fallback. This is unmeasured.
+  - The preview guard checks only that the local context exists, not its full origin/peer validation. The page holds synthetic constants only.
+  - The SkeletonGroup announcement has not been verified with a screen reader.
+  - Full `test:e2e:identity` has not been rerun after the review fixes, which touch only the shared components, the preview and font loading.
+- **Next step:** start Stage 1. Build the app header (unified search field, desktop navigation and mobile bottom bar per decision 5, language and theme switches, notifications button) using `src/ui/components`. Move `ui-root` to `<body>` and delete `globals.css` once the shell replaces the old header. Begin by listing the security cases of the `identity`, `locales`, `ui-layout`, `ui-zoom`, `archive` and `people` specs that will be rewritten.
 
 - 2026-11-26: Stage 0 independent review (`checkpoint-reviewer`, uncommitted scope). Verdict: 6 findings, 0 P1, 1 P2, 5 P3, and no security, authorization or data-loss issues. The P2 is that Dialog calls `onClose` twice. The P3s are font preload weight, toast focus and pause, preview toasts outside `.ui-root`, telemetry wording in the notices, and the SkeletonGroup announcement; the Stage 0 evidence entry and the token-pair wording are left for /handoff. The reviewer ran lint, typecheck and `npm test` (all passed), verified font provenance against IBM's tarballs, and confirmed client JS matches the baseline. Before the review, the implementer had run build, `test:e2e:components` (12/12), `test:e2e` (12/12) and `test:e2e:identity`. The identity groups passed: empty 1, main 185 with 1 skipped, archive 14, messaging 40, feed 18. Fixes are pending the owner's choice.
 
