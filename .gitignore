@@ -17,3 +17,6 @@ Thumbs.db
 *.pem
 *.key
 .aws/
+
+# Claude Code personal settings
+.claude/settings.local.json
