@@ -1,6 +1,6 @@
 ---
-name: resume
-description: Start-of-session pickup. Rebuilds context from git and the latest handoff, then proposes the next step. Run as /resume [plan file or topic].
+name: pickup
+description: Start-of-session pickup. Rebuilds context from git and the latest handoff, then proposes the next step. Run as /pickup [plan file or topic].
 disable-model-invocation: true
 argument-hint: [docs/plans/<file>.md or topic]
 ---

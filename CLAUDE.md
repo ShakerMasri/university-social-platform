@@ -18,7 +18,7 @@ Large work is split across sessions. The owner drives it with these commands; do
 | Command | When |
 | --- | --- |
 | `/plan-feature <name>` | Start of a large feature or fix: write the plan file, then stop for approval |
-| `/resume [plan]` | Start of each new session: rebuild context from git and the plan file, propose the next step |
+| `/pickup [plan]` | Start of each new session: rebuild context from git and the plan file, propose the next step |
 | `/handoff [plan]` | End of each session: record what was done, checks actually run, and the next step |
 | `/review-checkpoint [scope]` | Before committing: independent review by the read-only `checkpoint-reviewer` subagent |
 
