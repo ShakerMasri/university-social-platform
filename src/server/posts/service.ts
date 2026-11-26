@@ -14,6 +14,9 @@ function publicPost(row: Prisma.PostGetPayload<{ select: typeof projection }>, v
   return { id: row.id, communityId: row.communityId, type: row.type, title: row.title, body: row.body,
     resourceUrl: row.resourceUrl, createdAt: row.createdAt, authorName: row.author?.profile?.displayName ?? null, vote };
 }
+
+// Shared only by server-authorized post readers; never an access boundary itself.
+export { projection as postProjection, publicPost as projectPost };
 export function createPost(db: PrismaClient, token: unknown, value: unknown, input: Record<string, unknown>) {
   const { requestId, ...data } = postInput(input);
   return withCommunityPostAccess(db, token, value, true, async (tx, community, userId) => {

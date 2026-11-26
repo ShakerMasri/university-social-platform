@@ -29,7 +29,7 @@ export function commentResponse(value: unknown): CommentItem {
   return { ...attribution(row), rootId: row.rootId === null ? null : communityId(row.rootId),
     replyToId: row.replyToId === null ? null : communityId(row.replyToId), replyToName: row.replyToName === null ? null : text(row.replyToName), replyCount: row.replyCount as number };
 }
-function postResponse(value: unknown): PostItem {
+export function postResponse(value: unknown): PostItem {
   const row = record(value);
   const type = postTypes.find(type => type === row.type);
   if (!type) throw new Error("Invalid post type");

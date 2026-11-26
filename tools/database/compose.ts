@@ -9,7 +9,7 @@ export function composeEnvironment(m: LocalManifest, inherited: NodeJS.ProcessEn
   for (const key of Object.keys(env)) if (/^(M1B_|COMPOSE_)/i.test(key)) delete env[key];
   return {
     ...env,
-    M1B_OWNER: m.owner, M1B_CONTAINER: m.container, M1B_VOLUME: m.volume, M1B_PORT: String(m.port),
+    M1B_OWNER: m.owner, M1B_CONTAINER: m.container, M1B_VOLUME: m.volume, M1B_PORT: String(m.port), M1B_IMAGE: m.image,
   };
 }
 
