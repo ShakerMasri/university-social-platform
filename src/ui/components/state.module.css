@@ -1,0 +1,43 @@
+.state {
+  display: grid;
+  justify-items: center;
+  gap: var(--space-2);
+  padding-block: var(--space-8);
+  padding-inline: var(--space-6);
+  text-align: center;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-card);
+}
+.icon {
+  display: inline-grid;
+  place-items: center;
+  inline-size: 3rem;
+  block-size: 3rem;
+  margin-block-end: var(--space-1);
+  border-radius: 50%;
+  background: var(--color-surface-muted);
+  color: var(--color-text-muted);
+}
+.error .icon {
+  color: var(--color-danger-text);
+}
+.denied .icon {
+  color: var(--color-accent-text);
+  background: var(--color-accent-soft);
+}
+.title {
+  font-size: var(--text-heading);
+  font-weight: var(--weight-semibold);
+}
+.description {
+  max-inline-size: 42ch;
+  color: var(--color-text-muted);
+}
+.action {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: var(--space-2);
+  margin-block-start: var(--space-2);
+}

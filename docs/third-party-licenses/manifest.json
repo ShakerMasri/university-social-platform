@@ -4912,5 +4912,109 @@
         "comparison": "Exact byte match with installed Next 16.4.3 license; MIT corroboration for same-release env/eslint/SWC declarations, not bundled native component clearance."
       }
     ]
+  },
+  "uiRebuildFonts20261126": {
+    "collected": "2026-11-26",
+    "scope": "Fonts self-hosted by the rebuilt UI (feat/ui-redesign Stage 0)",
+    "license": {
+      "file": "ibm-plex-OFL-1.1.txt",
+      "sha256": "7e6b2818edbd8f6a01ae80641cc8f16a51080d08fb4e532be3a0b6f74adb07da",
+      "bytes": 4456,
+      "license": "OFL-1.1",
+      "source": "package/LICENSE.txt in both tarballs (byte-identical)",
+      "copy": "src/ui/fonts/OFL.txt"
+    },
+    "packages": [
+      {
+        "name": "@ibm/plex-sans",
+        "version": "2.0.0",
+        "tarball": "https://registry.npmjs.org/@ibm/plex-sans/-/plex-sans-2.0.0.tgz",
+        "integrity": "sha512-iGvuyYd1nBw5ojlspC+uMKvQNd1rlbPR4LX9bzn6KsnXULPemANYmHyZPlrDGDBWaJb84crU/A4rNoH5dl3/Wg==",
+        "gitHead": "2e90fe366fdc27c12682db13e5aa20ded3d90908",
+        "repository": "https://github.com/ibm/plex"
+      },
+      {
+        "name": "@ibm/plex-sans-arabic",
+        "version": "1.1.0",
+        "tarball": "https://registry.npmjs.org/@ibm/plex-sans-arabic/-/plex-sans-arabic-1.1.0.tgz",
+        "integrity": "sha512-u8wIS6szLAOFvlBjCFZmtpKIqbhuIuniG2N0J+sio8vV6INH58hP0t0QNYrSl9SZtCv2Fwb4oQGuZJY3kJ4+QA==",
+        "repository": "https://github.com/ibm/plex",
+        "gitHead": "1da12f02587b630c07e92692d21492d722f53614"
+      }
+    ],
+    "files": [
+      {
+        "file": "src/ui/fonts/IBMPlexSans-Bold-Latin1.woff2",
+        "sha256": "098277f28ccff8b6128068edc357d59cb9cb3d4e3d15d77e7757c85ba1162c73",
+        "bytes": 21504,
+        "source": "@ibm/plex-sans@2.0.0 package/fonts/split/woff2/IBMPlexSans-Bold-Latin1.woff2"
+      },
+      {
+        "file": "src/ui/fonts/IBMPlexSans-Bold.woff2",
+        "sha256": "0ee7512b5d3b040fe7c0b874df0965b357777d3929f627dfea202ff63834d05d",
+        "bytes": 65012,
+        "source": "@ibm/plex-sans@2.0.0 package/fonts/complete/woff2/IBMPlexSans-Bold.woff2"
+      },
+      {
+        "file": "src/ui/fonts/IBMPlexSans-Medium-Latin1.woff2",
+        "sha256": "668a0d9eabbfac0925f431988f56222b8b989ad66a0a78e91bc5889f73fe274a",
+        "bytes": 22304,
+        "source": "@ibm/plex-sans@2.0.0 package/fonts/split/woff2/IBMPlexSans-Medium-Latin1.woff2"
+      },
+      {
+        "file": "src/ui/fonts/IBMPlexSans-Medium.woff2",
+        "sha256": "0497fab52b9c10f9efbec00be509b16d449a1e277098f03af929ef1e7cbddb54",
+        "bytes": 69148,
+        "source": "@ibm/plex-sans@2.0.0 package/fonts/complete/woff2/IBMPlexSans-Medium.woff2"
+      },
+      {
+        "file": "src/ui/fonts/IBMPlexSans-Regular-Latin1.woff2",
+        "sha256": "bdb53f2af84b15e0a742428f5e199dacc3e6fd60776f0aebd9f700e2c97c960f",
+        "bytes": 21300,
+        "source": "@ibm/plex-sans@2.0.0 package/fonts/split/woff2/IBMPlexSans-Regular-Latin1.woff2"
+      },
+      {
+        "file": "src/ui/fonts/IBMPlexSans-Regular.woff2",
+        "sha256": "78efbe80177406a1b80d5925e706e3366290bf0d5309d7b0bd2d7f0d607f3c4c",
+        "bytes": 65080,
+        "source": "@ibm/plex-sans@2.0.0 package/fonts/complete/woff2/IBMPlexSans-Regular.woff2"
+      },
+      {
+        "file": "src/ui/fonts/IBMPlexSans-SemiBold-Latin1.woff2",
+        "sha256": "8251b7fc61b580c2f52550fa69b3c49fb94fc333815ad301ca6b1f6d15420f85",
+        "bytes": 22736,
+        "source": "@ibm/plex-sans@2.0.0 package/fonts/split/woff2/IBMPlexSans-SemiBold-Latin1.woff2"
+      },
+      {
+        "file": "src/ui/fonts/IBMPlexSans-SemiBold.woff2",
+        "sha256": "0fe2655c3c88b0b4c578b0046333fde7fb60d18419b9d07b4a1e115ac893e7f6",
+        "bytes": 69388,
+        "source": "@ibm/plex-sans@2.0.0 package/fonts/complete/woff2/IBMPlexSans-SemiBold.woff2"
+      },
+      {
+        "file": "src/ui/fonts/IBMPlexSansArabic-Bold.woff2",
+        "sha256": "db6650a05969c144ab5ab9bb6c3beca6ca4dbb3537bb5f2311c878dd293875b4",
+        "bytes": 73788,
+        "source": "@ibm/plex-sans-arabic@1.1.0 package/fonts/complete/woff2/IBMPlexSansArabic-Bold.woff2"
+      },
+      {
+        "file": "src/ui/fonts/IBMPlexSansArabic-Medium.woff2",
+        "sha256": "c72f6986f50ded745d06e71e508096209c52a55a6b3a81029954e33c52ba1dd2",
+        "bytes": 75936,
+        "source": "@ibm/plex-sans-arabic@1.1.0 package/fonts/complete/woff2/IBMPlexSansArabic-Medium.woff2"
+      },
+      {
+        "file": "src/ui/fonts/IBMPlexSansArabic-Regular.woff2",
+        "sha256": "74112e1b7bf2e2c547989a4e947a60cba6cd1f9156e0065670134636e717199d",
+        "bytes": 71904,
+        "source": "@ibm/plex-sans-arabic@1.1.0 package/fonts/complete/woff2/IBMPlexSansArabic-Regular.woff2"
+      },
+      {
+        "file": "src/ui/fonts/IBMPlexSansArabic-SemiBold.woff2",
+        "sha256": "869b2acd0a9660607a2025f0fe1c640110bf23d33417509328f07722922b8063",
+        "bytes": 76408,
+        "source": "@ibm/plex-sans-arabic@1.1.0 package/fonts/complete/woff2/IBMPlexSansArabic-SemiBold.woff2"
+      }
+    ]
   }
 }

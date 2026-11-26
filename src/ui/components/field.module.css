@@ -1,0 +1,85 @@
+.field {
+  display: grid;
+  gap: var(--space-1);
+  min-inline-size: 0;
+}
+.label {
+  font-size: var(--text-md);
+  font-weight: var(--weight-semibold);
+  color: var(--color-text);
+}
+.requiredMark {
+  margin-inline-start: var(--space-1);
+  color: var(--color-danger-text);
+}
+.hint {
+  font-size: var(--text-sm);
+  color: var(--color-text-muted);
+}
+.error {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-1);
+  font-size: var(--text-sm);
+  font-weight: var(--weight-medium);
+  color: var(--color-danger-text);
+}
+.error svg {
+  flex-shrink: 0;
+  margin-block-start: 0.1em;
+}
+.control {
+  inline-size: 100%;
+  min-inline-size: 0;
+  max-inline-size: 100%;
+  min-block-size: var(--control-height);
+  padding-block: var(--space-2);
+  padding-inline: var(--space-3);
+  border: 1px solid var(--color-control-border);
+  border-radius: var(--radius-control);
+  background: var(--color-surface);
+  color: var(--color-text);
+  font: inherit;
+  font-size: var(--text-body);
+  line-height: var(--leading-body);
+}
+.control::placeholder {
+  color: var(--color-text-subtle);
+  opacity: 1;
+}
+.control:focus-visible {
+  outline: var(--focus-ring-width) solid var(--color-accent);
+  outline-offset: var(--focus-ring-offset);
+}
+.control[aria-invalid="true"] {
+  border-color: var(--color-danger-text);
+  border-width: 2px;
+}
+.control:disabled {
+  cursor: not-allowed;
+  background: var(--color-surface-muted);
+  color: var(--color-text-muted);
+}
+.multiline {
+  min-block-size: 6.5rem;
+  resize: vertical;
+}
+.selectWrap {
+  position: relative;
+  display: grid;
+  align-items: center;
+}
+.select {
+  appearance: none;
+  padding-inline-end: var(--space-10);
+  cursor: pointer;
+}
+.selectIcon {
+  position: absolute;
+  inset-inline-end: var(--space-3);
+  pointer-events: none;
+  color: var(--color-text-muted);
+}
+@media (forced-colors: active) {
+  .control { border-color: FieldText; }
+}

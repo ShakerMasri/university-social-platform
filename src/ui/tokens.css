@@ -1,0 +1,180 @@
+/*
+ * "Clear Campus" design tokens (docs/design/ui-direction.md).
+ * Every color is defined once here with a light and a dark value. Components
+ * use only these custom properties. src/ui/tokens.test.ts parses this file and
+ * checks contrast for every text and non-text pair in both themes, so keep each
+ * value on its own `--name: #rrggbb;` line inside the marked theme blocks.
+ *
+ * Theme selection (plan decision 7): the server sets data-theme="light|dark"
+ * from the `theme` cookie; with no cookie the system preference applies via
+ * prefers-color-scheme. No script runs before first paint.
+ * A subtree can force a theme with its own data-theme attribute.
+ */
+
+/* theme:light:start */
+:root,
+[data-theme="light"] {
+  --color-scheme: light;
+  --color-bg: #F5F6F8;
+  --color-surface: #FFFFFF;
+  --color-surface-muted: #F2F4F7;
+  --color-border: #E4E7EC;
+  --color-border-strong: #D0D5DD;
+  --color-control-border: #7D8799;
+  --color-text: #101828;
+  --color-text-secondary: #344054;
+  --color-text-muted: #475467;
+  --color-text-subtle: #667085;
+  --color-accent: #4F46E5;
+  --color-accent-soft: #EEF0FF;
+  --color-accent-text: #3730A3;
+  --color-on-accent: #FFFFFF;
+  --color-danger: #D92D20;
+  --color-danger-text: #B42318;
+  --color-backdrop: rgb(16 24 40 / 0.55);
+  --color-question-bg: #EEF2FF;
+  --color-question-text: #3730A3;
+  --color-question-border: #C7D2FE;
+  --color-discussion-bg: #F0F9FF;
+  --color-discussion-text: #075985;
+  --color-discussion-border: #BAE6FD;
+  --color-resource-bg: #ECFDF3;
+  --color-resource-text: #05603A;
+  --color-resource-border: #ABEFC6;
+  --color-announcement-bg: #FFF4ED;
+  --color-announcement-text: #9A3412;
+  --color-announcement-border: #FED7AA;
+  --color-avatar-1-bg: #FDE2D3;
+  --color-avatar-1-text: #8A3A12;
+  --color-avatar-2-bg: #DBEAFE;
+  --color-avatar-2-text: #1E40AF;
+  --color-avatar-3-bg: #DCFCE7;
+  --color-avatar-3-text: #166534;
+  --color-avatar-4-bg: #F3E8FF;
+  --color-avatar-4-text: #6B21A8;
+}
+/* theme:light:end */
+
+/* theme:dark:start */
+[data-theme="dark"] {
+  --color-scheme: dark;
+  --color-bg: #0F1218;
+  --color-surface: #171B23;
+  --color-surface-muted: #1F2530;
+  --color-border: #262C36;
+  --color-border-strong: #353C48;
+  --color-control-border: #6B7585;
+  --color-text: #E8ECF2;
+  --color-text-secondary: #C9D1DC;
+  --color-text-muted: #A3ADBA;
+  --color-text-subtle: #8B95A3;
+  --color-accent: #818CF8;
+  --color-accent-soft: #252A4A;
+  --color-accent-text: #A5B4FC;
+  --color-on-accent: #0F1218;
+  --color-danger: #F97066;
+  --color-danger-text: #F97066;
+  --color-backdrop: rgb(0 0 0 / 0.7);
+  --color-question-bg: #22264A;
+  --color-question-text: #A5B4FC;
+  --color-question-border: #3A3F7A;
+  --color-discussion-bg: #0F2A3A;
+  --color-discussion-text: #7DD3FC;
+  --color-discussion-border: #1E4A63;
+  --color-resource-bg: #12301F;
+  --color-resource-text: #86EFAC;
+  --color-resource-border: #1F5236;
+  --color-announcement-bg: #3A2414;
+  --color-announcement-text: #FDBA74;
+  --color-announcement-border: #5A3A1E;
+  --color-avatar-1-bg: #4A2A1C;
+  --color-avatar-1-text: #FDBA8C;
+  --color-avatar-2-bg: #1E2F55;
+  --color-avatar-2-text: #93C5FD;
+  --color-avatar-3-bg: #173A26;
+  --color-avatar-3-text: #86EFAC;
+  --color-avatar-4-bg: #352049;
+  --color-avatar-4-text: #D8B4FE;
+}
+/* theme:dark:end */
+
+/* System preference applies only when no explicit choice is stored. Keep these
+   values identical to the dark block above (tokens.test.ts checks this). */
+/* theme:system-dark:start */
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --color-scheme: dark;
+    --color-bg: #0F1218;
+    --color-surface: #171B23;
+    --color-surface-muted: #1F2530;
+    --color-border: #262C36;
+    --color-border-strong: #353C48;
+    --color-control-border: #6B7585;
+    --color-text: #E8ECF2;
+    --color-text-secondary: #C9D1DC;
+    --color-text-muted: #A3ADBA;
+    --color-text-subtle: #8B95A3;
+    --color-accent: #818CF8;
+    --color-accent-soft: #252A4A;
+    --color-accent-text: #A5B4FC;
+    --color-on-accent: #0F1218;
+    --color-danger: #F97066;
+    --color-danger-text: #F97066;
+    --color-backdrop: rgb(0 0 0 / 0.7);
+    --color-question-bg: #22264A;
+    --color-question-text: #A5B4FC;
+    --color-question-border: #3A3F7A;
+    --color-discussion-bg: #0F2A3A;
+    --color-discussion-text: #7DD3FC;
+    --color-discussion-border: #1E4A63;
+    --color-resource-bg: #12301F;
+    --color-resource-text: #86EFAC;
+    --color-resource-border: #1F5236;
+    --color-announcement-bg: #3A2414;
+    --color-announcement-text: #FDBA74;
+    --color-announcement-border: #5A3A1E;
+    --color-avatar-1-bg: #4A2A1C;
+    --color-avatar-1-text: #FDBA8C;
+    --color-avatar-2-bg: #1E2F55;
+    --color-avatar-2-text: #93C5FD;
+    --color-avatar-3-bg: #173A26;
+    --color-avatar-3-text: #86EFAC;
+    --color-avatar-4-bg: #352049;
+    --color-avatar-4-text: #D8B4FE;
+  }
+}
+/* theme:system-dark:end */
+
+/* Theme-independent tokens. Sizes use rem so user font settings and zoom apply. */
+:root {
+  --font-sans: var(--font-plex-latin), var(--font-plex-extended), var(--font-plex-arabic), system-ui, "Segoe UI", Tahoma, Arial, sans-serif;
+  --text-xs: 0.75rem;      /* 12px: counts inside badges */
+  --text-sm: 0.8125rem;    /* 13px: meta lines */
+  --text-md: 0.875rem;     /* 14px: small text, buttons */
+  --text-body: 0.9375rem;  /* 15px */
+  --text-heading: 1rem;    /* 16px section heading */
+  --text-title: 1.125rem;  /* 18px post title */
+  --text-page: 1.5rem;     /* 24px page heading */
+  --leading-body: 1.55;
+  --leading-tight: 1.3;
+  --weight-regular: 400;
+  --weight-medium: 500;
+  --weight-semibold: 600;
+  --weight-bold: 700;
+  --space-1: 0.25rem;
+  --space-2: 0.5rem;
+  --space-3: 0.75rem;
+  --space-4: 1rem;
+  --space-5: 1.25rem;
+  --space-6: 1.5rem;
+  --space-8: 2rem;
+  --space-10: 2.5rem;
+  --radius-card: 0.875rem;  /* 14px */
+  --radius-control: 0.625rem; /* 10px */
+  --radius-pill: 999px;
+  --control-height: 2.75rem;         /* 44px */
+  --control-height-compact: 2.5rem;  /* 40px */
+  --focus-ring-width: 3px;
+  --focus-ring-offset: 2px;
+  --motion-fast: 120ms;
+}

@@ -1,0 +1,97 @@
+.button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  min-block-size: var(--control-height);
+  min-inline-size: 0;
+  max-inline-size: 100%;
+  padding-block: var(--space-2);
+  padding-inline: var(--space-4);
+  border: 1px solid transparent;
+  border-radius: var(--radius-control);
+  font: inherit;
+  font-size: var(--text-md);
+  font-weight: var(--weight-semibold);
+  line-height: var(--leading-tight);
+  text-align: center;
+  text-decoration: none;
+  overflow-wrap: anywhere;
+  cursor: pointer;
+  transition: background-color var(--motion-fast) ease, border-color var(--motion-fast) ease;
+}
+.button:focus-visible {
+  outline: var(--focus-ring-width) solid var(--color-accent);
+  outline-offset: var(--focus-ring-offset);
+}
+.compact {
+  min-block-size: var(--control-height-compact);
+  padding-inline: var(--space-3);
+}
+.primary {
+  background: var(--color-accent);
+  border-color: var(--color-accent);
+  color: var(--color-on-accent);
+}
+.primary:hover:not(:disabled, [aria-disabled="true"]) {
+  background: var(--color-accent-text);
+  border-color: var(--color-accent-text);
+}
+.secondary {
+  background: var(--color-surface);
+  border-color: var(--color-control-border);
+  color: var(--color-text);
+}
+.secondary:hover:not(:disabled, [aria-disabled="true"]),
+.ghost:hover:not(:disabled, [aria-disabled="true"]) {
+  background: var(--color-surface-muted);
+}
+.ghost {
+  background: transparent;
+  color: var(--color-text-secondary);
+}
+.danger {
+  background: var(--color-surface);
+  border-color: var(--color-danger-text);
+  color: var(--color-danger-text);
+}
+.danger:hover:not(:disabled, [aria-disabled="true"]) {
+  background: var(--color-surface-muted);
+}
+.button:disabled,
+.button[aria-disabled="true"] {
+  cursor: not-allowed;
+  background: var(--color-surface-muted);
+  border-color: var(--color-border-strong);
+  color: var(--color-text-subtle);
+}
+.icon {
+  display: inline-flex;
+  flex-shrink: 0;
+}
+.iconOnly {
+  inline-size: var(--control-height);
+  padding: 0;
+  flex-shrink: 0;
+}
+.iconOnly.compact {
+  inline-size: var(--control-height-compact);
+}
+.iconOnly[aria-pressed="true"] {
+  background: var(--color-accent-soft);
+  color: var(--color-accent-text);
+}
+.spinner {
+  inline-size: 1em;
+  block-size: 1em;
+  border: 2px solid currentColor;
+  border-inline-end-color: transparent;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+@media (forced-colors: active) {
+  .button { border-color: ButtonText; }
+}

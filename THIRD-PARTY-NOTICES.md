@@ -137,3 +137,14 @@ The dated sections above are historical package evidence. Current direct Next/pl
 | sql-escaper 1.5.2 | [MIT](docs/third-party-licenses/sql-escaper-1.5.2-LICENSE) |
 
 No new nonpermissive terms were introduced by the changed packages inspected. Full/production metadata still contains the existing scoped exceptions described in the brief; source/notice gaps and final hosting/native/bundle artifact verification remain open. Metadata and this limited text collection do not certify the full tree. The SQL escaper is a transitive mysql2 tooling dependency; no MySQL feature/provider or direct dependency was added.
+
+## UI rebuild fonts — 2026-11-26
+
+The rebuilt interface self-hosts IBM Plex Sans and IBM Plex Sans Arabic, which are bundled into the website and served to browsers. No font is loaded from Google or another third-party origin at runtime.
+
+| Font/version | Files incorporated | Preserved actual grant |
+| --- | --- | --- |
+| IBM Plex Sans 2.0.0 (`@ibm/plex-sans`) | `src/ui/fonts/IBMPlexSans-{Regular,Medium,SemiBold,Bold}.woff2` (complete) and `IBMPlexSans-{Regular,Medium,SemiBold,Bold}-Latin1.woff2` (IBM's own Latin-1 split) | [SIL OFL 1.1](docs/third-party-licenses/ibm-plex-OFL-1.1.txt), copyright © 2017 IBM Corp., Reserved Font Name "Plex" |
+| IBM Plex Sans Arabic 1.1.0 (`@ibm/plex-sans-arabic`) | `src/ui/fonts/IBMPlexSansArabic-{Regular,Medium,SemiBold,Bold}.woff2` | Same OFL text (byte-identical in both packages) |
+
+The files were extracted from IBM's official npm tarballs. Each tarball's registry integrity was checked by `npm pack`, and the woff2 files are copied byte for byte, without modification or re-subsetting. Because they are not Modified Versions, the OFL Reserved Font Name condition is not triggered. A copy of the licence ships next to the fonts as `src/ui/fonts/OFL.txt`. The packages themselves are not installed: both `@ibm/plex-sans` and `@ibm/plex-sans-arabic` declare a telemetry `postinstall` script (`ibmtelemetry`), which copying the files avoids. Tarball integrity values and per-file SHA-256 hashes are recorded under `uiRebuildFonts20261126` in the [manifest](docs/third-party-licenses/manifest.json). The OFL allows bundling and redistribution with software, including commercial use, as long as the fonts are not sold on their own. It requires that the copyright notice and licence travel with the fonts.

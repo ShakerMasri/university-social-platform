@@ -1,0 +1,42 @@
+.region {
+  position: fixed;
+  inset-block-end: var(--space-4);
+  inset-inline: var(--space-4);
+  z-index: 30;
+  display: grid;
+  justify-items: end;
+  gap: var(--space-2);
+  pointer-events: none;
+}
+.toast {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-2);
+  inline-size: min(26rem, 100%);
+  padding-block: var(--space-2);
+  padding-inline: var(--space-4) var(--space-1);
+  border: 1px solid var(--color-border-strong);
+  border-inline-start: 4px solid var(--toast-accent, var(--color-accent));
+  border-radius: var(--radius-control);
+  background: var(--color-surface);
+  color: var(--color-text);
+  pointer-events: auto;
+}
+.error {
+  --toast-accent: var(--color-danger-text);
+}
+.icon {
+  display: inline-flex;
+  flex-shrink: 0;
+  padding-block-start: var(--space-2);
+  color: var(--toast-accent, var(--color-accent-text));
+}
+.message {
+  flex: 1;
+  min-inline-size: 0;
+  padding-block: var(--space-2);
+  overflow-wrap: anywhere;
+}
+@media (forced-colors: active) {
+  .toast { border-color: CanvasText; }
+}

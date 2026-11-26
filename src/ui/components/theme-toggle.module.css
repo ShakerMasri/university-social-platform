@@ -1,0 +1,22 @@
+/* The icon follows the page theme through CSS, so it is right before script
+   runs: moon in light (switch to dark), sun in dark. */
+.sun {
+  display: none;
+}
+:global(:root[data-theme="dark"]) .sun {
+  display: inline-flex;
+}
+:global(:root[data-theme="dark"]) .moon {
+  display: none;
+}
+@media (prefers-color-scheme: dark) {
+  :global(:root:not([data-theme="light"])) .sun {
+    display: inline-flex;
+  }
+  :global(:root:not([data-theme="light"])) .moon {
+    display: none;
+  }
+}
+.icons {
+  display: inline-flex;
+}

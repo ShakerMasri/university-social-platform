@@ -59,7 +59,12 @@ Define every color once as a CSS custom property with a light and a dark value. 
 | accent-soft (active nav) | #EEF0FF | #252A4A |
 | accent-text (links, active nav text) | #3730A3 | #A5B4FC |
 | on-accent (text on accent fill) | #FFFFFF | #0F1218 |
-| danger (unread dot, errors) | #D92D20 | #F97066 |
+| danger (unread dot, error icons) | #D92D20 | #F97066 |
+| danger-text (error text, danger buttons) | #B42318 | #F97066 |
+| control-border (input, select and chip borders) | #7D8799 | #6B7585 |
+| backdrop (behind modal dialogs) | rgb(16 24 40 / 0.55) | rgb(0 0 0 / 0.7) |
+
+Three tokens were added in Stage 0 (2026-11-26). `danger-text` exists because #D92D20 reaches only 4.47:1 on the page background, below the 4.5:1 text minimum. `control-border` exists because `border-strong` is about 1.5:1, and input boundaries need 3:1 (WCAG 1.4.11). `backdrop` keeps the dialog overlay a token too. The values live in `src/ui/tokens.css`, and `src/ui/tokens.test.ts` checks every pair the components use.
 
 Post types (background / text / chip border):
 

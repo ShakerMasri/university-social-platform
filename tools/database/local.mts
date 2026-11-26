@@ -539,7 +539,7 @@ async function identityBrowser(m: LocalManifest) {
   // run before communities. Keep all assertions, with separate fixture scopes.
   for (const group of ["empty", "main", "archive", "messaging", "feed"] as const) await identityBrowserGroup(m, group);
 }
-async function identityBrowserGroup(m: LocalManifest, group: "empty" | "main" | "archive" | "messaging" | "zoom" | "feed") {
+async function identityBrowserGroup(m: LocalManifest, group: "empty" | "main" | "archive" | "messaging" | "zoom" | "feed" | "components") {
   verifyResources(m);
   const zoomOnly = group === "zoom";
   const controlPath = resolve(".cache/m2-browser.json");
@@ -554,6 +554,8 @@ async function identityBrowserGroup(m: LocalManifest, group: "empty" | "main" | 
       "--project=chromium", "--workers=1", "--retries=0", "--max-failures=1", "--output", output);
     console.log(`Focused EN/AR native zoom evidence: ${output}`);
   }
+  // UI rebuild component preview only; the full main group also runs this spec.
+  if (group === "components") testArguments.push("tests/e2e/ui-components.spec.ts", "--project=chromium");
   const record: DatabaseRecord = { name: `usp_m1b_${m.owner}_test_${randomBytes(6).toString("hex")}`, kind: "test", ready: false };
   if (zoomOnly && m.databases.some(existing => existing.name === record.name)) throw new Error("Zoom database name already registered; refusing adoption");
   m.databases.push(record); save(m);
@@ -794,6 +796,7 @@ try {
     else if (command === "identity-browser") { await reviewMigration(m); await identityBrowser(m); }
     // Replay the already-reviewed history only on the new focused browser target.
     else if (command === "zoom-browser") await identityBrowserGroup(m, "zoom");
+    else if (command === "components-browser") await identityBrowserGroup(m, "components");
     else if (command === "messaging-browser") { await reviewMigration(m); await identityBrowserGroup(m, "messaging"); }
     else if (command === "messaging-restart-check") await restartMessagingDatabase(m);
     else if (command === "cleanup") await cleanup(m);

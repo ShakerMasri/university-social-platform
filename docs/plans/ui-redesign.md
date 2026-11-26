@@ -448,6 +448,27 @@ Each stage is one checkpoint: review, then commit on `feat/ui-redesign`. Main is
 - **Manual:** EN/AR, both themes, mobile widths, NVDA, usability sessions.
 - **Remains unverified:** non-Chromium browsers (unless added), real email delivery, production load and scale, AI answer quality (none generated), deployment.
 
+### Client JS baseline (AC 10)
+
+Recorded 2026-11-26 on `feat/ui-redesign` at `ec5724b`, before any Stage 0 code, with `npm run build` and then `npm run size:client-js`. Each route's figure is its initial client JavaScript: the shared root chunks plus its own layout and page chunks, gzip level 9. Development-only routes are excluded.
+
+| Route | gzip |
+| --- | --- |
+| Shared root chunks (every page) | 128.8 KiB |
+| `/[locale]` | 135.6 KiB |
+| `/[locale]/signin`, `/verify` | 140.1 KiB |
+| `/[locale]/communities` | 138.6 KiB |
+| `/[locale]/communities/[id]` (largest) | 144.4 KiB |
+| `/[locale]/communities/[id]/posts/[postId]` | 143.5 KiB |
+| `/[locale]/feed`, `/feed/for-you` | 143.7 KiB |
+| `/[locale]/messages`, `/messages/[id]` | 142.3 KiB |
+| `/[locale]/archive` | 140.2 KiB |
+| `/[locale]/people` / `/people/[id]` | 138.1 / 140.1 KiB |
+| `/[locale]/notifications` | 138.9 KiB |
+| `/[locale]/profile` | 141.0 KiB |
+
+After Stage 0 every existing route's figure is unchanged, because the new components load only on the development preview. Re-measure at each stage. Explain in writing any route that grows beyond its baseline, measuring a replaced page against the page it replaces.
+
 ## Risks
 
 - **Size:** nine checkpoints on one long-lived branch. Mitigation: merge main into it regularly and keep each stage reviewable.
@@ -461,6 +482,8 @@ Each stage is one checkpoint: review, then commit on `feat/ui-redesign`. Main is
 ## Progress log
 
 Newest first; filled by /handoff and /review-checkpoint.
+
+- 2026-11-26: Stage 0 independent review (`checkpoint-reviewer`, uncommitted scope). Verdict: 6 findings, 0 P1, 1 P2, 5 P3, and no security, authorization or data-loss issues. The P2 is that Dialog calls `onClose` twice. The P3s are font preload weight, toast focus and pause, preview toasts outside `.ui-root`, telemetry wording in the notices, and the SkeletonGroup announcement; the Stage 0 evidence entry and the token-pair wording are left for /handoff. The reviewer ran lint, typecheck and `npm test` (all passed), verified font provenance against IBM's tarballs, and confirmed client JS matches the baseline. Before the review, the implementer had run build, `test:e2e:components` (12/12), `test:e2e` (12/12) and `test:e2e:identity`. The identity groups passed: empty 1, main 185 with 1 skipped, archive 14, messaging 40, feed 18. Fixes are pending the owner's choice.
 
 - 2026-11-26: Owner put the assistant on hold (decision 12) pending a discussion with the partner and instructor. All assistant UI and API work is removed from the stages, Stage 7 is marked on hold, and `ui-direction.md` is aligned with decisions 4 and 12.
 - 2026-11-26: Owner approved all twelve decisions. Decisions 4 and 8 differ from the recommendations: `/search` is the only search page, with tabs, and Messages read tracking is added in Stage 5. Priority is now unified search > share > save > messages unread > community new counts. Next step: Stage 0.
