@@ -117,7 +117,7 @@ The preview default is port **3200**; dev always uses **3000**, and browser test
 
 For automated preview verification, build first, ensure the guarded database setup exists and run `npm.cmd run test:preview:local`. It uses a fresh disposable test database and port 3201 by default, then removes its own test database/control file. Keep the manual preview stopped while rebuilding or running that check. This is separate evidence from the ordinary/synthetic browser suites.
 
-For the hot-reload workflow check, stop dev/preview and run `npm.cmd run test:dev:local`. No production build is needed. This reuses the preview browser checks in development mode against a disposable database, then verifies hot reload, forged websocket Host/Origin denial and session/profile/post persistence across a server restart. It temporarily edits and restores `src/app/[locale]/identity-shell.tsx`; avoid concurrent edits to that file during this command. Traces, screenshots and videos are disabled. Automated tests never use the development database.
+For the hot-reload workflow check, stop dev/preview and run `npm.cmd run test:dev:local`. No production build is needed. This reuses the preview browser checks in development mode against a disposable database, then verifies hot reload, forged websocket Host/Origin denial and session/profile/post persistence across a server restart. It temporarily edits and restores `src/app/[locale]/shell/shell-frame.tsx`; avoid concurrent edits to that file during this command. Traces, screenshots and videos are disabled. Automated tests never use the development database.
 
 
 ## Check the application
@@ -326,7 +326,11 @@ The local server service permits People contact without shared membership for sa
 
 For a focused messaging check after building, run `npm.cmd run test:e2e:messaging`. The complete `test:e2e:identity` command includes the same messaging group after its empty/main/archive groups. Run database and authenticated-browser suites sequentially. The messaging runner creates and removes only its own guarded disposable target. Its final case stops its authenticated test application, refuses a PostgreSQL restart if application ports or database clients remain, rechecks exact container/volume/image/owner/binding identity, gracefully stops/resumes that container, and starts its own replacement app. Retained databases and the old interactive registration are preserved. Never run this restart check alongside another app or database user. Control keys/cookies remain in worker memory and messaging traces/screenshots/videos are disabled.
 
+UI rebuild app shell: after building, `npm.cmd run test:e2e:shell` runs the shell, unified search and People suites (`tests/e2e/shell.spec.ts`, `search.spec.ts`, `people.spec.ts`) on their own guarded disposable database; the full `test:e2e:identity` main and archive groups run them too. The shell suite's screenshot tour has no assertions and runs only with `USP_VISUAL_TOUR=1` set (screenshots go to the test output folder).
+
 UI rebuild component preview: after building, `npm.cmd run test:e2e:components` runs only the development component preview suite (`tests/e2e/ui-components.spec.ts`). It covers both themes and both locales, theme persistence with no flash, keyboard focus handling, and self-hosted fonts. It uses its own guarded disposable database, and the full `test:e2e:identity` main group runs the same spec. While `npm.cmd run dev` is running, the preview is at `/en/dev/components`. Ordinary `npm.cmd start` returns 404 for it. `npm.cmd run size:client-js` reports each route's initial client JavaScript from the last build, for comparison with the baseline recorded in `docs/plans/ui-redesign.md`.
+
+Focused browser run while rewriting or checking one suite: after building, set `USP_E2E_SPECS` to one or more comma-separated `tests/e2e/*.spec.ts` files (main-group specs only), optionally `USP_E2E_GREP` (a test-title pattern) and `USP_E2E_REPEAT` (1–20 runs of each test), then run `npm.cmd run test:e2e:focus`. It uses its own guarded disposable database. In PowerShell: `$env:USP_E2E_SPECS='tests/e2e/votes.spec.ts'; $env:USP_E2E_REPEAT='5'; npm.cmd run test:e2e:focus`.
 
 The guarded identity suite also checks real Chromium page zoom at 200% and 400%, including 320 CSS-pixel reflow and form interactions in both languages. It uses the original permission-free extension under `tests/e2e/fixtures/page-zoom` in a disposable browser profile; it does not use or install anything in a personal browser profile. Zoom factor, viewport width and pixel ratio are verified after route changes. This automated check does not replace headed browser, screen-reader or usability evaluation.
 
@@ -339,23 +343,24 @@ Replace `{locale}` with `en` or `ar`:
 | Route | Purpose |
 | --- | --- |
 | `/` | Redirect to `/en` |
-| `/{locale}` | Home and language switching |
+| `/{locale}` | Home: a landing page when signed out, a start page when signed in |
+| `/{locale}/search` | Unified search: All, Posts (current readable post and comment text across academic years, with community and type filters) and People (confirmed display names) tabs |
 | `/{locale}/feed` | Newest-first posts from the caller's current MEMBER communities |
 | `/{locale}/feed/for-you` | Membership-boosted posts plus public discovery; verified readers, profile optional |
-| `/{locale}/people` | Verified-user search of confirmed display names |
+| `/{locale}/people` | Redirects to the People tab of `/search`, keeping `q` |
 | `/{locale}/people/{id}` | Discoverable profile and message request, using its directory ID |
 | `/{locale}/messages` | Incoming requests and existing conversations |
 | `/{locale}/messages/{id}` | Participant history, composer, recipient decisions and own block controls |
 | `/{locale}/signin` | Request a sign-in link |
 | `/{locale}/verify` | Confirm the link |
-| `/{locale}/profile` | Save your own name, set notification preferences and log out |
+| `/{locale}/profile` | Save your own name, set notification preferences and sign out; `?welcome=1` is the first-sign-in step |
 | `/{locale}/notifications` | Read your current community notifications and mark them read |
-| `/{locale}/archive` | Search currently readable post/comment text in English and Arabic |
+| `/{locale}/archive` | Redirects to the Posts tab of `/search`, keeping `q`, `community` and `type` |
 | `/{locale}/communities` | Discover and create communities |
 | `/{locale}/communities/{id}` | View a community, manage membership and create/read posts |
 | `/{locale}/communities/{id}/posts/{postId}` | Read one permitted post and its comments; eligible members can comment |
 
-Protected flows require interactive dev, the explicit localhost preview or a synthetic runner. Check both languages, Arabic RTL, keyboard focus, validation messages and mobile widths. `/fr` should return 404; the current generic 404 page is English.
+Protected flows require interactive dev, the explicit localhost preview or a synthetic runner. Check both languages, Arabic RTL, keyboard focus, validation messages and mobile widths. `/fr` and unknown paths return 404 with a localized page (English and Arabic for unknown locales).
 
 ## Security and release limits
 

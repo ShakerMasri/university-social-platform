@@ -539,7 +539,22 @@ async function identityBrowser(m: LocalManifest) {
   // run before communities. Keep all assertions, with separate fixture scopes.
   for (const group of ["empty", "main", "archive", "messaging", "feed"] as const) await identityBrowserGroup(m, group);
 }
-async function identityBrowserGroup(m: LocalManifest, group: "empty" | "main" | "archive" | "messaging" | "zoom" | "feed" | "components") {
+// UI rebuild Stage 1: the app shell and the specs rewritten with it. The full
+// main group also runs these files.
+const shellSpecs = ["tests/e2e/shell.spec.ts", "tests/e2e/search.spec.ts", "tests/e2e/people.spec.ts"];
+// Focused main-group run for rewriting or de-flaking one spec without the full
+// suite: USP_E2E_SPECS (comma-separated tests/e2e spec files), optional
+// USP_E2E_GREP (test title pattern) and USP_E2E_REPEAT (1-20 runs of each test).
+function focusedBrowserArguments(): string[] {
+  const specs = (process.env.USP_E2E_SPECS ?? "").split(",").map(spec => spec.trim()).filter(Boolean);
+  if (specs.length === 0) throw new Error("Set USP_E2E_SPECS to one or more tests/e2e/*.spec.ts files");
+  for (const spec of specs) if (!/^tests\/e2e\/[a-z0-9-]+\.spec\.ts$/.test(spec) || !existsSync(resolve(spec))) throw new Error(`Unknown browser spec: ${spec}`);
+  const repeat = Number(process.env.USP_E2E_REPEAT ?? "1");
+  if (!Number.isInteger(repeat) || repeat < 1 || repeat > 20) throw new Error("USP_E2E_REPEAT must be an integer from 1 to 20");
+  const grep = process.env.USP_E2E_GREP;
+  return [...specs, ...(grep ? ["--grep", grep] : []), `--repeat-each=${repeat}`, "--project=chromium"];
+}
+async function identityBrowserGroup(m: LocalManifest, group: "empty" | "main" | "archive" | "messaging" | "zoom" | "feed" | "components" | "shell" | "focus") {
   verifyResources(m);
   const zoomOnly = group === "zoom";
   const controlPath = resolve(".cache/m2-browser.json");
@@ -556,6 +571,9 @@ async function identityBrowserGroup(m: LocalManifest, group: "empty" | "main" | 
   }
   // UI rebuild component preview only; the full main group also runs this spec.
   if (group === "components") testArguments.push("tests/e2e/ui-components.spec.ts", "--project=chromium");
+  if (group === "shell") testArguments.push(...shellSpecs, "--project=chromium");
+  // The Playwright config treats "focus" like the main group.
+  if (group === "focus") testArguments.push(...focusedBrowserArguments());
   const record: DatabaseRecord = { name: `usp_m1b_${m.owner}_test_${randomBytes(6).toString("hex")}`, kind: "test", ready: false };
   if (zoomOnly && m.databases.some(existing => existing.name === record.name)) throw new Error("Zoom database name already registered; refusing adoption");
   m.databases.push(record); save(m);
@@ -797,6 +815,8 @@ try {
     // Replay the already-reviewed history only on the new focused browser target.
     else if (command === "zoom-browser") await identityBrowserGroup(m, "zoom");
     else if (command === "components-browser") await identityBrowserGroup(m, "components");
+    else if (command === "shell-browser") await identityBrowserGroup(m, "shell");
+    else if (command === "focus-browser") await identityBrowserGroup(m, "focus");
     else if (command === "messaging-browser") { await reviewMigration(m); await identityBrowserGroup(m, "messaging"); }
     else if (command === "messaging-restart-check") await restartMessagingDatabase(m);
     else if (command === "cleanup") await cleanup(m);

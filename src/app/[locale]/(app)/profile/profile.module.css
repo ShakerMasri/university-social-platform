@@ -1,0 +1,5 @@
+.column {
+  display: grid;
+  gap: var(--space-6);
+  max-inline-size: 40rem;
+}

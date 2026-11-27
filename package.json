@@ -23,6 +23,8 @@
     "test:e2e:identity": "node tools/database/local.mts identity-browser",
     "test:e2e:zoom": "node tools/database/local.mts zoom-browser",
     "test:e2e:components": "node tools/database/local.mts components-browser",
+    "test:e2e:shell": "node tools/database/local.mts shell-browser",
+    "test:e2e:focus": "node tools/database/local.mts focus-browser",
     "test:e2e:messaging": "node tools/database/local.mts messaging-browser",
     "test:e2e:feed": "node tools/database/local.mts feed-browser",
     "qa:manual": "node tools/database/local.mts manual-qa",

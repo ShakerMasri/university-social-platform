@@ -38,12 +38,16 @@ export function Button({ variant = "primary", size = "default", icon, pending = 
   );
 }
 
-export type ButtonLinkProps = CommonProps & Omit<AnchorHTMLAttributes<HTMLAnchorElement>, "href"> & { href: string };
+export type ButtonLinkProps = CommonProps & Omit<AnchorHTMLAttributes<HTMLAnchorElement>, "href"> & {
+  href: string;
+  /** Pass false when the destination does costly or budgeted work (search). */
+  prefetch?: boolean;
+};
 
 /** A link styled as a button, for navigation. Use Button for actions. */
-export function ButtonLink({ variant = "secondary", size = "default", icon, className, children, href, ...props }: ButtonLinkProps) {
+export function ButtonLink({ variant = "secondary", size = "default", icon, className, children, href, prefetch, ...props }: ButtonLinkProps) {
   return (
-    <Link {...props} href={href} className={buttonClass(variant, size, className)}>
+    <Link {...props} href={href} prefetch={prefetch} className={buttonClass(variant, size, className)}>
       {icon && <span className={styles.icon}>{icon}</span>}
       {children}
     </Link>

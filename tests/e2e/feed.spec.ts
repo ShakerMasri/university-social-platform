@@ -202,7 +202,7 @@ for (const locale of ["en", "ar"] as const) {
       await expect(page.locator(".post-card")).toHaveCount(0);
       expect((await write(context.request, `/api/communities/${spaces[0]}/memberships`, { action: "leave" })).status()).toBe(200);
       await keyboard(page, text.refresh); await expect(page.getByText(text.coldStart, { exact: true })).toBeVisible();
-      await expect(page.getByRole("main").getByRole("link", { name: text.archive, exact: true })).toHaveAttribute("href", `/${locale}/archive`);
+      await expect(page.getByRole("main").getByRole("link", { name: text.archive, exact: true })).toHaveAttribute("href", `/${locale}/search?tab=posts`);
       await expect(page.getByRole("link", { name: text.discover, exact: true })).toBeVisible();
       const valid = await (await context.request.get("/api/feed/for-you")).json();
       await page.route("**/api/feed/for-you", route => route.fulfill({ status: 200, contentType: "application/json", body: JSON.stringify({ ...valid, items: [], next: null }) }), { times: 1 });
@@ -290,7 +290,8 @@ test("feed confirms the current session and responds to sign-in and sign-out in 
     } catch { throw new Error("Synthetic link navigation failed; credentials omitted"); }
     const signInAborted = await holdEmptyFeedSessionCheck(page);
     await otherTab.getByRole("button", { name: identityText.en.confirm, exact: true }).click();
-    await expect(otherTab).toHaveURL(/\/en\/profile$/);
+    // First sign-in opens the display-name step (UI rebuild Stage 1).
+    await expect(otherTab).toHaveURL(/\/en\/profile\?welcome=1$/);
     await expect(page.getByText(feedText.en.unavailable, { exact: true })).toBeVisible();
     await expect.poll(signInAborted).toBe(true);
     expect((await context.request.get("/api/feed/session", { headers })).status()).toBe(403);

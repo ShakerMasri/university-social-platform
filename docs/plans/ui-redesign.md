@@ -1,6 +1,6 @@
 # UI rebuild — "Clear Campus"
 
-Status: Stage 0 done (2026-11-26); Stage 1 next · Branch: feat/ui-redesign · Milestone: UI rebuild (after M5-04 closure)
+Status: Stage 0 done (2026-11-26); Stage 1 built and tested, awaiting review and commit (2026-11-27) · Branch: feat/ui-redesign · Milestone: UI rebuild (after M5-04 closure)
 
 ## Goal
 
@@ -368,12 +368,12 @@ Each stage is one checkpoint: review, then commit on `feat/ui-redesign`. Main is
 - Checks to run: lint, typecheck, unit tests, build, contrast script; Playwright run of the preview page in both themes and both locales, plus a no-flash check.
 - Done when: the preview shows every component in light/dark × EN/AR, with keyboard and focus checked.
 
-### Stage 1 — App shell, sign-in, onboarding
+### Stage 1 — App shell, sign-in, onboarding (done 2026-11-27: see progress log)
 - Steps:
   - Build the header with the unified search field, the navigation (desktop and mobile per decision 5), the language and theme switches, and the notifications button with its preview.
   - Add `/search` with All, Posts and People tabs (the Communities tab comes in Stage 2).
   - Redirect `/archive` and `/people` to the matching tab, then remove the old archive and people search pages.
-  - Rebuild sign-in, verify and onboarding, and the localized 404 and denied pages.
+  - Rebuild sign-in, verify and onboarding, and the localized 404 page. (The denied page moved to Stages 2 and 3, with the pages that use it.)
   - Delete `globals.css` harness rules and the old header.
   - Walk through the problems listed in section A.
 - Checks to run: lint, typecheck, unit tests, build; rewritten `identity`, `locales`, `ui-layout`, `ui-zoom` and `archive`/`people` search suites; the C1 browser tests for posts and people, including the redirects; the e2e CI suite.
@@ -386,6 +386,7 @@ Each stage is one checkpoint: review, then commit on `feat/ui-redesign`. Main is
   - `CommunityVisit` migration and counts (C4).
   - `searchCommunities` and the Communities tab (C1).
   - Home side panel with recent notifications. No assistant card or placeholder.
+  - Denied state (moved from Stage 1, review P3-3): community pages show a localized "no access" state for private or removed access, revealing nothing about the content. Approved text: EN "You don't have access" / "This page is private, or your access has changed. If you think you should have access, ask the person who shared the link."; AR "لا تملك صلاحية الوصول" / "هذه الصفحة خاصة، أو أن صلاحية وصولك تغيرت. إن كنت تعتقد أنه يحق لك الوصول، فاسأل من شارك الرابط معك."
 - Checks to run:
   - Unit tests.
   - `db:test` and `db:test:feed`, plus the new database tests.
@@ -398,7 +399,8 @@ Each stage is one checkpoint: review, then commit on `feat/ui-redesign`. Main is
 - Steps:
   - Post page and post card in their final form.
   - Comments and replies with the icon-plus-count Replies action.
-  - Vote control (up/down counts, `aria-pressed`).
+  - Vote control (up/down counts, `aria-pressed`). **Ask the owner first:** they are leaning towards changing the 2026-11-03 vote display. Proposed: show only the upvote count publicly; keep the downvote button with its pressed state; keep downvotes in ranking; possibly add a "Disputed" label on replies with many downvotes relative to upvotes (propose the rule before building it). Reason: avoid discouraging students from asking questions. Display-only change; the server already counts both. Confirm before building the vote control, and consider asking usability-test participants which version they prefer.
+  - The same denied state on post pages (see Stage 2).
   - Share (C2).
   - `SavedPost` migration, APIs and `/saved` (C3).
 - Checks to run: `db:test` plus the save tests; rewritten `comments`, `discussion-actions`, `votes` and `replies-notifications` suites; the C2 and C3 tests.
@@ -440,6 +442,21 @@ Each stage is one checkpoint: review, then commit on `feat/ui-redesign`. Main is
 - Checks to run: the full CI gate plus all `test:e2e:*` suites.
 - Done when: AC 1–10 are evidenced, and the gaps found are fixed or recorded.
 
+### Temporary page CSS (owner decision 2026-11-27)
+
+Stage 1 deleted the harness CSS (`globals.css`). The owner approved keeping [legacy-pages.css](../../src/app/[locale]/legacy-pages.css) temporarily: it holds only working rules for pages not yet rebuilt, with no old layout or look. Each rule goes in the stage that rebuilds the last page using it. The file is deleted by the end of Stage 6 (AC 2). Tick each row when its rule is removed.
+
+| Rule | Why it is needed now | Last users | Remove in |
+| --- | --- | --- | --- |
+| `.visually-hidden` | Screen-reader-only text | communities forms, vote control | Stage 3 |
+| `.community-description` (pre-wrap) | Keeps the line breaks people typed | communities, posts, comments, message thread | Stage 5 |
+| `.message-scroll` | The message history is a scroll region | message thread | Stage 5 |
+| Form controls `max-inline-size: 100%` in `#main-content` | Reflow at 320px and 400% zoom | communities, post and comment forms, message composer, notification preferences | Stage 5 |
+| `.community-list` (no bullets) | List reading | communities, posts, comments, feed, messages, notifications | Stage 6 |
+| `.comment-replies` | Replies stay visibly nested | comment thread | Stage 3 |
+| Discussion controls: `.content-actions`, `.vote-control`, `.action-icon`, `.text-action`, `.comment-action`, `.comment-composer`, `.composer-actions` | 36px targets (WCAG 2.5.8) and the compact composers approved 2026-11-03 | post card, comment card and form, vote control | Stage 3 |
+| ~~`.archive-excerpt`~~ | — | none since `/search` | Removed in Stage 1 |
+
 ## Verification plan
 
 - **Unit (Vitest):** input validation, URL builders, theme and cookie parsing, count capping.
@@ -469,6 +486,32 @@ Recorded 2026-11-26 on `feat/ui-redesign` at `ec5724b`, before any Stage 0 code,
 
 After Stage 0 every existing route's figure is unchanged, because the new components load only on the development preview. Re-measure at each stage. Explain in writing any route that grows beyond its baseline, measuring a replaced page against the page it replaces.
 
+**Stage 1 (2026-11-27), measured the same way after `npm run build`:**
+
+| Route | Baseline | First shell | After lazy-loading |
+| --- | --- | --- | --- |
+| Shared root chunks | 128.8 | 128.6 | 128.6 |
+| `/[locale]` (Home) | 135.6 | 149.1 | 148.3 (+12.7) |
+| `/[locale]/signin`, `/verify` | 140.1 | 154.8 | 149.1 (+9.0) |
+| `/[locale]/communities/[id]` (largest) | 144.4 | 157.7 | 157.1 (+12.7) |
+| `/[locale]/search` (new) | — | 151.2 | 150.5 |
+| 404 (`[...missing]`) | — | 148.7 | 135.3 |
+
+What changed after the owner asked for lazy-loading:
+- **Loaded on first use** (or when the control is hovered or focused): the notifications preview (its fetch, validation and list), the menu list (the Stage 0 Menu now ships only its trigger, for every menu), and the mobile More dialog. Measured alone, this saved 1.6 KiB on app routes (Home 149.1 → 147.5).
+- **The larger saving came from imports:**
+  - The 404 boundary sits above every page, and it was importing the whole shell, so every route carried all of it. The 404 page is now built on the server from client-free parts, and a small switch picks the language. The 404 header has no theme or language switch. The boundary still adds a separate 3.3 KiB chunk to every route, which is why Home ends at 148.3 rather than 147.5.
+  - Sign-in and verify now import only the slim frame.
+
+**Written reason for the remaining growth (AC 10):** on app routes, +12.7 KiB gzip is the shell that is visible on every page:
+- header search (next/form, client-side navigation)
+- toast live regions (they must exist from the first render to be announced)
+- desktop and mobile navigation with current-page state
+- theme and language switches
+- the notifications and account triggers
+
+On sign-in and verify, +9.0 KiB is the theme and language switches, plus the new identity forms built on the shared components. A further option, not taken: a plain GET form for header search (no next/form). It would save a little but reload the whole page on every search.
+
 ## Risks
 
 - **Size:** nine checkpoints on one long-lived branch. Mitigation: merge main into it regularly and keep each stage reviewable.
@@ -482,6 +525,174 @@ After Stage 0 every existing route's figure is unchanged, because the new compon
 ## Progress log
 
 Newest first; filled by /handoff and /review-checkpoint.
+
+### 2026-11-27 — Session 3 — Stage 1 test rewrites, walkthrough, review
+- **State:** Stage 1 complete pending review · branch `feat/ui-redesign` at `c595291` (new: `docs: add replies format rule`, CLAUDE.md only, owner-approved; not pushed) · all Stage 1 work uncommitted.
+- **Done:**
+  - Votes keyboard test waits for the vote buttons to be enabled (hydration) before each key press. Then 10/10 (5 runs × EN/AR), then 10/10 again, and the whole votes spec 32/32 (4 runs).
+  - New focused runner `test:e2e:focus` (`USP_E2E_SPECS`, `USP_E2E_GREP`, `USP_E2E_REPEAT`), validated input, same guarded disposable database as the other groups; recorded in README.
+  - `identity.spec.ts` rewritten (see the inventory status). Sign-out is tested from both controls: header account menu (dead sessions, trigger failure with toast and focus return) and the profile page button (SELECT-revoked failure, final logout).
+  - `ui-layout.spec.ts`: navigation check uses whichever navigation is visible; unique community name per run; reflow failures now name the overflowing elements. `ui-zoom.spec.ts`: `/search` tabs replace `/archive` and `/people`; fit check includes header and navigation.
+  - **Bug fixed:** at 320px with 200% text and WCAG text spacing, the header's notifications and account buttons overflowed off-screen (both locales). The header row and its action group now wrap (`shell.module.css`).
+  - Section A walkthrough with screenshots (EN/AR × light/dark × 320/1360; synthetic data, outside the repo; temporary spec deleted). Findings below.
+- **Walkthrough (section A):**
+  - P2, P3 (posts and people), P6: resolved by Stage 0–1 (header search, unread bell with preview, account menu; unified `/search`; theme, self-hosted fonts, localized 404).
+  - P1: partial. Verified Home is a start page with three links; the feed on Home is Stage 2.
+  - P7: partial. Notification settings now sit on the profile page, but are still unstyled (Stage 4).
+  - P3 (communities search), P4, P5, P8: unchanged, planned for Stages 2, 2, 3 and 5. Post and community pages still look like the harness (expected).
+  - New small findings: (a) the profile page button says "Log out" while the header menu says "Sign out"; (b) the profile page shows two near-duplicate privacy notes (directory hint and the "Only you can edit" note); (c) the mobile More sheet holds a single item (Profile and settings).
+- **Checks:**
+  - `npm run lint` -> passed; `npm run typecheck` -> passed; `npm test` -> 496 passed, 1 skipped
+  - `npm run build` -> succeeded
+  - `test:e2e:focus` identity spec -> 19/19; ui-layout -> 4/4 (after the header fix)
+  - `npm run test:e2e:zoom` -> 2/2 (native 200% and 400%, EN/AR)
+  - `npm run test:e2e:identity` (all groups) -> empty 1/1, main 201 passed + 1 skipped, archive 14/14, messaging 40/40, feed 18/18
+  - after removing a temporary diagnostic and rebuilding: `npm run test:e2e` -> 18/18, `test:e2e:shell` -> 37/37, `test:e2e:components` -> 12/12
+  - not run: NVDA, forced colors, non-Chromium browsers, client JS size re-measurement (only CSS changed since the last measurement).
+- **Open issues / risks:**
+  - During the first votes run the server logged `shell.notifications.failed` twice (header unread count failed; the header degrades to no count). A temporary diagnostic was added and ~300 further browser tests ran without it recurring, so the cause is unknown. The diagnostic was removed.
+- **Review (`checkpoint-reviewer`, 2026-11-27, uncommitted scope):** no P1, 1 P2, 7 P3. No authorization, leak or validation regression found; server changes limited to diagnostics event names; security inventory I1–I17, A2/A4/A6/A7, P1–P10 and C1 cases confirmed present.
+  - P2-1: each `(app)` render runs the profile read plus a full `listNotifications` (membership snapshot, advisory locks, a 21-item page) only for the unread count, on a 4-connection pool with Prisma's 2 s transaction wait. Hypothesised cause of the two `shell.notifications.failed` logs; a pool-wait failure on the first read would show "session could not be checked" for a healthy session. Fix needs a small read-only count function (server addition, owner decision) or a client-side count after idle.
+  - P3-1: header unread count and avatar go stale after client navigation (shared layout is not re-rendered); a comment in `notifications-button.tsx` claims otherwise.
+  - P3-2: the All tab applies `community`/`type` from the URL without showing them.
+  - P3-3: `DeniedContent` is built but unused; Stage 1 lists the denied page.
+  - P3-4: the header search landmark has no accessible name.
+  - P3-5: README (search pages, 404 text, `test:e2e:shell`), project brief Stage 1 entry and the Stage 1 heading here are out of date.
+  - P3-6: the "visual tour screenshots" test in `shell.spec.ts` has no assertions and runs in every shell and main run.
+  - P3-7: no browser test for `/search` failure and Retry states; tab keyboard activation not tested; two unused i18n keys.
+  - Reviewer checks: lint and typecheck passed; `npm test` 496 passed with Node 24.21.0 (2 environment-only failures on Node 24.13.0). No database or browser suites run by the reviewer.
+  - Residual: search budgets spent per All-tab render; possible production prefetch of some ButtonLinks; removed "Local synthetic account test" label; stale `tools/testing/feed-qa-snapshot.mts` file list; manual/NVDA/forced-colours/non-Chromium checks outstanding.
+  - Status: owner chose fixes (below).
+- **Owner decisions on the review (2026-11-27):**
+  - P2-1: "Yes. Add a small read-only count for unread notifications. It must apply exactly the same access rules as the notification list ... Keep it bounded, give it unit tests, and add a browser test that the count drops when access is revoked. Fix the stale count after client navigation (P3-1) in the same change."
+  - P3-2 to P3-7: "Yes, fix all seven."
+  - Walkthrough: "Use 'Sign out' everywhere and keep the clearer of the two privacy notes, in both languages." More sheet: leave until Stage 4.
+  - After fixes and checks, re-review the fixes only; with no P1/P2, commit Stage 1 with the approved message, push both commits to `feat/ui-redesign`, then hand off.
+- **Fixes:**
+  - P2-1: `countUnreadNotifications` (server, read-only) reuses the list's `visibleNotifications` scope, so the access rules are identical; it counts at most `unreadCountLimit + 1` (99 + 1) rows. The header uses it instead of `listNotifications` and shows "99+" above the limit (EN/AR). Database tests: count equals the list's unread across removal, pending rejoin, approval, leaving and other users (public and private); the cap; the lock race after removal; 401 for an unknown session. Unit tests: viewer and label.
+  - P3-1: pages tell the header directly (`shell/shell-events.ts`, same tab only): opening an unread notification from the list lowers the count; saving a display name updates the avatar. The misleading comment is corrected. Mark-all-read already refreshes the route. New notifications that arrive during client-side browsing still show on the next full load or refresh (no realtime; recorded limitation).
+  - P3-2: post filters apply only on the Posts tab. P3-3: the unused denied page was removed; it moved to Stages 2 and 3 with its approved text (the reviewer's second option, to avoid changing pages those stages rebuild). P3-4: the header search landmark is named. P3-5: README routes, 404 note and `test:e2e:shell`, the project brief's Stage 1 entry and this plan updated. P3-6: the screenshot tour runs only with `USP_VISUAL_TOUR=1`. P3-7: new browser tests for a failed kind with Retry (genuine fault: comments unreadable), an unchecked session on `/search`, keyboard tab activation and All ignoring filters; unused keys removed.
+  - "Log out" is now "Sign out"; the profile keeps the directory note and drops the longer duplicate.
+  - New browser tests in `shell.spec.ts`: the count drops after removal from a private community and returns on readmission; the header count and avatar update without a reload.
+- **Checks after fixes:**
+  - `npm run lint` -> passed; `npm run typecheck` -> passed; `npm test` -> 501 passed, 1 skipped; `npm run build` -> succeeded
+  - `npm run db:test` -> 179 passed, 18 skipped (skips are the gated evidence suites)
+  - `npm run test:e2e:identity` -> empty 1/1, main 204 passed + 2 skipped (screenshot tour now opt-in), archive 18/18, messaging 40/40, feed 18/18
+  - `npm run test:e2e:shell` -> 44 passed, 1 skipped; `npm run test:e2e` -> 18/18
+  - Logged events in these runs all trace to deliberate faults (identity I6/I16, search fault test). In I16 a background session recheck on Home can be mid-render when SELECT is revoked, which logs `shell.notifications.failed` once per locale. The single occurrence in the first votes run of this session (no faults) remains unexplained.
+- **Re-review of the fixes (`checkpoint-reviewer`, 2026-11-27):** no P1, no P2, 2 P3. Confirmed the count uses the list's scope, is read-only and bounded, and that P3-2 to P3-7 and the wording changes are in place. Reviewer ran lint, typecheck and unit tests (passed); no database or browser suites.
+  - P3-a (open): the header can keep a count from the preview after "Mark all read" when the server value equals its last render (for example 0 at load, 3 seen in the preview, then mark all read). Fix next: have mark-all send a shell event (or reset on every server render), correct the comment in `notifications-button.tsx`, and add a browser assertion on the header after mark-all.
+  - P3-b (open, needs an owner decision): opening an already-read item from an outdated list (after Back) lowers the header count again. Exact fix: the open endpoint reports whether it marked the item read (changes an existing API response). Otherwise record it as a known limitation.
+  - Per the owner's instruction (no P1/P2), Stage 1 is committed and pushed with these two P3s open.
+
+### 2026-11-27 — Session 2 — Stage 1 shell, search and entry pages (partial)
+- **State:** partial · branch `feat/ui-redesign` at `5d45817` · uncommitted: all Stage 1 work (107 status entries, 94 files vs HEAD), including the `(app)`/`(entry)` route-group moves, staged as renames.
+- **Done:**
+  - App shell in persistent group layouts: `src/app/[locale]/(app)/layout.tsx` (AppShell) and `(entry)/layout.tsx` (EntryFrame), so loading states keep the header. Shell code in `src/app/[locale]/shell/`: header search, primary nav, mobile bar with a lazy More dialog, account menu (lazy menu list), notifications button with a lazy preview, theme and language switches, and `loadViewer` (anonymous / unavailable / verified).
+  - Localized 404 for every route, including unknown locales (`not-found.tsx`, `[...missing]/page.tsx`, `notFound()` in the group layouts so the status is a real 404). Denied page content in `shell/status-content.tsx`.
+  - `/search` with All, Posts and People tabs, rendered on the server from the URL (`(app)/search/`). `/archive` and `/people` redirect (307) to the matching tab; the old search pages were removed.
+  - Sign-in, verify and onboarding rebuilt (`identity-forms.tsx`, `profile?welcome=1`); Home rebuilt for anonymous, verified and unavailable viewers.
+  - `globals.css` deleted. Remaining page rules live in the temporary `legacy-pages.css`, each with a removal stage (see "Temporary page CSS").
+  - Lazy-loading for the notifications preview, menu list and More dialog. The 404 boundary and entry layout no longer import the whole shell. Sizes are recorded under "Client JS baseline (AC 10)".
+  - New browser specs: `tests/e2e/shell.spec.ts`, `search.spec.ts`, and the helpers in `shell-navigation.ts`. Rewritten: `locales.spec.ts`, `people.spec.ts`. `archive.spec.ts` was deleted; its cases moved to `search.spec.ts`. Older suites were adjusted to the new shell. New runner group `test:e2e:shell`.
+  - Local database repair: removed an orphaned not-ready manifest entry and two leftover test databases (manifest backed up to `.cache/m1b/manifest.backup-2026-11-27.json`). Tooling fix committed separately as `5d45817`: an unfinished entry now gives a named "incomplete database setup" error.
+- **Decisions:**
+  - "Yes, the three tokens are approved." (`danger-text`, `control-border`, `backdrop`)
+  - "Keep legacy-pages.css temporarily. Track each rule's removal in the plan so the file is deleted by Stage 6."
+  - "Do the lazy-loading now (notifications preview, account menu, More dialog) and record the new size."
+  - "The two behaviour changes are fine": the language link keeps a profile URL as typed, and back/forward may show search results that were already displayed.
+  - Database: "yes to steps 1, 2, 3 and 4. Keep the tooling fix in its own commit."
+  - Votes test: fix the hydration wait "in the next session".
+  - Stage 1 commit: approved ("yes") to commit as `feat(ui): add Stage 1 app shell, unified search and entry pages` once `/review-checkpoint` passes. Not approved: pushing.
+- **Checks:**
+  - `npm run lint` -> passed
+  - `npm run typecheck` -> passed
+  - `npm test` -> 496 passed
+  - `npx vitest run tools/database/targets.test.ts` -> 5 passed (after the tooling fix)
+  - production build used for the client JS measurement -> succeeded; Home 148.3, sign-in/verify 149.1, largest route 157.1, 404 135.3 KiB gzip
+  - `npm run test:e2e` -> 18/18
+  - `npm run test:e2e:shell` -> 37/37
+  - `npm run test:e2e:components` -> 12/12
+  - `npm run test:e2e:feed` -> 18/18 (an earlier run had 4 failures that did not reproduce)
+  - `npm run test:e2e:messaging` -> 40/40, including the PostgreSQL restart case, after the database repair
+  - `npm run db:status` -> passed after the repair
+  - `npm run test:e2e:identity` -> 180 passed, 21 failed, 1 skipped. The 21 failures are the planned rewrites: 17 in `identity.spec.ts`, 2 in `ui-layout.spec.ts`, 2 in `ui-zoom.spec.ts`.
+  - not run: `/review-checkpoint`, e2e CI suite, manual section A walkthrough, NVDA, forced colors, non-Chromium browsers.
+- **Open issues / risks:**
+  - `votes.spec.ts` "profileless members toggle ... by keyboard" failed once in English (aria-pressed stayed false) and passed on the rerun. Likely cause: the test focuses the vote button and presses Enter before hydration, while the button is still disabled. Fix next session: wait for `toBeEnabled()` before each focus, including after the reload.
+  - Stage 1 is not yet committable as a checkpoint: three suites are red until they are rewritten.
+  - Client JS is +12.7 KiB gzip over the Stage 0 baseline (reason recorded under AC 10).
+- **Next step:** add `toBeEnabled()` waits to the votes keyboard test, then rewrite `tests/e2e/identity.spec.ts` against the new sign-in, verify and onboarding pages, using the "Stage 1 security case inventory" (I1–I10, I14–I16 rewrite; I11–I13 and I17 keep). Then `ui-layout` and `ui-zoom` (archive and people zoom routes become `/search`), the section A walkthrough, and `/review-checkpoint`.
+
+### 2026-11-27 — Stage 1 security case inventory (before rewriting specs)
+
+Each security case in the six specs Stage 1 rewrites, and where it goes. **Keep** = an API-level test that doesn't touch the UI; it moves over unchanged. **Rewrite** = drives the UI; the same assertions are rewritten against the new pages. A case is crossed off only when its new test passes.
+
+**`identity.spec.ts`** → rewritten `identity.spec.ts`
+| # | Case | Plan |
+| --- | --- | --- |
+| I1 | Verification token stays in the URL fragment only: never in request URLs, storage, `history.state` or the DOM; a GET (scanner) of `/verify` does not sign in; `GET /api/identity/confirm` is 404 | Rewrite |
+| I2 | Browser binding: the token confirmed from another browser context returns 400 | Rewrite |
+| I3 | Single use: replaying a confirmed token with the original pending cookie returns 400 | Rewrite |
+| I4 | Switching language on `/verify` keeps the token in memory only and confirmation still works | Rewrite |
+| I5 | Logout with an expired, revoked or absent session clears both cookies, shows sign-in, leaks no email in the page; the old cookie replayed on GET and POST profile returns 401; a repeated logout returns 200 | Rewrite |
+| I6 | Logout during a database failure (trigger reject; SELECT revoked) returns 503 with no `Set-Cookie`, keeps both cookies, shows a focused failure message, does not revoke the session; a later logout succeeds | Rewrite |
+| I7 | Session cookie is `HttpOnly`, `SameSite=Lax`; the profile API sends `Cache-Control: private, no-store` | Rewrite |
+| I8 | After logout, the old session cookie returns 401 | Rewrite |
+| I9 | Signing in again with the same email reuses the account and keeps the saved name | Rewrite |
+| I10 | An expired link shows the link error (focused), also after a language switch | Rewrite |
+| I11 | Profile writes reject `userId`, `email` and `role` (400); `?userId=` returns 404; a second account's cookie only reaches its own profile | Keep (API) |
+| I12 | Request responses are identical for new, existing and ineligible emails (202 `{ok:true}`); no mail to ineligible addresses | Keep (API) |
+| I13 | Untrusted or empty `Origin` returns 403; `DELETE` returns 405; an oversized body returns 400 | Keep (API) |
+| I14 | Home sends `no-store`; reading home without a profile creates no `Profile` row; a logout in another tab shows on focus, back and reload | Rewrite |
+| I15 | Home rechecks expired and revoked sessions on back and reload, without clearing the cookie on a GET | Rewrite |
+| I16 | Home during a database failure: no `Set-Cookie`, an alert, neither the sign-in nor the profile link, and retry recovers | Rewrite |
+| I17 | Rate limits use the real peer IP; forged `X-Forwarded-For` and `X-USP-Peer*` headers are ignored; 30 per window for request and confirm | Keep (API) |
+
+**`locales.spec.ts`** → rewritten `locales.spec.ts`
+| # | Case | Plan |
+| --- | --- | --- |
+| L1 | `/` redirects 307 to `/en` | Keep |
+| L2 | `/_next/image` is disabled (404) | Keep |
+| L3 | Unsupported locales and unknown paths return HTTP 404 (now with a localized page) | Rewrite |
+| L4 | Home rechecks the server (RSC request) on focus and on back, keeping keyboard focus | Rewrite |
+
+**`ui-layout.spec.ts`** and **`ui-zoom.spec.ts`**: no security cases. Their reflow, zoom, skip-link and focus checks are rewritten against the new shell. The community and post pages are rebuilt in Stages 2 and 3, so their layout checks stay until then. In `ui-zoom`, the `archive` and `people` routes become `/search` tabs.
+
+**`archive.spec.ts`** → new `search.spec.ts` (Posts tab)
+| # | Case | Plan |
+| --- | --- | --- |
+| A1 | Every new server snapshot (scoped navigation, header navigation, unchanged refresh) resets query, filters, results, cursor and retry state | Rewrite |
+| A2 | After removal from a private community, a refresh clears its results and drops it from the community filter; an unscoped search then returns nothing | Rewrite |
+| A3 | A response body delayed across navigation or a refresh after removal is discarded, and focus is kept | Rewrite |
+| A4 | Stored HTML in titles and bodies renders inert | Rewrite |
+| A5 | Changing the query cancels the in-flight request; its late response never renders | Rewrite |
+| A6 | Private pagination: non-member scoped 404 and unscoped empty; pending member 404; approved member 20 + 3; another user's cursor 400; `private, no-store`; after removal the next page is 404, the UI shows "unavailable" and clears results; a direct reply link and a comment id from another post show "unavailable" | Keep the API part; rewrite the UI part |
+| A7 | Duplicate keys, unknown parameters, oversized and `%`-only queries, invalid type: 400; `POST` 405; a literal `%_` query is safe | Keep (API) |
+
+**`people.spec.ts`** → new `search.spec.ts` (People tab) plus a slimmer `people.spec.ts` for the person page and APIs
+| # | Case | Plan |
+| --- | --- | --- |
+| P1 | Unverified accounts disappear from results, and their person page and API return 404 | Rewrite |
+| P2 | Accounts without a saved profile are not listed; opening `/profile` shows a suggested name but creates no `Profile` row until saved | Rewrite |
+| P3 | Results carry only `id` and `displayName`, the `id` is not the user id, and responses are `private, no-store` | Rewrite |
+| P4 | There is no hiding control; a `directoryVisible` field is rejected (400) | Rewrite |
+| P5 | Stored HTML in names renders inert | Rewrite |
+| P6 | A caller signed out mid-search sees "unavailable" and the results clear | Rewrite |
+| P7 | Results delayed across a server refresh are discarded, and the query resets | Rewrite |
+| P8 | Anonymous search and detail return 401; a missing `Origin` returns 403; extra fields, wrong types and empty names return 400; short, duplicate, unknown and bad-cursor queries return 400; an unknown id returns 404 `{ok:false}` | Keep (API) |
+| P9 | Both profile routes share one save budget across sessions; over the limit, 429 with no change and no `Set-Cookie` | Keep (API) |
+| P10 | Control and bidi characters are rejected on both profile routes without changing the profile | Keep (API) |
+
+New in Stage 1 (C1): a non-member searching a private post's unique word gets no result on the All or Posts tab while a member does; after removal it disappears; `/archive?q&community&type` and `/people?q` redirect to the matching tab with the same results.
+
+**Status (2026-11-27, end of session 2):**
+- Done and passing in `search.spec.ts`: A2, A4, A6 (UI and API), A7, the new C1 cases, the redirects, and P1, P5, P6. `people.spec.ts` keeps P2, P3, P4 and P8–P10, plus the typo-matching case.
+- A1, A3, A5 and P7 guarded client-held search state: snapshot resets, delayed bodies, cancelled requests. `/search` renders results on the server from the URL, so no such state exists. Each render rechecks access, and each page is a URL. Covered instead by the reload-after-removal, cursor and redirect cases in `search.spec.ts`.
+- L1–L4: done in the rewritten `locales.spec.ts`.
+- ~~Still to rewrite: I1–I10 and I14–I16 in `identity.spec.ts`, plus `ui-layout` (2) and `ui-zoom` (2).~~ Done in session 3: I1–I10 and I14–I16 rewritten against the new sign-in, welcome step, header account menu and Home; I11–I13 and I17 unchanged; all 19 pass. `ui-layout` and `ui-zoom` rewritten (zoom now visits the `/search` tabs, and its fit check covers the header and navigation).
+
+- 2026-11-27: Owner approved the three Stage 0 tokens (`danger-text`, `control-border`, `backdrop`): "Yes, the three tokens are approved." This closes the Session 1 open issue. Owner said to start Stage 1 by listing the security cases of the specs being rewritten, then continue.
 
 ### 2026-11-26 — Session 1 — Stage 0 foundations
 - **State:** done · branch `feat/ui-redesign` at `e12c629` (pushed) · uncommitted: this log entry, the brief entry and the `ui-direction.md` wording fix

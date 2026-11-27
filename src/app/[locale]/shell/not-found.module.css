@@ -1,0 +1,24 @@
+/* Bilingual 404 for an unsupported locale segment (for example /fr). */
+.bilingual {
+  display: grid;
+  justify-items: start;
+  gap: var(--space-6);
+  max-inline-size: 36rem;
+  margin-inline: auto;
+  padding: var(--space-10) var(--space-4);
+}
+.code {
+  font-size: var(--text-page);
+}
+.message {
+  display: grid;
+  gap: var(--space-2);
+  inline-size: 100%;
+  padding: var(--space-5);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-card);
+  background: var(--color-surface);
+}
+.title {
+  font-size: var(--text-heading);
+}

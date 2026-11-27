@@ -15,7 +15,10 @@ export type OperationalEvent =
   | "profiles.http.failed"
   | "profiles.page.failed"
   | "messaging.http.failed"
-  | "messaging.page.failed";
+  | "messaging.page.failed"
+  | "shell.viewer.failed"
+  | "shell.notifications.failed"
+  | "search.page.failed";
 
 // Fixed event names identify the failing boundary. Never accept an Error,
 // request, URL, headers, query, user identifier or provider-supplied message.

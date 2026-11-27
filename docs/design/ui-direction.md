@@ -64,7 +64,7 @@ Define every color once as a CSS custom property with a light and a dark value. 
 | control-border (input, select and chip borders) | #7D8799 | #6B7585 |
 | backdrop (behind modal dialogs) | rgb(16 24 40 / 0.55) | rgb(0 0 0 / 0.7) |
 
-Three tokens were added in Stage 0 (2026-11-26). `danger-text` exists because #D92D20 reaches only 4.47:1 on the page background, below the 4.5:1 text minimum. `control-border` exists because `border-strong` is about 1.5:1, and input boundaries need 3:1 (WCAG 1.4.11). `backdrop` keeps the dialog overlay a token too. The values live in `src/ui/tokens.css`, and `src/ui/tokens.test.ts` checks the main text and non-text pairs in both themes. Two hover-state pairs are not in the test yet: a selected post-type chip on `surface-muted`, and a pressed vote on `border`. Both pass when computed by hand (at least 6.6:1 and 7.0:1).
+Three tokens were added in Stage 0 (2026-11-26) and approved by the owner on 2026-11-27. `danger-text` exists because #D92D20 reaches only 4.47:1 on the page background, below the 4.5:1 text minimum. `control-border` exists because `border-strong` is about 1.5:1, and input boundaries need 3:1 (WCAG 1.4.11). `backdrop` keeps the dialog overlay a token too. The values live in `src/ui/tokens.css`, and `src/ui/tokens.test.ts` checks the main text and non-text pairs in both themes. Two hover-state pairs are not in the test yet: a selected post-type chip on `surface-muted`, and a pressed vote on `border`. Both pass when computed by hand (at least 6.6:1 and 7.0:1).
 
 Post types (background / text / chip border):
 

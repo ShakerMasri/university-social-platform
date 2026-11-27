@@ -9,7 +9,8 @@ import { createCommunity, changeMembership } from "../../src/server/communities/
 import { createPost } from "../../src/server/posts/service";
 import { createComment, listComments } from "../../src/server/comments/service";
 import { readPreferences, savePreferences } from "../../src/server/notifications/preferences";
-import { listNotifications, markAllNotificationsRead, notificationTarget } from "../../src/server/notifications/service";
+import { countUnreadNotifications, listNotifications, markAllNotificationsRead, notificationTarget } from "../../src/server/notifications/service";
+import { unreadCountLimit } from "../../src/server/notifications/policy";
 import { setVote } from "../../src/server/votes/service";
 import { readManifest, databaseUrl, assertDatabaseIdentity } from "../../tools/database/targets";
 
@@ -86,6 +87,41 @@ describe("reply threads and atomic notification delivery", () => {
     expect((await db.notification.findUniqueOrThrow({ where: { id: read.id } })).readAt).toEqual(readAt);
   });
 
+  it.each(["PUBLIC", "PRIVATE"])("counts %s unread exactly as the list does across removal, pending rejoin, approval and other users", async visibility => {
+    const { owner, member, space } = await setup(visibility), stranger = await actor();
+    const announce = () => createPost(db, owner.token, space.id, { requestId: randomUUID(), type: "ANNOUNCEMENT", title: "Count target", body: "Body" });
+    const same = async (token: string, expected: number) => {
+      expect(await countUnreadNotifications(db, token)).toBe(expected);
+      expect((await listNotifications(db, token)).unread).toBe(expected);
+    };
+    await announce(); await announce();
+    await same(member.token, 2); await same(stranger.token, 0);
+    await notificationTarget(db, member.token, (await listNotifications(db, member.token)).items[0].id, true);
+    await same(member.token, 1);
+    await changeMembership(db, owner.token, space.id, { action: "remove", userId: member.id });
+    await same(member.token, 0);
+    await changeMembership(db, member.token, space.id, { action: "join" });
+    if (visibility === "PRIVATE") {
+      await same(member.token, 0);
+      await changeMembership(db, owner.token, space.id, { action: "approve", userId: member.id });
+    }
+    await same(member.token, 1);
+    await changeMembership(db, member.token, space.id, { action: "leave" });
+    await same(member.token, 0);
+    await deny(countUnreadNotifications(db, newToken()), 401);
+  });
+
+  it("caps the header count just above the limit while the list keeps the exact number", async () => {
+    const { owner, member, space } = await setup();
+    const target = await createPost(db, owner.token, space.id, { requestId: randomUUID(), type: "QUESTION", title: "Cap target", body: "Body" });
+    const total = unreadCountLimit + 6;
+    await migration.query('INSERT INTO "Notification" (id,"recipientId","postId","eventKey",kind) SELECT gen_random_uuid(),$1::uuid,$2::uuid,gen_random_uuid(),\'UPVOTE\'::"NotificationKind" FROM generate_series(1,$3::int)', [member.id, target.id, total]);
+    expect(await countUnreadNotifications(db, member.token)).toBe(unreadCountLimit + 1);
+    expect((await listNotifications(db, member.token)).unread).toBe(total);
+    await markAllNotificationsRead(db, member.token);
+    expect(await countUnreadNotifications(db, member.token)).toBe(0);
+  });
+
   it("isolates notification owners, cursors and read actions; read-all excludes other users", async () => {
     const { owner, member, space, post } = await setup(), stranger = await actor();
     await changeMembership(db, stranger.token, space.id, { action: "join" });
@@ -119,18 +155,19 @@ describe("reply threads and atomic notification delivery", () => {
     await deny(listComments(db, owner.token, space.id, post.id, undefined, undefined, ids[21]), 404);
   });
 
-  it.each(["list", "open", "all"])("rechecks membership after a queued %s operation loses the community lock race", async operation => {
+  it.each(["list", "count", "open", "all"])("rechecks membership after a queued %s operation loses the community lock race", async operation => {
     const { owner, member, space } = await setup("PRIVATE");
     await createPost(db, owner.token, space.id, { requestId: randomUUID(), type: "ANNOUNCEMENT", title: "Private target", body: "Body" });
     const notification = (await listNotifications(db, member.token)).items[0], block = await locker(space.id);
     let removal: Promise<unknown> | undefined, pending: Promise<unknown> | undefined;
     try {
       removal = changeMembership(db, owner.token, space.id, { action: "remove", userId: member.id }); await waiting(1);
-      const action = operation === "list" ? listNotifications(db, member.token) : operation === "open" ? notificationTarget(db, member.token, notification.id, true) : markAllNotificationsRead(db, member.token);
+      const action = operation === "list" ? listNotifications(db, member.token) : operation === "count" ? countUnreadNotifications(db, member.token) : operation === "open" ? notificationTarget(db, member.token, notification.id, true) : markAllNotificationsRead(db, member.token);
       pending = action.catch((error: { status: number }) => ({ status: error.status })); await waiting(2);
       await block.query("COMMIT"); await removal;
       const result = await pending;
       if (operation === "list") expect(result).toMatchObject({ items: [], unread: 0 });
+      if (operation === "count") expect(result).toBe(0);
       if (operation === "open") expect(result).toEqual({ status: 404 });
       expect((await db.notification.findUniqueOrThrow({ where: { id: notification.id } })).readAt).toBeNull();
     } finally { await block.query("ROLLBACK"); await block.end(); await Promise.all([removal, pending]); }

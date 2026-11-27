@@ -16,9 +16,9 @@ export async function verifyDevelopmentLifecycle(page: Page, context: BrowserCon
     } });
     expect(response.status()).toBe(403);
   }
-  const source = resolve("src/app/[locale]/identity-shell.tsx");
+  const source = resolve("src/app/[locale]/shell/shell-frame.tsx");
   const original = readFileSync(source, "utf8");
-  const modified = original.replace("<footer>", '<footer data-development-refresh="verified">');
+  const modified = original.replace("<footer className={styles.footer}>", '<footer className={styles.footer} data-development-refresh="verified">');
   expect(modified !== original).toBe(true);
   let documents = 0;
   let sourceChanged = false;

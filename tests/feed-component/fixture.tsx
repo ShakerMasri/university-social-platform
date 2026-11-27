@@ -1,6 +1,6 @@
 import { StrictMode, useLayoutEffect } from "react";
 import { createRoot } from "react-dom/client";
-import { FeedList } from "../../src/app/[locale]/feed/list";
+import { FeedList } from "../../src/app/[locale]/(app)/feed/list";
 import { announceSessionChange } from "../../src/app/[locale]/session-change";
 
 export type SessionOutcome = 200 | 401 | 403 | 429 | 503 | "malformed" | "offline" | "pending";

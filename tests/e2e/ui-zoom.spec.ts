@@ -6,8 +6,7 @@ import { syntheticTokenFor } from "./synthetic-mail";
 import { readManifest, databaseUrl, assertDatabaseIdentity } from "../../tools/database/targets";
 import { communityText } from "../../src/i18n/communities";
 import { identityText } from "../../src/i18n/identity";
-import { archiveText } from "../../src/i18n/archive";
-import { peopleText } from "../../src/i18n/people";
+import { searchText } from "../../src/i18n/search";
 import { messagingText } from "../../src/i18n/messaging";
 
 async function messagingPeer() {
@@ -71,7 +70,8 @@ async function post(context: BrowserContext, path: string, data: object, status 
 
 async function expectPageFits(page: Page) {
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
-  const overflow = await page.locator("main input, main textarea, main select, main button, .button-link").evaluateAll(elements => elements.filter(element => {
+  // The shell header and navigation must fit too, not only the page's own controls.
+  const overflow = await page.locator("main input, main textarea, main select, main button, main a, header a, header button, header input, nav a, nav button").evaluateAll(elements => elements.filter(element => {
     const box = element.getBoundingClientRect();
     return box.left < -1 || box.right > innerWidth + 1;
   }).map(element => ({ tag: element.tagName, id: element.id })));
@@ -141,7 +141,7 @@ for (const locale of ["en", "ar"] as const) {
         await setBrowserZoom(worker, factor);
         const measurement = await expectZoomMeasurement(page, baseline, factor);
         console.log(`${locale} native zoom ${factor * 100}%: ${JSON.stringify(measurement)}`);
-        for (const path of ["", "signin", "verify", "profile", "communities", `communities/${id}`, `communities/${id}/posts/${postId}`, "notifications", "archive", "people", `people/${directoryId}`, "messages", `messages/${conversationId}`]) {
+        for (const path of ["", "signin", "verify", "profile", "communities", `communities/${id}`, `communities/${id}/posts/${postId}`, "notifications", "search", `search?tab=posts&community=${id}`, "search?tab=people", `people/${directoryId}`, "messages", `messages/${conversationId}`]) {
           await page.goto(`/${locale}/${path}`);
           await expect(page.getByRole("heading", { level: 1 })).toBeVisible();
           if (path.startsWith("messages/")) {
@@ -175,17 +175,19 @@ for (const locale of ["en", "ar"] as const) {
         await expect(page.locator("#identity-feedback")).toHaveText(identityText[locale].saved);
         await expectZoomMeasurement(page, baseline, factor);
         await expectPageFits(page);
-        await page.goto(`/${locale}/archive?community=${id}`);
-        await page.getByLabel(archiveText[locale].query, { exact: true }).fill("Concurrency");
-        await page.getByRole("button", { name: archiveText[locale].submit, exact: true }).focus(); await page.keyboard.press("Enter");
-        await expect(page.locator(".archive-result")).toHaveCount(1);
-        await expect(page.getByRole("heading", { name: archiveText[locale].results, exact: true })).toBeFocused();
-        await expectPageFits(page);
-        await page.goto(`/${locale}/people`);
-        await page.getByLabel(peopleText[locale].query, { exact: true }).fill("Zoom saved");
-        await page.getByRole("button", { name: peopleText[locale].submit, exact: true }).focus(); await page.keyboard.press("Enter");
-        await expect(page.locator(".people-result").first()).toBeVisible();
-        await expect(page.getByRole("heading", { name: peopleText[locale].results, exact: true })).toBeFocused();
+        // The Posts and People tabs of /search replace the old archive and People search pages.
+        const search = searchText[locale];
+        await page.goto(`/${locale}/search?tab=posts&community=${id}`);
+        await page.getByLabel(search.query, { exact: true }).fill("Concurrency");
+        await page.getByRole("main").getByRole("button", { name: search.submit, exact: true }).focus(); await page.keyboard.press("Enter");
+        await expect(page.locator('[data-search-result="post"]')).toHaveCount(1);
+        await expect(page.getByRole("heading", { name: search.results, exact: true })).toBeFocused();
+        await expectZoomMeasurement(page, baseline, factor); await expectPageFits(page);
+        await page.goto(`/${locale}/search?tab=people`);
+        await page.getByLabel(search.query, { exact: true }).fill("Zoom saved");
+        await page.getByRole("main").getByRole("button", { name: search.submit, exact: true }).focus(); await page.keyboard.press("Enter");
+        await expect(page.locator('[data-search-result="person"]').first()).toBeVisible();
+        await expect(page.getByRole("heading", { name: search.results, exact: true })).toBeFocused();
         await expectZoomMeasurement(page, baseline, factor); await expectPageFits(page);
       }
     } finally { await context.close(); }

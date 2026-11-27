@@ -2,6 +2,7 @@ import { expect, test, type APIRequestContext, type BrowserContext } from "@play
 import { randomUUID } from "node:crypto";
 import { Client } from "pg";
 import { syntheticTokenFor } from "./synthetic-mail";
+import { openNotificationsFromShell } from "./shell-navigation";
 import { readManifest, databaseUrl, assertDatabaseIdentity } from "../../tools/database/targets";
 import { voteText } from "../../src/i18n/votes";
 import { replyText } from "../../src/i18n/replies";
@@ -83,10 +84,10 @@ for (const locale of ["en", "ar"] as const) {
       await expect(page).toHaveURL(new RegExp(`notification=${inbox.items[0].id}`));
       await expect(page.locator(`#comment-${root}`)).toBeVisible(); await expect(page.locator(`#comment-${reply}`)).toContainText("Deep linked reply رد");
       await expect(page.getByRole("button", { name: replyText[locale].first, exact: true })).toBeVisible();
-      await page.getByRole("link", { name: text.title, exact: true }).click();
+      await openNotificationsFromShell(page, locale);
       await expect(page.locator(`#notification-${inbox.items[0].id}`).locator("p").first()).toHaveText(`${text.read} · ${text.comment}`);
       await page.getByRole("button", { name: text.markAll, exact: true }).focus(); await page.keyboard.press("Enter");
-      await expect(page.getByRole("status").filter({ hasText: text.marked })).toBeFocused();
+      await expect(page.getByRole("main").getByRole("status").filter({ hasText: text.marked })).toBeFocused();
       await expect(page.getByRole("button", { name: text.markAll, exact: true })).toBeDisabled();
       expect((await (await context.request.get("/api/notifications")).json()).unread).toBe(0);
       await page.reload(); await expect(page.locator("main article").filter({ hasText: text.unread })).toHaveCount(0);
@@ -354,10 +355,10 @@ test("inbox pagination drops revoked communities and HTTP boundaries isolate own
     expect((await member.request.get(`/api/notifications?after=${initial.items[0].id}`)).status()).toBe(404);
     await page.route("**/api/notifications/read-all", route => route.abort("failed"));
     await page.getByRole("button", { name: notificationText.en.markAll, exact: true }).click();
-    await expect(page.getByRole("status").filter({ hasText: notificationText.en.failed })).toBeFocused();
+    await expect(page.getByRole("main").getByRole("status").filter({ hasText: notificationText.en.failed })).toBeFocused();
     await page.unroute("**/api/notifications/read-all");
     await page.getByRole("button", { name: notificationText.en.markAll, exact: true }).click();
-    await expect(page.getByRole("status").filter({ hasText: notificationText.en.marked })).toBeFocused();
+    await expect(page.getByRole("main").getByRole("status").filter({ hasText: notificationText.en.marked })).toBeFocused();
     await expect(page.getByRole("button", { name: notificationText.en.markAll, exact: true })).toBeDisabled();
     expect(await fixture(async client => (await client.query('SELECT count(*) FROM "Notification" WHERE "recipientId"=$1 AND "readAt" IS NULL', [recipient])).rows[0].count)).toBe("2");
   } finally { await member.close(); await anonymous.close(); }

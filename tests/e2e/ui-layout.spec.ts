@@ -4,7 +4,7 @@ import { Client } from "pg";
 import { syntheticTokenFor } from "./synthetic-mail";
 import { readManifest, databaseUrl, assertDatabaseIdentity } from "../../tools/database/targets";
 import { communityText } from "../../src/i18n/communities";
-import { interfaceText } from "../../src/i18n/interface";
+import { shellText } from "../../src/i18n/shell";
 import { replyText } from "../../src/i18n/replies";
 import { dictionaries } from "../../src/i18n/dictionaries";
 import { identityText } from "../../src/i18n/identity";
@@ -25,7 +25,11 @@ test.beforeEach(async () => {
 });
 
 async function expectReflow(page: Page) {
-  expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
+  // Name the elements that stick out, so a failure says where to look.
+  const offenders = await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth ? [] : [...document.querySelectorAll("body *")]
+    .filter(element => { const box = element.getBoundingClientRect(); return box.width > 0 && (box.right > innerWidth + 1 || box.left < -1); })
+    .slice(0, 8).map(element => `${element.tagName.toLowerCase()}.${[...element.classList].join(".")}`));
+  expect(offenders).toEqual([]);
   // Inputs must also fit their container; document width alone misses clipping.
   expect(await page.locator("main input, main textarea, main select, main button").evaluateAll(elements => elements.every(element => {
     const box = element.getBoundingClientRect();
@@ -69,7 +73,8 @@ for (const locale of ["en", "ar"] as const) {
     const token = await syntheticTokenFor(email);
     await create("/api/identity/confirm", { token, locale }, 200);
     await create("/api/identity/profile", { displayName: "طالب Learning partner" }, 200);
-    const name = "هندسة الحاسوب · Computer engineering — a shared space across academic years";
+    // Unique per run: both locales create one, and a duplicate name would match two headings.
+    const name = `هندسة الحاسوب · Computer engineering — a shared space across years ${randomUUID().slice(0, 6)}`;
     const { id } = await create("/api/communities", { name, description: "نناقش الأفكار ونشارك المعرفة. A place for thoughtful academic conversations.", visibility: "PUBLIC" });
     const { id: postId } = await create(`/api/communities/${id}/posts`, { requestId: randomUUID(), type: "RESOURCE", title: "كيف نفهم التزامن؟ Understanding concurrency together", body: "ملاحظات للنقاش · Notes for discussion\n" + "LongIdentifier".repeat(15), resourceUrl: "https://example.com/" + "reference".repeat(25) });
     const { id: commentId } = await create(`/api/communities/${id}/posts/${postId}/comments`, { requestId: randomUUID(), body: "هل يمكن توضيح المثال؟ Could we walk through the example?" });
@@ -92,7 +97,10 @@ for (const locale of ["en", "ar"] as const) {
       await page.setViewportSize({ width, height: 900 });
       await page.goto(directory);
       await expect(page.getByRole("heading", { name: name, exact: true })).toBeVisible();
-      await expect(page.getByRole("navigation", { name: interfaceText[locale].navigation }).getByRole("link", { name: communityText[locale].title, exact: true })).toHaveAttribute("aria-current", "page");
+      // Desktop shows the main navigation and phones the bottom bar; only the visible one is in the accessibility tree.
+      const navigation = page.getByRole("navigation", { name: new RegExp(`^(?:${shellText[locale].navigation}|${shellText[locale].mobileNavigation})$`) });
+      await expect(navigation).toHaveCount(1);
+      await expect(navigation.getByRole("link", { name: shellText[locale].communities, exact: true })).toHaveAttribute("aria-current", "page");
       await expectReflow(page);
       const createLink = page.getByRole("link", { name: communityText[locale].create, exact: true });
       await createLink.focus();
@@ -123,7 +131,7 @@ for (const locale of ["en", "ar"] as const) {
     await page.getByRole("button", { name: replyText[locale].cancel, exact: true }).click();
     await expect(page.locator(`#comment-${commentId}`)).toBeFocused();
     const other = locale === "en" ? "ar" : "en";
-    await page.getByRole("link", { name: other === "ar" ? "العربية" : "English", exact: true }).click();
+    await page.getByRole("banner").getByRole("link", { name: other === "ar" ? "العربية" : "English", exact: true }).click();
     await expect(page).toHaveURL(new RegExp(`/${other}/communities/${id}/posts/${postId}$`));
     await expect(page.locator("html")).toHaveAttribute("dir", other === "ar" ? "rtl" : "ltr");
   });

@@ -2,7 +2,7 @@ import "server-only";
 import type { Prisma, PrismaClient } from "../../generated/prisma/client.ts";
 import { authorized, mutating, CommunityError } from "../communities/service.ts";
 import { communityId } from "../communities/policy.ts";
-import { notificationPageSize } from "./policy.ts";
+import { notificationPageSize, unreadCountLimit } from "./policy.ts";
 import { digest } from "../identity/policy.ts";
 
 // Memberships are already capped at 500 by the community service. Snapshot a
@@ -40,6 +40,18 @@ export function listNotifications(db: PrismaClient, token: unknown, cursor?: unk
     const items = rows.slice(0, notificationPageSize).map(displayNotification);
     const unread = await tx.notification.count({ where: { AND: [visible, { readAt: null }] } });
     return { items, next: rows.length > notificationPageSize ? items.at(-1)!.id : null, unread, scope };
+  });
+}
+
+/**
+ * Unread count for the header, under exactly the list's access rules (the same
+ * visibleNotifications scope). Bounded: counts at most unreadCountLimit + 1
+ * rows, so a result above the limit means "more than the limit". Read-only.
+ */
+export function countUnreadNotifications(db: PrismaClient, token: unknown) {
+  return authorized(db, token, async (tx, userId) => {
+    const { where: visible } = await visibleNotifications(tx, userId);
+    return tx.notification.count({ where: { AND: [visible, { readAt: null }] }, take: unreadCountLimit + 1 });
   });
 }
 

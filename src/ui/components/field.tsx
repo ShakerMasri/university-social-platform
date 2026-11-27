@@ -27,10 +27,12 @@ function FieldFrame({ label, hideLabel, hint, error, required, controlId, hintId
 }) {
   return (
     <div className={styles.field}>
-      <label htmlFor={controlId} className={classNames(styles.label, hideLabel && "ui-visually-hidden")}>
-        {label}
-        {required && <span className={styles.requiredMark} aria-hidden="true">*</span>}
-      </label>
+      {/* The asterisk sits outside the label so the label text, and the
+          control's accessible name, stay exactly the label. */}
+      <span className={classNames(styles.labelRow, hideLabel && "ui-visually-hidden")}>
+        <label htmlFor={controlId} className={styles.label}>{label}</label>
+        {required && !hideLabel && <span className={styles.requiredMark} aria-hidden="true">*</span>}
+      </span>
       {hint && <p id={hintId} className={styles.hint}>{hint}</p>}
       {children}
       {error && (

@@ -14,7 +14,15 @@ async function requestLink(page: Page, email: string, locale: "en" | "ar") {
   await page.goto(`${origin}/${locale}/signin`);
   await page.getByLabel(identityText[locale].email, { exact: true }).fill(email);
   await page.getByRole("button", { name: identityText[locale].request, exact: true }).click();
-  await expect(page.getByRole("status")).toHaveText(identityText[locale].requested);
+  await expect(page.locator("#identity-feedback")).toHaveText(identityText[locale].requested);
+}
+/** First sign-in asks for a display name, then continues to Home. */
+async function saveWelcomeName(page: Page, locale: "en" | "ar", name: string) {
+  await page.getByLabel(identityText[locale].name, { exact: true }).fill(name);
+  await page.getByRole("button", { name: identityText[locale].welcomeSave, exact: true }).click();
+  await expect(page).toHaveURL(`${origin}/${locale}`);
+  await page.goto(`${origin}/${locale}/profile`);
+  await expect(page.getByLabel(identityText[locale].name, { exact: true })).toHaveValue(name);
 }
 async function confirm(page: Page, context: BrowserContext, locale: "en" | "ar") {
   await page.getByRole("button", { name: identityText[locale].previewOpen, exact: true }).click();
@@ -33,9 +41,7 @@ for (const locale of ["en", "ar"] as const) {
       const page = await context.newPage(), email = address(), name = `${locale === "ar" ? "طالب" : "Preview"} ${randomUUID()}`;
       const title = locale === "ar" ? "منشور تجريبي محلي" : "Local preview post";
       await requestLink(page, email, locale); await confirm(page, context, locale);
-      await page.getByLabel(identityText[locale].name, { exact: true }).fill(name);
-      await page.getByRole("button", { name: identityText[locale].save, exact: true }).click();
-      await expect(page.locator("#identity-feedback")).toHaveText(identityText[locale].saved);
+      await saveWelcomeName(page, locale, name);
       await page.reload(); expect(await page.getByLabel(identityText[locale].name, { exact: true }).inputValue() === name).toBe(true);
       await page.getByRole("link", { name: communityText[locale].title, exact: true }).click();
       await page.getByLabel(communityText[locale].name, { exact: true }).fill("Local preview community");
@@ -100,9 +106,7 @@ if (process.env.USP_LOCAL_DEVELOPMENT_CHECK === "1") {
   });
   test("development: hot reload and restart preserve the session, profile and post", async ({ page, context }) => {
     await requestLink(page, address(), "en"); await confirm(page, context, "en");
-    await page.getByLabel(identityText.en.name, { exact: true }).fill("Development restart user");
-    await page.getByRole("button", { name: identityText.en.save, exact: true }).click();
-    await expect(page.locator("#identity-feedback")).toHaveText(identityText.en.saved);
+    await saveWelcomeName(page, "en", "Development restart user");
     await page.getByRole("link", { name: communityText.en.title, exact: true }).click();
     await page.getByLabel(communityText.en.name, { exact: true }).fill("Development restart community");
     await page.getByRole("button", { name: communityText.en.create, exact: true }).click();

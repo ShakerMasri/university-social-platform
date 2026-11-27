@@ -70,6 +70,7 @@ for (const locale of ["en", "ar"] as const) {
         await expect(page.locator("html")).toHaveAttribute("dir", locale === "ar" ? "rtl" : "ltr");
         for (const targetId of [`post-${target.postId}`, `comment-${target.commentId}`]) {
           const group = page.locator(`#${targetId}`).getByRole("group", { name: text.group });
+          await expect(group.getByRole("button", { name: text.add, exact: true })).toBeEnabled();
           await group.getByRole("button", { name: text.add, exact: true }).focus(); await page.keyboard.press("Enter");
           await expect(group.getByRole("button", { name: text.add, exact: true })).toHaveAttribute("aria-pressed", "true");
           await expect(group).toContainText(text.saved);
@@ -77,6 +78,7 @@ for (const locale of ["en", "ar"] as const) {
           await expect(group.locator(".vote-down-count")).toHaveText(`${text.downvotes}: ${(0).toLocaleString(locale)}`);
           await page.reload();
           await expect(group.getByRole("button", { name: text.add, exact: true })).toHaveAttribute("aria-pressed", "true");
+          await expect(group.getByRole("button", { name: text.add, exact: true })).toBeEnabled();
           await group.getByRole("button", { name: text.add, exact: true }).focus(); await page.keyboard.press("Enter");
           await expect(group).toContainText(text.removed);
           await expect(group.getByRole("button", { name: text.add, exact: true })).toHaveAttribute("aria-pressed", "false");

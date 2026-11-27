@@ -92,3 +92,11 @@ export const GlobeIcon = (p: IconProps) => (
 export const InboxIcon = (p: IconProps) => (
   <Icon {...p}><path d="M4 13.5 6.5 5h11l2.5 8.5V19H4zM4 13.5h4.5l1 2h5l1-2H20" /></Icon>
 );
+/** The site's mark: two overlapping speech shapes on a rounded square, drawn for this project. */
+export const LogoMark = ({ size = 32, ...p }: Omit<SVGProps<SVGSVGElement>, "children"> & { size?: number }) => (
+  <svg viewBox="0 0 32 32" width={size} height={size} aria-hidden="true" focusable="false" {...p}>
+    <rect width="32" height="32" rx="9" fill="var(--color-accent)" />
+    <path d="M8 10.5h10.5v7H12l-4 3z" fill="none" stroke="var(--color-on-accent)" strokeWidth="2" strokeLinejoin="round" />
+    <path d="M14.5 20.5H20l4 3v-10.5h-3" fill="none" stroke="var(--color-on-accent)" strokeWidth="2" strokeLinejoin="round" strokeLinecap="round" />
+  </svg>
+);

@@ -115,9 +115,9 @@ for (const locale of ["en", "ar"] as const) {
     await page.route("**/api/communities", async (route) => { await held; await route.fulfill({ status: 503, contentType: "application/json", body: '{"ok":false}' }); });
     await page.getByRole("button", { name: text.create, exact: true }).click();
     await expect(page.getByRole("button", { name: text.busy, exact: true })).toBeDisabled();
-    await expect(page.locator("form")).toHaveAttribute("aria-busy", "true");
+    await expect(page.getByRole("main").locator("form")).toHaveAttribute("aria-busy", "true");
     release(); await expect(feedback).toHaveText(text.failed); await expect(feedback).toBeFocused();
-    await expect(page.locator("form")).toHaveAttribute("aria-busy", "false");
+    await expect(page.getByRole("main").locator("form")).toHaveAttribute("aria-busy", "false");
   });
 }
 test("HTTP boundaries reject unauthenticated/incomplete actors, authority spoofing, cross-user joins, CSRF, and stale sessions", async ({ context, browser }) => {

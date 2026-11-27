@@ -66,14 +66,14 @@ for (const locale of ["en", "ar"] as const) {
     const field = page.getByLabel(text.body, { exact: true }), button = page.getByRole("button", { name: text.publish, exact: true });
     await page.route(`**${path}`, async route => { await route.fetch(); await route.abort("failed"); });
     await field.fill("Original committed comment"); await button.click();
-    await expect(page.getByRole("status")).toHaveText(text.failed);
+    await expect(page.getByRole("main").getByRole("status")).toHaveText(text.failed);
     await page.unroute(`**${path}`);
     await field.fill("Changed deliberate comment"); await button.click();
-    await expect(page.getByRole("status")).toHaveText(text.conflict);
-    await expect(page.getByRole("status")).toBeFocused();
+    await expect(page.getByRole("main").getByRole("status")).toHaveText(text.conflict);
+    await expect(page.getByRole("main").getByRole("status")).toBeFocused();
     await expect(field).toHaveValue("Changed deliberate comment");
     expect((await (await context.request.get(path)).json() as { items: { body: string }[] }).items.map(item => item.body)).toEqual(["Original committed comment"]);
-    await button.click(); await expect(page.getByRole("status")).toHaveText(text.saved);
+    await button.click(); await expect(page.getByRole("main").getByRole("status")).toHaveText(text.saved);
     expect((await (await context.request.get(path)).json() as { items: { body: string }[] }).items.map(item => item.body)).toEqual(["Original committed comment", "Changed deliberate comment"]);
   });
 
@@ -83,8 +83,8 @@ for (const locale of ["en", "ar"] as const) {
     await page.goto(`/${locale}/communities/${id}/posts/${postId}`);
     const field = page.getByLabel(text.body, { exact: true }), button = page.getByRole("button", { name: text.publish, exact: true });
     await field.fill("x".repeat(4001)); await button.click();
-    await expect(page.getByRole("status")).toHaveText(text.invalid);
-    await expect(page.getByRole("status")).toBeFocused();
+    await expect(page.getByRole("main").getByRole("status")).toHaveText(text.invalid);
+    await expect(page.getByRole("main").getByRole("status")).toBeFocused();
     let release: () => void = () => {};
     const pending = new Promise<void>(resolve => { release = resolve; });
     await page.route(`**${path}`, async route => {
@@ -96,11 +96,11 @@ for (const locale of ["en", "ar"] as const) {
     await expect(field).toBeDisabled();
     await expect(page.getByRole("button", { name: text.busy, exact: true })).toBeDisabled();
     release();
-    await expect(page.getByRole("status")).toHaveText(text.failed);
-    await expect(page.getByRole("status")).toBeFocused();
+    await expect(page.getByRole("main").getByRole("status")).toHaveText(text.failed);
+    await expect(page.getByRole("main").getByRole("status")).toBeFocused();
     await expect(field).toHaveValue("تعليق Retry 😀");
     await page.unroute(`**${path}`);
-    await button.click(); await expect(page.getByRole("status")).toHaveText(text.saved);
+    await button.click(); await expect(page.getByRole("main").getByRole("status")).toHaveText(text.saved);
     expect((await (await context.request.get(path)).json() as { items: unknown[] }).items.length).toBe(1);
   });
 
@@ -115,7 +115,7 @@ for (const locale of ["en", "ar"] as const) {
       await page.getByLabel(text.body, { exact: true }).fill(body);
       await page.getByRole("button", { name: text.publish, exact: true }).focus(); await page.keyboard.press("Enter");
       await expect(page.getByText(body, { exact: true })).toBeVisible();
-      await expect(page.getByRole("status")).toContainText(text.saved);
+      await expect(page.getByRole("main").getByRole("status")).toContainText(text.saved);
       await expect(page.locator("html")).toHaveAttribute("dir", locale === "ar" ? "rtl" : "ltr");
       await expect(page.getByLabel(text.body, { exact: true })).toHaveValue("");
       expect(await page.locator("main script, main img, .community-description svg").count()).toBe(0);
@@ -155,7 +155,7 @@ for (const locale of ["en", "ar"] as const) {
     await expect(section.getByRole("article")).toHaveCount(20);
     await page.getByLabel(text.body, { exact: true }).fill(marker);
     await page.getByRole("button", { name: text.publish, exact: true }).click();
-    await expect(page.getByRole("status")).toHaveText(text.saved);
+    await expect(page.getByRole("main").getByRole("status")).toHaveText(text.saved);
     await expect(page.getByText(marker, { exact: true })).toBeInViewport();
     await expect(section.getByRole("article")).toHaveCount(21);
     await expect(page.getByRole("region", { name: text.justPublished })).toBeVisible();

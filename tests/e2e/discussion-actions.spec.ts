@@ -3,6 +3,7 @@ import { randomUUID } from "node:crypto";
 import { Client } from "pg";
 import { readManifest, databaseUrl, assertDatabaseIdentity } from "../../tools/database/targets";
 import { syntheticTokenFor } from "./synthetic-mail";
+import { headerHomeLink, openNotificationsFromShell, openProfileFromShell } from "./shell-navigation";
 import { commentText } from "../../src/i18n/comments";
 import { replyText } from "../../src/i18n/replies";
 import { voteText } from "../../src/i18n/votes";
@@ -159,7 +160,7 @@ for (const locale of ["en", "ar"] as const) {
         await expect(thread.getByText("Local publication cleared on denial", { exact: true })).toHaveCount(0);
         await expect(root.getByRole("button", { name: text.reply, exact: true })).toHaveCount(0);
         await expect(thread.locator(".comment-replies article")).toHaveCount(0);
-        const focus = page.locator(`header a[hreflang='${locale}']`); await focus.focus();
+        const focus = headerHomeLink(page, locale); await focus.focus();
         await releaseResponse(page);
         await expect(focus).toBeFocused(); await expect(thread.locator(".comment-composer")).toHaveCount(0);
         await expect(thread.getByRole("status")).toHaveCount(0); await expect(thread.getByText(marker, { exact: true })).toHaveCount(0);
@@ -361,7 +362,7 @@ for (const locale of ["en", "ar"] as const) {
       await page.getByRole("button", { name: notificationText[locale].markAll, exact: true }).click();
       await expect(page.locator("html")).toHaveAttribute("data-notification-waiting", "true");
       expect((await (await context.request.get("/api/notifications")).json()).unread).toBe(0);
-      await page.locator(`.primary-navigation a[href='/${locale}/profile']`).click();
+      await openProfileFromShell(page, locale);
       await expect(page.locator("#display-name")).toBeEnabled(); await page.locator("#display-name").focus();
       const refreshes: string[] = [];
       page.on("request", request => {
@@ -370,7 +371,7 @@ for (const locale of ["en", "ar"] as const) {
       await releaseResponse(page);
       await expect(page).toHaveURL(`${origin}/${locale}/profile`); await expect(page.locator("#display-name")).toBeFocused();
       expect(refreshes).toEqual([]);
-      await page.locator(`.primary-navigation a[href='/${locale}/notifications']`).click();
+      await openNotificationsFromShell(page, locale);
       await expect(page.getByText(`${notificationText[locale].unread}: ${(0).toLocaleString(locale)}`, { exact: true })).toBeVisible();
     } finally { await member.close(); }
   });
@@ -483,9 +484,11 @@ for (const locale of ["en", "ar"] as const) {
         expect((await (await context.request.get("/api/notifications")).json()).items[0].read).toBe(true);
         const nextLocale = destination === "locale" ? locale === "en" ? "ar" : "en" : locale;
         const nextPath = `/${nextLocale}/${destination === "profile" ? "profile" : "notifications"}`;
-        const navigation = destination === "locale" ? page.locator(`header a[hreflang='${nextLocale}']`) : page.locator(`.primary-navigation a[href='${nextPath}']`);
-        await navigation.click(); await expect(page).toHaveURL(`${origin}${nextPath}`);
-        const focus = destination === "profile" ? page.locator("#display-name") : page.locator(`header a[hreflang='${nextLocale}']`);
+        if (destination === "locale") await page.locator(`header a[hreflang='${nextLocale}']`).click();
+        else if (destination === "profile") await openProfileFromShell(page, locale);
+        else await openNotificationsFromShell(page, locale);
+        await expect(page).toHaveURL(`${origin}${nextPath}`);
+        const focus = destination === "profile" ? page.locator("#display-name") : headerHomeLink(page, nextLocale);
         if (destination !== "profile") {
           await expect(page.getByText(`${notificationText[nextLocale].unread}: ${(0).toLocaleString(nextLocale)}`, { exact: true })).toBeVisible();
           await expect(page.locator(`#notification-${notificationId}`).getByRole("button", { name: notificationText[nextLocale].open, exact: true })).toBeEnabled();
@@ -495,7 +498,7 @@ for (const locale of ["en", "ar"] as const) {
         await expect(page.getByRole("main").getByRole("status").filter({ hasText: notificationText[locale].failed })).toHaveCount(0);
         // Ignoring stale client work must retain the server read. A current
         // retry still opens the authorized destination and gives it focus.
-        if (destination === "profile") await page.locator(`.primary-navigation a[href='/${nextLocale}/notifications']`).click();
+        if (destination === "profile") await openNotificationsFromShell(page, nextLocale);
         const card = page.locator(`#notification-${notificationId}`); await expect(card).toContainText(notificationText[nextLocale].read);
         await card.getByRole("button", { name: notificationText[nextLocale].open, exact: true }).click();
         await expect(page).toHaveURL(`${origin}/${nextLocale}/communities/${id}/posts/${postId}?notification=${notificationId}`);

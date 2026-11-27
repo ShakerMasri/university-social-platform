@@ -29,19 +29,16 @@ async function save(context: BrowserContext, displayName: string) {
   const response = await context.request.put("/api/people/profile", { data: { displayName }, headers: { Origin: origin } });
   expect(response.status()).toBe(200);
 }
-async function search(page: Page, locale: "en" | "ar", query: string) {
-  const text = peopleText[locale];
-  await page.getByLabel(text.query, { exact: true }).fill(query);
-  await page.getByRole("button", { name: text.submit, exact: true }).focus(); await page.keyboard.press("Enter");
-  await expect(page.getByRole("heading", { name: text.results, exact: true })).toBeFocused();
+// The People search page is now the People tab of /search; its UI cases live
+// in search.spec.ts. This file keeps the profile, directory API and matching
+// regressions. Results render on the server, so a search is a URL.
+const results = (page: Page) => page.locator('[data-search-result="person"]');
+async function searchPeople(page: Page, locale: "en" | "ar", query: string) {
+  await page.goto(`/${locale}/search?tab=people&q=${encodeURIComponent(query)}`);
 }
 async function fits(page: Page) {
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
-  expect(await page.locator("main input, main button").evaluateAll(elements => elements.every(element => {
-    const box = element.getBoundingClientRect(); return box.left >= -1 && box.right <= innerWidth + 1;
-  }))).toBe(true);
 }
-type PeopleBrowser = Window & { next: { router: { refresh(): void } }; peopleHold: { reached: boolean; release(): void } };
 for (const locale of ["en", "ar"] as const) {
   test(`${locale}: Unicode-number typos respect whole words, partial matching and saved profiles`, async ({ context, page, browser }) => {
     const owner = await browser.newContext(), hidden = await browser.newContext(), marker = randomUUID().slice(0, 8);
@@ -49,47 +46,18 @@ for (const locale of ["en", "ar"] as const) {
     try {
       await signIn(context); await signIn(owner); await signIn(hidden);
       await save(owner, displayName); // The other account has no saved profile.
-      await page.goto(`/${locale}/people`); await search(page, locale, `${marker} a²a`);
-      await expect(page.locator(".people-result")).toHaveCount(1);
-      const link = page.getByRole("link", { name: displayName, exact: true }), destination = await link.getAttribute("href");
-      await link.click(); await expect(page.getByRole("heading", { name: displayName, exact: true })).toBeVisible();
+      await searchPeople(page, locale, `${marker} a²a`);
+      await expect(results(page)).toHaveCount(1);
+      await expect(results(page).getByRole("link", { name: displayName, exact: true })).toBeVisible();
       await save(owner, `${marker} ab²zz`);
-      await page.goto(`/${locale}/people`); await search(page, locale, `${marker} abc`);
-      await expect(page.locator(".people-result")).toHaveCount(0);
+      await searchPeople(page, locale, `${marker} abc`);
+      await expect(results(page)).toHaveCount(0);
       await expect(page.getByText(peopleText[locale].empty, { exact: true })).toBeVisible();
-      await search(page, locale, `${marker} ²z`);
-      await expect(page.locator(".people-result")).toHaveCount(1);
-      await fixture(client => client.query('UPDATE "User" SET "emailVerifiedAt"=NULL WHERE id=(SELECT "userId" FROM "Profile" WHERE "directoryId"=$1)', [destination!.split("/").at(-1)]));
-      await search(page, locale, `${marker} ²z`);
-      await expect(page.locator(".people-result")).toHaveCount(0);
-      expect((await context.request.get(`/api/people/${destination!.split("/").at(-1)}`)).status()).toBe(404);
+      await searchPeople(page, locale, `${marker} ²z`);
+      await expect(results(page)).toHaveCount(1);
     } finally { await owner.close(); await hidden.close(); }
   });
-  test(`${locale}: suggests saved profiles for typos and separate name parts and excludes unverified accounts`, async ({ context, page, browser }) => {
-    const owner = await browser.newContext(), hidden = await browser.newContext(), marker = randomUUID().slice(0, 8);
-    const displayName = `${marker} أَحْـمَد Ahmed Mahmoud`;
-    try {
-      await signIn(context); await signIn(owner); await signIn(hidden);
-      await save(owner, displayName); // The other account has no saved profile.
-      await page.goto(`/${locale}/people`);
-      await search(page, locale, `Mahmoud ${marker} Ahmde`);
-      await expect(page.locator(".people-result")).toHaveCount(1);
-      const link = page.getByRole("link", { name: displayName, exact: true }), destination = await link.getAttribute("href");
-      await expect(link).toBeVisible();
-      await search(page, locale, `${marker} أحدم`);
-      await expect(page.locator(".people-result")).toHaveCount(1); await expect(link).toHaveAttribute("href", destination!);
-      await link.click(); await expect(page.getByRole("heading", { name: displayName, exact: true })).toBeVisible();
-      await fixture(client => client.query('UPDATE "User" SET "emailVerifiedAt"=NULL WHERE id=(SELECT "userId" FROM "Profile" WHERE "directoryId"=$1)', [destination!.split("/").at(-1)]));
-      await page.goto(`/${locale}/people`);
-      await search(page, locale, `${marker} Ahmde`);
-      await expect(page.locator(".people-result")).toHaveCount(0);
-      await expect(page.getByText(peopleText[locale].empty, { exact: true })).toBeVisible();
-      await expect(page.getByRole("link", { name: peopleText[locale].settings, exact: true })).toHaveAttribute("href", `/${locale}/profile`);
-      expect((await context.request.get(`/api/people/${destination!.split("/").at(-1)}`)).status()).toBe(404);
-      await page.setViewportSize({ width: 320, height: 900 }); await fits(page);
-    } finally { await owner.close(); await hidden.close(); }
-  });
-  test(`${locale}: saves a generated label, searches without shared membership and offers no hiding control`, async ({ context, page, browser }) => {
+  test(`${locale}: saves a generated label, is found without shared membership and offers no hiding control`, async ({ context, page, browser }) => {
     const id = await signIn(context), other = await browser.newContext(), text = peopleText[locale];
     try {
       await signIn(other); await page.setViewportSize({ width: 320, height: 900 });
@@ -99,14 +67,15 @@ for (const locale of ["en", "ar"] as const) {
       await expect(page.getByText(text.directoryHint, { exact: true })).toBeVisible();
       await expect(page.getByRole("checkbox")).toHaveCount(3); // Notification preferences only.
       await page.reload(); await expect(input).toHaveValue(suggestion);
+      // Showing the suggestion creates no profile: nothing is listed until saved.
       expect(await fixture(async client => Number((await client.query('SELECT count(*) FROM "Profile" WHERE "userId"=$1', [id])).rows[0].count))).toBe(0);
       await page.getByRole("button", { name: identityText[locale].save, exact: true }).focus(); await page.keyboard.press("Enter");
       await expect(page.locator("#identity-feedback")).toHaveText(identityText[locale].saved); await fits(page);
       const response = await other.request.get(`/api/people?q=${encodeURIComponent(suggestion)}`);
       expect(response.status()).toBe(200); expect(response.headers()["cache-control"]).toBe("private, no-store");
       const item = (await response.json()).items[0]; expect(Object.keys(item).sort()).toEqual(["displayName", "id"]); expect(item.id).not.toBe(id);
-      const viewer = await other.newPage(); await viewer.goto(`/${locale}/people`); await search(viewer, locale, suggestion);
-      await viewer.getByRole("link", { name: suggestion, exact: true }).click();
+      const viewer = await other.newPage(); await searchPeople(viewer, locale, suggestion);
+      await results(viewer).getByRole("link", { name: suggestion, exact: true }).click();
       await expect(viewer).toHaveURL(`${origin}/${locale}/people/${item.id}`);
       await expect(viewer.getByRole("heading", { name: suggestion, exact: true })).toBeVisible();
       expect((await context.request.put("/api/people/profile", { data: { displayName: suggestion, directoryVisible: false }, headers: { Origin: origin } })).status()).toBe(400);
@@ -114,58 +83,6 @@ for (const locale of ["en", "ar"] as const) {
       await page.reload(); await expect(input).toHaveValue(suggestion);
       expect((await other.request.get(`/api/people/${item.id}`)).status()).toBe(200);
     } finally { await other.close(); }
-  });
-  test(`${locale}: literal bilingual search, inert names, pagination, failure/retry and revoked caller`, async ({ context, page }) => {
-    await signIn(context); const marker = randomUUID().slice(0, 8), displayName = `أَحْـمَد Ali ${marker} <svg onload=window.peopleXSS=1>`;
-    await fixture(async client => {
-      for (let i = 0; i < 23; i++) {
-        const id = randomUUID(); await client.query('INSERT INTO "User" (id,email,"emailKey","emailVerifiedAt","updatedAt") VALUES ($1,$2,$2,now(),now())', [id, `${id}@university.test`]);
-        await client.query('INSERT INTO "Profile" ("userId","displayName","directoryVisible","updatedAt") VALUES ($1,$2,true,now())', [id, displayName]);
-      }
-    });
-    await page.setViewportSize({ width: 320, height: 900 }); await page.goto(`/${locale}/people`);
-    await search(page, locale, `أحمد ali ${marker}`); await expect(page.locator(".people-result")).toHaveCount(20); await fits(page);
-    expect(await page.evaluate(() => (window as unknown as { peopleXSS?: number }).peopleXSS)).toBeUndefined();
-    const text = peopleText[locale];
-    await page.route("**/api/people?**", route => route.fulfill({ status: 503, contentType: "application/json", body: '{"ok":false}' }), { times: 1 });
-    await page.getByRole("button", { name: text.next, exact: true }).click();
-    await expect(page.getByRole("main").getByRole("alert")).toHaveText(text.failed);
-    await page.getByRole("button", { name: text.retry, exact: true }).click(); await expect(page.locator(".people-result")).toHaveCount(3);
-    await search(page, locale, "NoMatchingSyntheticName"); await expect(page.getByText(text.empty, { exact: true })).toBeVisible();
-    await context.request.post("/api/identity/logout", { data: {}, headers: { Origin: origin } });
-    await search(page, locale, marker); await expect(page.getByRole("main").getByRole("alert")).toHaveText(text.unavailable);
-    await expect(page.locator(".people-result")).toHaveCount(0);
-  });
-  test(`${locale}: real server refresh invalidates delayed people results and query state`, async ({ context, page, browser }) => {
-    const owner = await browser.newContext();
-    try {
-      await signIn(context); await signIn(owner); const marker = `Held${randomUUID()}`; await save(owner, marker);
-      await page.goto(`/${locale}/people`);
-      await page.evaluate(() => {
-        const target = window as unknown as PeopleBrowser, original = window.fetch;
-        let release!: () => void, once = true; const gate = new Promise<void>(done => { release = done; });
-        target.peopleHold = { reached: false, release: () => { window.fetch = original; release(); } };
-        window.fetch = async (...args) => {
-          const response = await original(...args), input = args[0];
-          const path = new URL(typeof input === "string" ? input : input instanceof URL ? input.href : input.url, location.href).pathname;
-          if (path === "/api/people" && once) {
-            once = false; const json = response.json.bind(response);
-            response.json = async () => { const value: unknown = await json(); target.peopleHold.reached = true; await gate; return value; };
-          }
-          return response;
-        };
-      });
-      await page.getByLabel(peopleText[locale].query, { exact: true }).fill(marker);
-      await page.getByRole("button", { name: peopleText[locale].submit, exact: true }).click();
-      await expect.poll(() => page.evaluate(() => (window as unknown as PeopleBrowser).peopleHold.reached)).toBe(true);
-      await save(owner, `Changed${randomUUID()}`);
-      const refresh = page.waitForResponse(response => new URL(response.url()).pathname === `/${locale}/people` && response.request().headers().rsc === "1");
-      await page.evaluate(() => (window as unknown as PeopleBrowser).next.router.refresh()); expect((await refresh).status()).toBe(200);
-      await expect(page.getByLabel(peopleText[locale].query, { exact: true })).toHaveValue("");
-      await page.evaluate(() => (window as unknown as PeopleBrowser).peopleHold.release());
-      await expect(page.locator(".people-result")).toHaveCount(0); await expect(page.getByText(peopleText[locale].initial, { exact: true })).toBeVisible();
-      await search(page, locale, marker); await expect(page.getByText(peopleText[locale].empty, { exact: true })).toBeVisible();
-    } finally { await owner.close(); }
   });
 }
 test("people endpoints enforce verification, origin, exact inputs and generic unavailable responses", async ({ context, browser }) => {

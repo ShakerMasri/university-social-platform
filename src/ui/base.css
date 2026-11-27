@@ -1,8 +1,10 @@
 /*
- * Base styles for the rebuilt UI. They apply only inside an element with the
- * `ui-root` class, so the old harness pages keep their styling until Stage 1
- * deletes them; then `ui-root` moves to <body>.
+ * Base styles for the rebuilt UI. They apply inside an element with the
+ * `ui-root` class: <body>, and the themed panels of the component preview.
  */
+body.ui-root {
+  margin: 0;
+}
 .ui-root {
   color-scheme: var(--color-scheme);
   background: var(--color-bg);

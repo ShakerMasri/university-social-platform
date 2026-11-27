@@ -2,9 +2,10 @@ import { expect, test, type BrowserContext, type Page } from "@playwright/test";
 import { randomUUID } from "node:crypto";
 import { Client } from "pg";
 import { syntheticTokenFor } from "./synthetic-mail";
+import { primaryNavLink } from "./shell-navigation";
+import { searchText } from "../../src/i18n/search";
 import { assertDatabaseIdentity, databaseUrl, readManifest } from "../../tools/database/targets";
 import { messagingText } from "../../src/i18n/messaging";
-import { peopleText } from "../../src/i18n/people";
 import { digest, sessionCookie } from "../../src/server/identity/policy";
 import { verifyMessagingRestart } from "./messaging-restart";
 test.use({ trace: "off", screenshot: "off", video: "off" });
@@ -154,7 +155,9 @@ for (const locale of ["en", "ar"] as const) {
         await expect(page.getByRole("heading", { name: text.contact, exact: true })).toHaveCount(0);
         await expect(page.getByLabel(text.body, { exact: true })).toHaveCount(0);
         await expect(page.getByRole("button", { name: text.send, exact: true })).toHaveCount(0);
-        await expect(page.locator(".language-list a[lang=en]")).toHaveAttribute("href", `/en/people/${own.directoryId}`);
+        // The shell's language link keeps the profile as typed (Stage 1).
+        const otherLocale = locale === "en" ? "ar" : "en";
+        await expect(page.locator(`header a[hreflang='${otherLocale}']`)).toHaveAttribute("href", `/${otherLocale}/people/${id}`);
       }
       expect((await context.request.post(`/api/people/${own.directoryId.toUpperCase()}/messages`, { headers, data: input() })).status()).toBe(404);
       await page.goto(`/${locale}/people/${peer.directoryId.toUpperCase()}`);
@@ -221,9 +224,10 @@ for (const locale of ["en", "ar"] as const) {
     try {
       await account(context); await account(other, name);
       await page.setViewportSize({ width: 320, height: 900 });
-      await page.goto(`/${locale}/people`);
-      await page.getByLabel(peopleText[locale].query, { exact: true }).fill(name);
-      await page.getByRole("button", { name: peopleText[locale].submit, exact: true }).click();
+      // People search is the People tab of /search (Stage 1).
+      await page.goto(`/${locale}/search?tab=people`);
+      await page.getByLabel(searchText[locale].query, { exact: true }).fill(name);
+      await page.getByRole("button", { name: searchText[locale].submit, exact: true }).click();
       await page.getByRole("link", { name, exact: true }).click(); await expect(page).toHaveURL(/\/people\/[a-f0-9-]+$/);
       await page.getByLabel(text.body, { exact: true }).fill("طلب مرحبًا <script>window.messageXSS=1</script>");
       await page.getByRole("button", { name: text.send, exact: true }).focus(); await page.keyboard.press("Enter");
@@ -368,7 +372,7 @@ for (const locale of ["en", "ar"] as const) {
         await page.getByRole("button", { name: text.send, exact: true }).click();
       }
       await expect.poll(() => page.evaluate(() => (window as Window & { messageGate?: { reached: boolean } }).messageGate?.reached)).toBe(true);
-      await page.locator(".primary-navigation").getByRole("link", { name: text.title, exact: true }).click();
+      await primaryNavLink(page, locale, text.title).click();
       await expect(page).toHaveURL(`${origin}/${locale}/messages`);
       await page.evaluate(() => (window as Window & { messageGate?: { release(): void } }).messageGate?.release());
       await expect(page.getByRole("link", { name: /^Member / })).toBeVisible();

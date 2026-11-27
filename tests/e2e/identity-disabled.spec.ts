@@ -24,12 +24,15 @@ test("ordinary startup leaves synthetic identity disabled", async ({ request, pa
   expect((await request.get("/api/archive?q=study")).status()).toBe(503);
   expect((await request.get("/api/people?q=Member")).status()).toBe(503);
   expect((await request.put("/api/people/profile", { data: { displayName: "Member", directoryVisible: true }, headers: { Origin: "http://127.0.0.1:3100" } })).status()).toBe(503);
-  await page.goto("/en/people");
-  await expect(page.getByRole("main").getByRole("alert")).toBeVisible();
-  await expect(page.getByRole("textbox")).toHaveCount(0);
-  await page.goto("/en/archive");
-  await expect(page.getByRole("main").getByRole("alert")).toBeVisible();
-  await expect(page.getByRole("textbox")).toHaveCount(0);
+  // Old search URLs forward to /search, which needs a session: with identity
+  // disabled every visitor lands on the disabled sign-in page, with no form.
+  for (const path of ["/en/people?q=Member", "/en/archive?q=study", "/en/search?q=study"]) {
+    await page.goto(path);
+    await expect(page).toHaveURL("http://127.0.0.1:3100/en/signin");
+    await expect(page.getByText("Identity testing is available through the dedicated local test runner.")).toBeVisible();
+    await expect(page.getByRole("textbox")).toHaveCount(0);
+    await expect(page.getByRole("searchbox")).toHaveCount(0);
+  }
   expect((await request.post("/api/communities", { data: { name: "Synthetic", description: "", visibility: "PUBLIC" }, headers: { Origin: "http://127.0.0.1:3100" } })).status()).toBe(503);
   const id = "11111111-2222-3333-4444-555555555555";
   const forgedHeaders = { Origin: "http://127.0.0.1:3100", "X-Usp-Peer": "127.0.0.1", "X-Usp-Peer-Signature": "a".repeat(64), "X-Messaging-Scope": id };

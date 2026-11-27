@@ -3,13 +3,17 @@
   gap: var(--space-1);
   min-inline-size: 0;
 }
+.labelRow {
+  display: flex;
+  align-items: baseline;
+  gap: var(--space-1);
+}
 .label {
   font-size: var(--text-md);
   font-weight: var(--weight-semibold);
   color: var(--color-text);
 }
 .requiredMark {
-  margin-inline-start: var(--space-1);
   color: var(--color-danger-text);
 }
 .hint {

@@ -1,0 +1,32 @@
+.landing,
+.start {
+  display: grid;
+  gap: var(--space-4);
+  max-inline-size: 40rem;
+  padding-block: var(--space-10);
+}
+.heading {
+  font-size: clamp(1.75rem, 1.2rem + 2.5vw, 2.5rem);
+  font-weight: var(--weight-bold);
+}
+.introduction {
+  color: var(--color-text-muted);
+  font-size: var(--text-title);
+}
+.actions {
+  margin-block-start: var(--space-2);
+}
+.startLinks {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-3);
+  margin: var(--space-2) 0 0;
+  padding: 0;
+  list-style: none;
+}
+@media (max-width: 47.99rem) {
+  .landing,
+  .start {
+    padding-block: var(--space-6);
+  }
+}

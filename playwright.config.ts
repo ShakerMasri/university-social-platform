@@ -4,14 +4,16 @@ const archiveOnly = authenticated && process.env.M2_BROWSER_GROUP === "archive";
 const emptyOnly = authenticated && process.env.M2_BROWSER_GROUP === "empty";
 const messagingOnly = authenticated && process.env.M2_BROWSER_GROUP === "messaging";
 const feedOnly = authenticated && process.env.M2_BROWSER_GROUP === "feed";
+// UI rebuild Stage 1 focused group; the main and archive groups also run these.
+const shellOnly = authenticated && process.env.M2_BROWSER_GROUP === "shell";
 const emptyDiscovery = /empty community discovery is localized in English and Arabic/;
 
 export default defineConfig({
   testDir: "./tests/e2e",
-  testMatch: feedOnly ? ["**/feed.spec.ts"] : messagingOnly ? ["**/messaging.spec.ts"] : archiveOnly ? ["**/archive.spec.ts"] : emptyOnly ? ["**/communities.spec.ts"] : undefined,
+  testMatch: shellOnly ? ["**/shell.spec.ts", "**/search.spec.ts", "**/people.spec.ts"] : feedOnly ? ["**/feed.spec.ts"] : messagingOnly ? ["**/messaging.spec.ts"] : archiveOnly ? ["**/search.spec.ts"] : emptyOnly ? ["**/communities.spec.ts"] : undefined,
   grep: emptyOnly ? emptyDiscovery : undefined,
   grepInvert: authenticated && !emptyOnly ? emptyDiscovery : undefined,
-  testIgnore: process.env.M2_IDENTITY_E2E === "1" ? ["**/identity-disabled.spec.ts", "**/feed-disabled.spec.ts", ...(feedOnly ? [] : ["**/feed.spec.ts"]), ...(archiveOnly ? [] : ["**/archive.spec.ts"]), ...(messagingOnly ? [] : ["**/messaging.spec.ts"])] : ["**/feed.spec.ts", "**/identity.spec.ts", "**/communities.spec.ts", "**/posts.spec.ts", "**/comments.spec.ts", "**/votes.spec.ts", "**/replies-notifications.spec.ts", "**/ui-layout.spec.ts", "**/ui-zoom.spec.ts", "**/discussion-actions.spec.ts", "**/archive.spec.ts", "**/people.spec.ts", "**/messaging.spec.ts", "**/ui-components.spec.ts"],
+  testIgnore: process.env.M2_IDENTITY_E2E === "1" ? ["**/identity-disabled.spec.ts", "**/feed-disabled.spec.ts", ...(feedOnly ? [] : ["**/feed.spec.ts"]), ...(archiveOnly || shellOnly ? [] : ["**/search.spec.ts"]), ...(messagingOnly ? [] : ["**/messaging.spec.ts"])] : ["**/feed.spec.ts", "**/identity.spec.ts", "**/communities.spec.ts", "**/posts.spec.ts", "**/comments.spec.ts", "**/votes.spec.ts", "**/replies-notifications.spec.ts", "**/ui-layout.spec.ts", "**/ui-zoom.spec.ts", "**/discussion-actions.spec.ts", "**/search.spec.ts", "**/shell.spec.ts", "**/people.spec.ts", "**/messaging.spec.ts", "**/ui-components.spec.ts"],
   forbidOnly: Boolean(process.env.CI),
   retries: 0,
   workers: 1,

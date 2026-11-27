@@ -4,9 +4,8 @@ import { describe, expect, it } from "vitest";
 
 // Plan acceptance criterion 4: new CSS uses logical properties only, so the
 // Arabic layout mirrors correctly. Flags physical left/right properties and
-// values. The old harness stylesheet is excluded until Stage 1 deletes it.
+// values.
 
-const legacyExclusions = new Set(["src/app/globals.css"]);
 const physical = [
   /(^|[\s;{])(margin|padding|border|inset|scroll-margin|scroll-padding)-(left|right)\b/,
   /(^|[\s;{])border-(top|bottom)-(left|right)-radius\b/,
@@ -24,7 +23,7 @@ function cssFiles(directory: string): string[] {
 
 describe("logical CSS properties", () => {
   const root = process.cwd();
-  const files = cssFiles(join(root, "src")).map((file) => relative(root, file).replaceAll("\\", "/")).filter((file) => !legacyExclusions.has(file));
+  const files = cssFiles(join(root, "src")).map((file) => relative(root, file).replaceAll("\\", "/"));
 
   it("finds the UI stylesheets", () => {
     expect(files).toContain("src/ui/tokens.css");
