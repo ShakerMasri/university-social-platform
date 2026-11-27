@@ -1,6 +1,6 @@
 # UI rebuild — "Clear Campus"
 
-Status: Stage 0 done (2026-11-26); Stage 1 built and tested, awaiting review and commit (2026-11-27) · Branch: feat/ui-redesign · Milestone: UI rebuild (after M5-04 closure)
+Status: Stage 0 done (2026-11-26); Stage 1 done (2026-11-27, `1cd7eb2`, pushed); two review P3s open; Stage 2 next · Branch: feat/ui-redesign · Milestone: UI rebuild (after M5-04 closure)
 
 ## Goal
 
@@ -368,7 +368,7 @@ Each stage is one checkpoint: review, then commit on `feat/ui-redesign`. Main is
 - Checks to run: lint, typecheck, unit tests, build, contrast script; Playwright run of the preview page in both themes and both locales, plus a no-flash check.
 - Done when: the preview shows every component in light/dark × EN/AR, with keyboard and focus checked.
 
-### Stage 1 — App shell, sign-in, onboarding (done 2026-11-27: see progress log)
+### Stage 1 — App shell, sign-in, onboarding (done 2026-11-27, `1cd7eb2`)
 - Steps:
   - Build the header with the unified search field, the navigation (desktop and mobile per decision 5), the language and theme switches, and the notifications button with its preview.
   - Add `/search` with All, Posts and People tabs (the Communities tab comes in Stage 2).
@@ -527,7 +527,7 @@ On sign-in and verify, +9.0 KiB is the theme and language switches, plus the new
 Newest first; filled by /handoff and /review-checkpoint.
 
 ### 2026-11-27 — Session 3 — Stage 1 test rewrites, walkthrough, review
-- **State:** Stage 1 complete pending review · branch `feat/ui-redesign` at `c595291` (new: `docs: add replies format rule`, CLAUDE.md only, owner-approved; not pushed) · all Stage 1 work uncommitted.
+- **State:** done · branch `feat/ui-redesign` at `1cd7eb2`, pushed to `origin/feat/ui-redesign` (`c595291` docs: add replies format rule; `1cd7eb2` feat(ui): add Stage 1 app shell, unified search and entry pages; the push also carried session 2's `5d45817` tooling fix, which was committed but not yet pushed) · uncommitted: this handoff's edits to this plan and `docs/project-brief.md`.
 - **Done:**
   - Votes keyboard test waits for the vote buttons to be enabled (hydration) before each key press. Then 10/10 (5 runs × EN/AR), then 10/10 again, and the whole votes spec 32/32 (4 runs).
   - New focused runner `test:e2e:focus` (`USP_E2E_SPECS`, `USP_E2E_GREP`, `USP_E2E_REPEAT`), validated input, same guarded disposable database as the other groups; recorded in README.
@@ -584,6 +584,14 @@ Newest first; filled by /handoff and /review-checkpoint.
   - P3-a (open): the header can keep a count from the preview after "Mark all read" when the server value equals its last render (for example 0 at load, 3 seen in the preview, then mark all read). Fix next: have mark-all send a shell event (or reset on every server render), correct the comment in `notifications-button.tsx`, and add a browser assertion on the header after mark-all.
   - P3-b (open, needs an owner decision): opening an already-read item from an outdated list (after Back) lowers the header count again. Exact fix: the open endpoint reports whether it marked the item read (changes an existing API response). Otherwise record it as a known limitation.
   - Per the owner's instruction (no P1/P2), Stage 1 is committed and pushed with these two P3s open.
+- **Decisions (this session):**
+  - "Start with the vote keyboard test ... Then rewrite the identity tests and keep every security case. Do layout and zoom after that."
+  - Replies rule: "Commit it now as its own docs commit ... staging only CLAUDE.md ... Don't push yet." (diff shown first; committed as `c595291`)
+  - Review fixes, wording, More sheet and commit/push conditions: quoted above under "Owner decisions on the review".
+- **Owner decisions after the handoff (2026-11-27):**
+  - P3-b: "Yes, change the open-notification API to report whether it marked the item read. Keep it backward compatible, test both cases (unread → marked; already read → not marked), and make sure it reveals nothing about notifications I can no longer access."
+  - "Next session: merge main into the branch first if it has moved, then fix both header count issues together, then start Stage 2."
+- **Next step:** (1) `git fetch` and merge `origin/main` into `feat/ui-redesign` if it has moved; run lint, typecheck and unit tests after a merge. (2) Fix P3-a and P3-b together: add a field to the `POST /api/notifications/{id}/open` response that says whether this request marked the notification read (from the `updateMany` count in `notificationTarget`), keeping every existing field; inaccessible or unknown ids keep returning the same 404 with no new information. The list (`notifications-list.tsx`) and the header preview (`shell/notifications-preview.tsx`) lower the header count only when that field is true. A successful "Mark all read" sends a shell event that sets the header count to 0; correct the comment in `shell/notifications-button.tsx`. Tests: database cases for unread → marked and already read → not marked, plus removed-member and other-user 404s unchanged; browser assertions for the header after mark-all and after reopening a read item via Back. (3) Start Stage 2, first asking the owner to confirm the `CommunityVisit` migration scope.
 
 ### 2026-11-27 — Session 2 — Stage 1 shell, search and entry pages (partial)
 - **State:** partial · branch `feat/ui-redesign` at `5d45817` · uncommitted: all Stage 1 work (107 status entries, 94 files vs HEAD), including the `(app)`/`(entry)` route-group moves, staged as renames.
