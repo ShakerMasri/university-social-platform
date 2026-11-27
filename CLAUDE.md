@@ -68,4 +68,10 @@ The old UI was only a test harness for the server features; it is being rebuilt,
 
 ## Replies
 
-Keep replies short: start with a one-line result (done / blocked / needs a decision), then at most 5 bullets. Put details in files or give them only when asked. Ask questions as a short numbered list.
+The owner reads replies quickly. Every reply:
+
+- Line 1: **Done**, **Blocked** or **Needs your decision**, in one sentence.
+- Then at most 3 short bullets, only on what the owner must know. No file lists, test counts, line references, sizes or internal names.
+- Then **Decisions:** as a numbered list. Each question is answerable with yes/no or a short choice, with your recommendation in brackets.
+
+Keep it under about 10 lines. Details (checks run, files, numbers, reasoning) go in the plan's progress log, or come only when the owner asks. Never hide a failure, risk or skipped check to stay short; state it in one line.
