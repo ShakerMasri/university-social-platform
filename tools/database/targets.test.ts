@@ -45,7 +45,8 @@ describe("local targets rejected before network access", () => {
     }
     const m = fixture();
     m.databases[0].ready = false;
-    expect(() => validateTarget(databaseUrl(m, m.databases[0].name, "runtime"), m, "runtime")).toThrow();
+    expect(() => validateTarget(databaseUrl(m, m.databases[0].name, "runtime"), m, "runtime"))
+      .toThrow(`Incomplete database setup requires inspection: ${m.databases[0].name}`);
   });
 
   it("rejects identical main/shadow targets and allows two different owned databases", () => {

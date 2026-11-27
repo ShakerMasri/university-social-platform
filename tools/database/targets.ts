@@ -62,12 +62,15 @@ export function validateTarget(value: unknown, m: LocalManifest, role: "runtime"
   let url: URL;
   try { url = new URL(value); } catch { throw new Error("Invalid M1B database target"); }
   const name = url.pathname.slice(1);
-  const record = m.databases.find((d) => d.name === name && d.ready);
+  const record = m.databases.find((d) => d.name === name);
   if (
     url.protocol !== "postgresql:" || url.hostname !== "127.0.0.1" || url.port !== String(m.port) ||
     url.search || url.hash || !record ||
     value !== databaseUrl(m, name, role)
   ) throw new Error("Refusing an unowned or mismatched database target");
+  // Listed but never finished (an interrupted run): say so, instead of the
+  // generic refusal, so the entry is inspected rather than mistaken for tampering.
+  if (!record.ready) throw new Error(`Incomplete database setup requires inspection: ${name} is listed in the local manifest but not ready`);
   return name;
 }
 
