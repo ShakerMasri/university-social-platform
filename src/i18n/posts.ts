@@ -8,7 +8,7 @@ export const postText: Record<Locale, PostText> = {
   en: {
     title: "Posts", create: "Create a post", type: "Post type", postTitle: "Post title", body: "Post text",
     link: "Resource link (optional)", publish: "Publish post", busy: "Publishing…", failed: "Could not publish. Try again. Your access may have changed.",
-    invalid: "Check the post type, text lengths and resource link.", conflict: "This submission changed. Submit again to publish the updated text.",
+    invalid: "Check the post type, text lengths and resource link.", conflict: "Your earlier post may already have been published. Check the feed before posting again.",
     rate: "Too many posting attempts. Try again later.", empty: "No posts yet.", next: "Older posts", more: "Load more posts", open: "Open post", back: "Back to community",
     deleted: "Deleted user", attribution: "Posted by", unavailable: "This post is unavailable or you do not have access.",
     joinHint: "Join this community and save your display name to publish. Announcements are reserved for its creator.",
@@ -20,7 +20,7 @@ export const postText: Record<Locale, PostText> = {
   ar: {
     title: "المنشورات", create: "إنشاء منشور", type: "نوع المنشور", postTitle: "عنوان المنشور", body: "نص المنشور",
     link: "رابط المورد (اختياري)", publish: "نشر المنشور", busy: "جارٍ النشر…", failed: "تعذر النشر. حاول مجددًا، فقد تكون صلاحياتك قد تغيرت.",
-    invalid: "تحقق من نوع المنشور وأطوال النصوص ورابط المورد.", conflict: "تغيّر محتوى هذه المحاولة. أرسل مجددًا لنشر النص المعدّل.",
+    invalid: "تحقق من نوع المنشور وأطوال النصوص ورابط المورد.", conflict: "ربما نُشر منشورك السابق بالفعل. تحقّق من المنشورات قبل النشر مجددًا.",
     rate: "محاولات نشر كثيرة. حاول لاحقًا.", empty: "لا توجد منشورات بعد.", next: "منشورات أقدم", more: "تحميل المزيد من المنشورات", open: "فتح المنشور", back: "العودة إلى المجتمع",
     deleted: "مستخدم محذوف", attribution: "نشره", unavailable: "هذا المنشور غير متاح أو ليس لديك صلاحية الوصول.",
     joinHint: "انضم إلى المجتمع واحفظ اسم العرض لتتمكن من النشر. الإعلانات مخصصة لمنشئ المجتمع.",

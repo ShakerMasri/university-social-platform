@@ -335,3 +335,28 @@ for (const locale of locales) {
     await expect(peopleResults(page)).toHaveCount(0);
   });
 }
+
+test("ar: search tabs announce that the next tab is loading", async ({ context, page }) => {
+  await signIn(context);
+  const text = searchText.ar, marker = `busy${randomUUID().slice(0, 8)}`;
+  await page.goto(`/ar/search?q=${marker}`);
+  await expect(resultsHeading(page, "ar")).toBeVisible();
+  // Hold the server render of the People tab until the pending state is checked.
+  let release!: () => void;
+  const held = new Promise<void>(done => { release = done; });
+  const pattern = "**/ar/search?tab=people*";
+  await page.route(pattern, async route => {
+    if (route.request().headers()["rsc"] !== "1") return route.fallback();
+    await held; await route.fallback();
+  });
+  const tabs = page.getByRole("navigation", { name: text.tabsLabel, exact: true });
+  const people = tabs.getByRole("link", { name: text.people, exact: true });
+  const announcement = tabs.getByRole("status");
+  await expect(announcement).toHaveText("");
+  await people.click();
+  await expect(people.locator("[data-tab-pending]")).toHaveCount(1);
+  await expect(announcement).toHaveText(archiveText.ar.loading);
+  release(); await page.unroute(pattern);
+  await expect(people).toHaveAttribute("aria-current", "page");
+  await expect(announcement).toHaveText("");
+});

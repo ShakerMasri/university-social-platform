@@ -690,6 +690,39 @@ test("the composer locks after an unknown outcome, unlocks only on a conclusive 
   } finally { await owner.close(); }
 });
 
+test("a 409 after a lock unlocks the picker and renews the retry key, so the edited text publishes as a new post", async ({ context, browser, page }) => {
+  const owner = await browser.newContext(), home = homeText.en, posts = postText.en;
+  try {
+    const reader = await signIn(context); await signIn(owner);
+    const space = await community(owner, `Conflict ${randomUUID().slice(0, 6)}`);
+    expect((await write(context.request, `/api/communities/${space}/memberships`, { action: "join" })).status()).toBe(200);
+    await page.goto("/en");
+    await composer(page, "en").getByRole("button", { name: home.startPost, exact: true }).click();
+    await picker(page, "en").selectOption(space);
+    const marker = randomUUID().slice(0, 8), title = composer(page, "en").getByLabel(posts.postTitle, { exact: true });
+    await title.fill(`Conflict ${marker} first`);
+    await composer(page, "en").getByLabel(posts.body, { exact: true }).fill("Synthetic");
+    const publish = composer(page, "en").getByRole("button", { name: posts.publish, exact: true });
+    // The server saves the first post but its answer is lost: locked.
+    await page.route(`**/api/communities/${space}/posts`, async route => { await route.fetch(); await route.fulfill({ status: 503, contentType: "application/json", body: '{"ok":false}' }); }, { times: 1 });
+    await publish.click();
+    await expect(composer(page, "en").getByRole("status").filter({ hasText: home.uncertain })).toBeFocused();
+    await expect(picker(page, "en")).toBeDisabled();
+    // Retrying with edited text under the same key: the real server answers 409 (the earlier post exists).
+    await title.fill(`Conflict ${marker} edited`);
+    await publish.click();
+    await expect(composer(page, "en").getByRole("status").filter({ hasText: posts.conflict })).toBeFocused();
+    await expect(picker(page, "en")).toBeEnabled();
+    const count = () => fixture(async client => Number((await client.query<{ count: string }>(`SELECT count(*) FROM "Post" WHERE title LIKE $1 AND "authorId"=$2`, [`Conflict ${marker} %`, reader])).rows[0].count));
+    expect(await count()).toBe(1);
+    // A new key: submitting again publishes the edited text as its own post.
+    await publish.click();
+    await expect(page).toHaveURL(new RegExp(`/en/communities/${space}/posts/[0-9a-f-]{36}$`));
+    expect(await fixture(async client => (await client.query<{ title: string }>(`SELECT title FROM "Post" WHERE title LIKE $1 AND "authorId"=$2 ORDER BY title`, [`Conflict ${marker} %`, reader])).rows.map(row => row.title))).toEqual([`Conflict ${marker} edited`, `Conflict ${marker} first`]);
+    expect(await count()).toBe(2);
+  } finally { await owner.close(); }
+});
+
 test("an open composer closes when Home re-renders for another account", async ({ context, browser, page }) => {
   const owner = await browser.newContext(), home = homeText.en;
   try {

@@ -75,7 +75,7 @@ export default async function SearchPage({ params, searchParams }: {
     <div className={styles.page}>
       <h1 className={styles.heading}>{text.title}</h1>
       <SearchForm locale={locale} request={request} communities={options?.items} moreCommunities={options?.more} />
-      <Tabs label={text.tabsLabel} items={tabs} prefetch={false} />
+      <Tabs label={text.tabsLabel} items={tabs} prefetch={false} pendingLabel={archiveText[locale].loading} />
       <section className={styles.results} aria-labelledby={resultsHeadingId}>
         <h2 id={resultsHeadingId} tabIndex={-1} className={styles.resultsHeading}>{text.results}</h2>
         {communities && communities.status !== "ok" && communities.status !== "signedOut" && (
