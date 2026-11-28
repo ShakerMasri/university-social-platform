@@ -5,6 +5,7 @@ import type { Locale } from "./locales";
 export const homeText = {
   en: {
     heading: "Home",
+    loading: "Loading…",
     feedTabs: "Feeds",
     tabCommunities: "Your communities",
     tabForYou: "For you",
@@ -35,6 +36,7 @@ export const homeText = {
   },
   ar: {
     heading: "الرئيسية",
+    loading: "جارٍ التحميل…",
     feedTabs: "قوائم المنشورات",
     tabCommunities: "مجتمعاتك",
     tabForYou: "لك",

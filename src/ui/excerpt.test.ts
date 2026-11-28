@@ -17,6 +17,7 @@ describe("post excerpt", () => {
   it("keeps an emoji sequence and an Arabic letter with its marks whole", () => {
     const family = "👩‍👩‍👧", marked = "شَدَّة";
     expect(excerpt(family.repeat(5), 3)).toBe(family.repeat(3) + "…");
-    expect(excerpt(marked + marked, 5)).toBe(Array.from(new Intl.Segmenter("ar", { granularity: "grapheme" }).segment(marked + marked), part => part.segment).slice(0, 5).join("") + "…");
+    // Graphemes: شَ دَّ ة شَ دَّ — the fifth keeps both of its marks.
+    expect(excerpt(marked + marked, 5)).toBe(marked + "شَدَّ" + "…");
   });
 });

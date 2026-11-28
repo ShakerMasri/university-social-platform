@@ -88,7 +88,11 @@ export default function ComposerForm({ locale, initialType, onClose }: { locale:
     const next = items.find(item => item.id === id);
     if (type === "ANNOUNCEMENT" && !next?.isOwner) setType("QUESTION");
   }
-  function notify(value: string) { setMessage(value); requestAnimationFrame(() => feedback.current?.focus()); }
+  // Focus the message once React has rendered it: the line is hidden while
+  // empty, so focusing it before the commit would silently fail.
+  const [focusRequest, setFocusRequest] = useState(0);
+  useEffect(() => { if (focusRequest) feedback.current?.focus(); }, [focusRequest]);
+  function notify(value: string) { setMessage(value); setFocusRequest((count) => count + 1); }
 
   async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -103,11 +107,14 @@ export default function ComposerForm({ locale, initialType, onClose }: { locale:
       const response = await fetch(`/api/communities/${community.id}/posts`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(input), cache: "no-store", signal: AbortSignal.timeout(requestTimeoutMs) });
       if (!response.ok) {
         if (response.status >= 500) { setUncertain(true); notify(text.uncertain); return; }
-        // Any other refusal means nothing was published.
-        setUncertain(false);
-        if (response.status === 409) requestId.current = null;
+        // A refusal of this request says nothing about an earlier one whose
+        // outcome was unknown (the rate budget, for one, is checked before
+        // the retry key), so the lock stays. Two answers end it: 409 means
+        // the earlier post exists (the key is renewed to publish the edited
+        // text), and 403/404 mean this community can no longer be used.
+        if (response.status === 409) { requestId.current = null; setUncertain(false); }
         if (response.status === 401) { setCommunities({ status: "session" }); return; }
-        if (response.status === 403 || response.status === 404) { notify(text.noAccess); void load(true); return; }
+        if (response.status === 403 || response.status === 404) { setUncertain(false); notify(text.noAccess); void load(true); return; }
         notify(response.status === 429 ? posts.rate : response.status === 409 ? posts.conflict : posts.failed);
         return;
       }

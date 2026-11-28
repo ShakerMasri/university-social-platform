@@ -601,6 +601,11 @@ for (const locale of ["en", "ar"] as const) {
       await expect(composer(page, locale).getByRole("status").filter({ hasText: home.uncertain })).toBeFocused();
       // The post may exist in this community, so the choice is locked until Cancel.
       await expect(picker(page, locale)).toBeDisabled();
+      // A rate-limit refusal of the retry proves nothing about the first post: still locked.
+      await page.route(`**/api/communities/${theirs}/posts`, route => route.fulfill({ status: 429, contentType: "application/json", body: '{"ok":false}' }), { times: 1 });
+      await publish.click();
+      await expect(composer(page, locale).getByRole("status").filter({ hasText: posts.rate })).toBeFocused();
+      await expect(picker(page, locale)).toBeDisabled();
       await publish.click();
       await expect(page).toHaveURL(new RegExp(`/${locale}/communities/${theirs}/posts/[0-9a-f-]{36}$`));
       expect(await fixture(async client => Number((await client.query<{ count: string }>(`SELECT count(*) FROM "Post" WHERE title=$1 AND "authorId"=$2 AND type='DISCUSSION'`, [title, reader])).rows[0].count))).toBe(1);
@@ -636,6 +641,71 @@ test("the composer's picker is searchable when the list is long, and keeps the c
     await expect(picker(page, "ar")).toHaveValue(ids[8]);
     await search.fill("nothing like this");
     await expect(composer(page, "ar").getByText(home.noMatch, { exact: true })).toBeVisible();
+    // A lost answer locks the search as well as the picker.
+    await search.fill("");
+    await composer(page, "ar").getByLabel(postText.ar.postTitle, { exact: true }).fill("Locked search");
+    await composer(page, "ar").getByLabel(postText.ar.body, { exact: true }).fill("Synthetic");
+    await page.route(`**/api/communities/${ids[8]}/posts`, route => route.abort("connectionreset"), { times: 1 });
+    await composer(page, "ar").getByRole("button", { name: postText.ar.publish, exact: true }).click();
+    await expect(composer(page, "ar").getByRole("status").filter({ hasText: home.uncertain })).toBeFocused();
+    await expect(search).toBeDisabled(); await expect(picker(page, "ar")).toBeDisabled();
+  } finally { await owner.close(); }
+});
+
+test("the composer locks after an unknown outcome, unlocks only on a conclusive answer, and Cancel starts over", async ({ context, browser, page }) => {
+  const owner = await browser.newContext(), home = homeText.en, posts = postText.en;
+  try {
+    await signIn(context); await signIn(owner);
+    const first = await community(owner, `Lock A ${randomUUID().slice(0, 6)}`), second = await community(owner, `Lock B ${randomUUID().slice(0, 6)}`);
+    for (const id of [first, second]) expect((await write(context.request, `/api/communities/${id}/memberships`, { action: "join" })).status()).toBe(200);
+    await page.goto("/en");
+    const start = composer(page, "en").getByRole("button", { name: home.startPost, exact: true });
+    const publish = composer(page, "en").getByRole("button", { name: posts.publish, exact: true });
+    const fill = async () => {
+      await picker(page, "en").selectOption(first);
+      await composer(page, "en").getByLabel(posts.postTitle, { exact: true }).fill(`Lock ${randomUUID().slice(0, 8)}`);
+      await composer(page, "en").getByLabel(posts.body, { exact: true }).fill("Synthetic");
+    };
+    const uncertain = composer(page, "en").getByRole("status").filter({ hasText: home.uncertain });
+    // No answer at all (network failure): locked.
+    await start.click(); await fill();
+    await page.route(`**/api/communities/${first}/posts`, route => route.abort("connectionreset"), { times: 1 });
+    await publish.click();
+    await expect(uncertain).toBeFocused(); await expect(picker(page, "en")).toBeDisabled();
+    // A 403 is conclusive (no access to this community any more): unlocked.
+    await page.route(`**/api/communities/${first}/posts`, route => route.fulfill({ status: 403, contentType: "application/json", body: '{"ok":false}' }), { times: 1 });
+    await publish.click();
+    await expect(composer(page, "en").getByRole("status").filter({ hasText: home.noAccess })).toBeFocused();
+    await expect(picker(page, "en")).toBeEnabled();
+    // An unreadable success (the post may exist): locked; Cancel starts over with a free choice.
+    await page.route(`**/api/communities/${first}/posts`, route => route.fulfill({ status: 201, contentType: "application/json", body: "{}" }), { times: 1 });
+    await publish.click();
+    await expect(uncertain).toBeFocused(); await expect(picker(page, "en")).toBeDisabled();
+    await composer(page, "en").getByRole("button", { name: home.cancel, exact: true }).click();
+    await expect(start).toBeFocused();
+    await start.click();
+    await expect(picker(page, "en")).toBeEnabled();
+    await picker(page, "en").selectOption(second);
+    await expect(picker(page, "en")).toHaveValue(second);
+  } finally { await owner.close(); }
+});
+
+test("an open composer closes when Home re-renders for another account", async ({ context, browser, page }) => {
+  const owner = await browser.newContext(), home = homeText.en;
+  try {
+    await signIn(context); await signIn(owner);
+    const space = await community(owner, `Keyed ${randomUUID().slice(0, 6)}`);
+    expect((await write(context.request, `/api/communities/${space}/memberships`, { action: "join" })).status()).toBe(200);
+    await page.goto("/en");
+    await composer(page, "en").getByRole("button", { name: home.startPost, exact: true }).click();
+    await expect(picker(page, "en").locator("option")).toHaveCount(2);
+    // Another account signs in on this browser without any page event reaching this tab.
+    await signIn(context);
+    const rendered = page.waitForResponse(response => response.request().headers()["rsc"] === "1");
+    await page.evaluate(() => window.dispatchEvent(new Event("focus")));
+    await rendered;
+    await expect(picker(page, "en")).toHaveCount(0);
+    await expect(composer(page, "en").getByRole("button", { name: home.startPost, exact: true })).toBeVisible();
   } finally { await owner.close(); }
 });
 
@@ -713,10 +783,15 @@ test("Home shows a busy tab while a tab switch renders", async ({ context, page 
   };
   const forYou = tabs(page, "en").getByRole("link", { name: homeText.en.tabForYou, exact: true });
   const release = await hold("**/en?tab=for-you*");
+  const announcement = tabs(page, "en").getByRole("status");
+  await expect(announcement).toHaveText("");
   await forYou.click();
   await expect(forYou.locator("[data-tab-pending]")).toHaveCount(1);
+  // Screen readers hear that the tab is loading.
+  await expect(announcement).toHaveText(homeText.en.loading);
   await release();
   await expect(page).toHaveURL("/en?tab=for-you");
   await expect(forYou).toHaveAttribute("aria-current", "page");
   await expect(forYou.locator("[data-tab-pending]")).toHaveCount(0);
+  await expect(announcement).toHaveText("");
 });

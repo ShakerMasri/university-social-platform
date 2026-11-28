@@ -55,7 +55,7 @@ export default async function Home({ params, searchParams }: {
           <div className={homeStyles.feedColumn}>
             <h1 className="ui-visually-hidden">{home.heading}</h1>
             <Composer key={feed?.state === "ready" ? feed.viewer : "unchecked"} locale={locale} displayName={viewer.displayName} avatarSeed={viewer.avatarSeed} />
-            <Tabs label={home.feedTabs} prefetch={false} items={[
+            <Tabs label={home.feedTabs} prefetch={false} pendingLabel={home.loading} items={[
               { href: homeHref(locale), label: home.tabCommunities, current: tab === "communities" },
               { href: homeHref(locale, "for-you"), label: home.tabForYou, current: tab === "for-you" },
             ]} />

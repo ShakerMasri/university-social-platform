@@ -1,13 +1,16 @@
 import type { Locale } from "@/i18n/locales";
-import { feedText } from "@/i18n/feed";
+import { homeText } from "@/i18n/home";
 import { Skeleton, SkeletonGroup } from "@/ui/components/skeleton";
 import { ByLocale } from "@/app/[locale]/shell/by-locale";
 
-// Shown while Home renders, including tab switches (each tab is its own URL).
-// Loading files receive no params, so a tiny client switch picks the language.
+// Shown while Home renders after navigation from another page (Next.js does
+// not show it when only the query changes, so tab switches use the busy tab
+// and its announcement instead). It also covers the signed-out landing page,
+// so the label is neutral. Loading files receive no params, so a tiny client
+// switch picks the language.
 function HomeLoading({ locale }: { locale: Locale }) {
   return (
-    <SkeletonGroup label={feedText[locale].loading}>
+    <SkeletonGroup label={homeText[locale].loading}>
       <Skeleton blockSize="7rem" />
       <Skeleton shape="text" inlineSize="40%" />
       <Skeleton blockSize="12rem" />
