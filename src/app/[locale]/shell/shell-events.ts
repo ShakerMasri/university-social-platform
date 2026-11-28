@@ -28,6 +28,22 @@ export function onNotificationsCleared(listener: () => void) {
   return () => window.removeEventListener(notificationsClearedEvent, listener);
 }
 
+const unreadCountEvent = "usp:unread-count";
+
+/** A page just read the server's unread count (for example Home's side panel). */
+export function announceUnreadCount(count: number) {
+  window.dispatchEvent(new CustomEvent<number>(unreadCountEvent, { detail: count }));
+}
+
+export function onUnreadCount(listener: (count: number) => void) {
+  const handler = (event: Event) => {
+    const count = (event as CustomEvent<unknown>).detail;
+    if (Number.isSafeInteger(count) && (count as number) >= 0) listener(count as number);
+  };
+  window.addEventListener(unreadCountEvent, handler);
+  return () => window.removeEventListener(unreadCountEvent, handler);
+}
+
 /** The signed-in user saved a new display name. */
 export function announceDisplayName(name: string) {
   window.dispatchEvent(new CustomEvent<string>(displayNameEvent, { detail: name }));

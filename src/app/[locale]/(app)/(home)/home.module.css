@@ -1,5 +1,4 @@
-.landing,
-.start {
+.landing {
   display: grid;
   gap: var(--space-4);
   max-inline-size: 40rem;
@@ -16,17 +15,8 @@
 .actions {
   margin-block-start: var(--space-2);
 }
-.startLinks {
-  display: flex;
-  flex-wrap: wrap;
-  gap: var(--space-3);
-  margin: var(--space-2) 0 0;
-  padding: 0;
-  list-style: none;
-}
 @media (max-width: 47.99rem) {
-  .landing,
-  .start {
+  .landing {
     padding-block: var(--space-6);
   }
 }

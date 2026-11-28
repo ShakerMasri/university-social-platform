@@ -1,4 +1,6 @@
 export const communityPageSize = 20;
+/** Most memberships (any status) one user may hold; joining and creating refuse beyond it. */
+export const membershipLimit = 500;
 export type CommunityInput = { name: string; description: string; visibility: "PUBLIC" | "PRIVATE" };
 export type MembershipAction = "join" | "leave" | "approve" | "remove";
 

@@ -1,0 +1,71 @@
+.card {
+  display: grid;
+  gap: var(--space-3);
+  min-inline-size: 0;
+  padding: var(--space-5);
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-card);
+}
+@media (max-width: 30rem) {
+  .card { padding: var(--space-4); }
+}
+.note {
+  font-size: var(--text-sm);
+  color: var(--color-text-muted);
+}
+.header {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  min-inline-size: 0;
+}
+.byline {
+  display: grid;
+  flex: 1;
+  min-inline-size: 0;
+}
+.author {
+  font-weight: var(--weight-semibold);
+  color: var(--color-text);
+}
+.meta {
+  font-size: var(--text-sm);
+  color: var(--color-text-muted);
+}
+.type {
+  flex-shrink: 0;
+  align-self: start;
+}
+.title {
+  font-size: var(--text-title);
+  font-weight: var(--weight-semibold);
+}
+.title a {
+  color: var(--color-text);
+  text-decoration: none;
+}
+.title a:hover {
+  color: var(--color-accent-text);
+  text-decoration: underline;
+}
+.excerpt {
+  color: var(--color-text-muted);
+  line-height: 1.55;
+}
+.resource {
+  font-size: var(--text-md);
+  color: var(--color-text-muted);
+}
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2);
+  padding-block-start: var(--space-3);
+  border-block-start: 1px solid var(--color-border);
+}
+/* At 320px or large text, the badge moves under the byline instead of squeezing it. */
+@media (max-width: 22rem) {
+  .header { flex-wrap: wrap; }
+}

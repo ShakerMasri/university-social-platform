@@ -2,13 +2,12 @@ import { timingSafeEqual } from "node:crypto";
 import { communityId } from "../communities/policy.ts";
 import { postTypes, type PostType } from "../posts/policy.ts";
 import { keyedDigest } from "../identity/policy.ts";
+import { normalizeArchiveText } from "./normalize.ts";
+export { normalizeArchiveText };
 
 export const archivePageSize = 20;
 export const archiveExcerptLimit = 240;
 export type ArchiveInput = { query: string; terms: string[]; communityId?: string; type?: PostType; after?: string };
-export function normalizeArchiveText(value: string) {
-  return value.normalize("NFC").replace(/\u0640|[\u064b-\u0652]|\u0670/gu, "").toLowerCase();
-}
 export function archiveInput(parameters: URLSearchParams): ArchiveInput {
   const keys = [...parameters.keys()];
   if (keys.length > 4 || new Set(keys).size !== keys.length || keys.some(key => !["q", "community", "type", "after"].includes(key))) throw new Error("Invalid archive parameters");

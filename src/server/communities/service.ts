@@ -2,7 +2,7 @@ import "server-only";
 import type { Prisma, PrismaClient } from "../../generated/prisma/client.ts";
 import { sessionInTransaction } from "../identity/service.ts";
 import { consumeUserAttempt } from "../identity/attempt-budget.ts";
-import { communityId, communityInput, communityPageSize, membershipInput } from "./policy.ts";
+import { communityId, communityInput, communityPageSize, membershipInput, membershipLimit } from "./policy.ts";
 
 export class CommunityError extends Error {
   constructor(public readonly status: 401 | 403 | 404 | 409 | 429) { super("Community operation unavailable"); }
@@ -51,7 +51,7 @@ export function createCommunity(db: PrismaClient, token: unknown, input: Record<
     // A per-user advisory lock enforces the local resource cap across sessions.
     await tx.$queryRaw`SELECT pg_advisory_xact_lock(hashtextextended(${`community-budget:${ownerId}`}::text, 0))::text`;
     if (await tx.community.count({ where: { ownerId } }) >= 50) throw new CommunityError(429);
-    if (await tx.communityMembership.count({ where: { userId: ownerId } }) >= 500) throw new CommunityError(429);
+    if (await tx.communityMembership.count({ where: { userId: ownerId } }) >= membershipLimit) throw new CommunityError(429);
     const community = await tx.community.create({ data: { ...data, ownerId,
       memberships: { create: { userId: ownerId, status: "MEMBER" } } }, select: { id: true } });
     return community;
@@ -70,6 +70,22 @@ export function discoverCommunities(db: PrismaClient, token: unknown, cursor?: u
       isOwner: ownerId === userId, membership: memberships[0]?.status ?? null }));
     return { items, next: rows.length > communityPageSize ? items.at(-1)!.id : null,
       canCreate: Boolean(await tx.profile.findUnique({ where: { userId }, select: { userId: true } })) };
+  });
+}
+
+/**
+ * The viewer's own MEMBER communities, for the Home composer (and later the
+ * navigation and "N new" counts). Never pending ones and never anyone else's
+ * memberships. Bounded by the membership limit; ordered by id so the result
+ * is deterministic (the client sorts names for its locale).
+ */
+export function listMemberCommunities(db: PrismaClient, token: unknown) {
+  return authorized(db, token, async (tx, userId) => {
+    const rows = await tx.communityMembership.findMany({ where: { userId, status: "MEMBER" },
+      orderBy: { communityId: "asc" }, take: membershipLimit + 1,
+      select: { community: { select: { id: true, name: true, visibility: true, ownerId: true } } } });
+    if (rows.length > membershipLimit) throw new CommunityError(429);
+    return { items: rows.map(({ community: { ownerId, ...community } }) => ({ ...community, isOwner: ownerId === userId })) };
   });
 }
 
@@ -124,7 +140,7 @@ export function changeMembership(db: PrismaClient, token: unknown, value: unknow
     // Serialize all transitions per community. Repeated requests preserve MEMBER
     // status, and never downgrade an approved private member to PENDING.
     if (await tx.communityMembership.findUnique({ where: { communityId_userId: where } })) return;
-    if (await tx.communityMembership.count({ where: { userId } }) >= 500) throw new CommunityError(429);
+    if (await tx.communityMembership.count({ where: { userId } }) >= membershipLimit) throw new CommunityError(429);
     await tx.communityMembership.create({ data: { ...where, status: community.visibility === "PUBLIC" ? "MEMBER" : "PENDING" } });
   });
 }

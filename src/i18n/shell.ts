@@ -36,11 +36,6 @@ export const shellText = {
     backHome: "Go to Home",
     sessionUnavailable: "Your session could not be checked.",
     landingSignIn: "Sign in with your university email",
-    welcome: "Welcome back",
-    welcomeIntro: "Catch up on your communities, or find something new.",
-    startFeed: "Posts from your communities",
-    startForYou: "Posts picked for you",
-    startCommunities: "Browse communities",
   },
   ar: {
     navigation: "التنقل الرئيسي",
@@ -73,11 +68,6 @@ export const shellText = {
     backHome: "الذهاب إلى الرئيسية",
     sessionUnavailable: "تعذر التحقق من جلستك.",
     landingSignIn: "سجّل الدخول ببريدك الجامعي",
-    welcome: "مرحبًا بعودتك",
-    welcomeIntro: "تابع جديد مجتمعاتك، أو اكتشف شيئًا جديدًا.",
-    startFeed: "منشورات من مجتمعاتك",
-    startForYou: "منشورات مختارة لك",
-    startCommunities: "تصفح المجتمعات",
   },
 } as const satisfies Record<Locale, Record<string, string>>;
 

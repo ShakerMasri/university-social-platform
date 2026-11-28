@@ -7,6 +7,10 @@ import { readManifest, databaseUrl, assertDatabaseIdentity } from "../../tools/d
 import { feedText } from "../../src/i18n/feed";
 import { identityText } from "../../src/i18n/identity";
 import { voteText } from "../../src/i18n/votes";
+import { homeText } from "../../src/i18n/home";
+import { postText } from "../../src/i18n/posts";
+import { shellText } from "../../src/i18n/shell";
+import { notificationText } from "../../src/i18n/notifications";
 test.use({ trace: "off", screenshot: "off", video: "off" });
 const origin = "http://127.0.0.1:3100";
 const write = (request: APIRequestContext, path: string, data: object) => request.post(path, { data, headers: { Origin: origin } });
@@ -48,8 +52,14 @@ async function setup(context: BrowserContext, owner: BrowserContext, count = 23)
   });
   return { reader, spaces, ids };
 }
+/** The feed on Home (the section named by its heading). */
+const feed = (page: Page) => page.locator('section[aria-labelledby="feed-results"]');
+const cards = (page: Page) => feed(page).getByRole("article");
+/** The feed's current alert, by its message. */
+const feedAlert = (page: Page) => feed(page).getByRole("alert").getByRole("heading");
+const tabs = (page: Page, locale: "en" | "ar") => page.getByRole("navigation", { name: homeText[locale].feedTabs, exact: true });
 async function keyboard(page: Page, name: string) {
-  const button = page.getByRole("button", { name, exact: true });
+  const button = feed(page).getByRole("button", { name, exact: true });
   await button.focus(); await page.keyboard.press("Enter");
 }
 for (const locale of ["en", "ar"] as const) {
@@ -57,40 +67,44 @@ for (const locale of ["en", "ar"] as const) {
     const text = feedText[locale], owner = await browser.newContext();
     try {
       await signIn(context, false);
-      await page.goto(`/${locale}/feed`); await expect(page.getByText(text.empty, { exact: true })).toBeVisible();
+      await page.goto(`/${locale}`); await expect(page.getByText(text.empty, { exact: true })).toBeVisible();
       // Use a new signed-in reader for the populated fixture; no account-data clearing.
       const { ids, spaces } = await setup(context, owner);
-      await page.goto(`/${locale}/feed`);
+      await page.goto(`/${locale}`);
       await expect(page.locator("html")).toHaveAttribute("lang", locale);
       await expect(page.locator("html")).toHaveAttribute("dir", locale === "ar" ? "rtl" : "ltr");
-      await expect(page.locator(".post-card")).toHaveCount(20);
-      expect(await page.locator(".post-card").evaluateAll(cards => cards.map(card => card.id))).toEqual(ids.slice(0, 20).map(id => `post-${id}`));
+      await expect(cards(page)).toHaveCount(20);
+      expect(await cards(page).evaluateAll(items => items.map(item => item.id))).toEqual(ids.slice(0, 20).map(id => `post-${id}`));
       await expect(page.getByRole("main").getByRole("link", { name: "CE101 مجتمع PRIVATE", exact: true }).first()).toHaveAttribute("href", `/${locale}/communities/${spaces[1]}`);
       expect(await page.evaluate(() => "feedInjected" in window)).toBe(false);
-      const upvote = page.locator(".post-card").first().getByRole("button", { name: voteText[locale].add, exact: true });
+      const upvote = cards(page).first().getByRole("button", { name: voteText[locale].add, exact: true });
+      // Heading, Refresh, then the first card: community, title, vote.
       await page.locator("#feed-results").focus(); await page.keyboard.press("Tab");
-      await expect(page.getByRole("main").getByRole("link", { name: "CE101 مجتمع PUBLIC", exact: true }).first()).toBeFocused();
+      await expect(feed(page).getByRole("button", { name: feedText[locale].refresh, exact: true })).toBeFocused();
+      await page.keyboard.press("Tab");
+      await expect(cards(page).first().getByRole("link", { name: "CE101 مجتمع PUBLIC", exact: true })).toBeFocused();
+      await page.keyboard.press("Tab"); await expect(cards(page).first().getByRole("heading").getByRole("link")).toBeFocused();
       await page.keyboard.press("Tab"); await expect(upvote).toBeFocused();
       await page.keyboard.press("Enter"); await expect(upvote).toHaveAttribute("aria-pressed", "true");
       await page.route("**/api/feed?*", route => route.fulfill({ status: 503, contentType: "application/json", body: '{"ok":false}' }), { times: 1 });
-      await keyboard(page, text.next); await expect(page.getByRole("main").getByRole("alert")).toHaveText(text.failed);
-      await expect(page.locator(".post-card")).toHaveCount(0); await expect(page.locator("#feed-results")).toBeFocused();
-      await keyboard(page, text.retry); await expect(page.locator(".post-card")).toHaveCount(3);
-      expect(await page.locator(".post-card").evaluateAll(cards => cards.map(card => card.id))).toEqual(ids.slice(20).map(id => `post-${id}`));
+      await keyboard(page, text.next); await expect(feedAlert(page)).toHaveText(text.failed);
+      await expect(cards(page)).toHaveCount(0); await expect(page.locator("#feed-results")).toBeFocused();
+      await keyboard(page, text.retry); await expect(cards(page)).toHaveCount(3);
+      expect(await cards(page).evaluateAll(items => items.map(item => item.id))).toEqual(ids.slice(20).map(id => `post-${id}`));
       await expect(page.getByText(text.end, { exact: true })).toBeVisible(); await expect(page.getByRole("button", { name: text.next, exact: true })).toHaveCount(0);
       await page.setViewportSize({ width: 320, height: 800 });
       expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true);
-      await expect(page.locator(".post-card").first().getByRole("link").last()).toHaveAttribute("href", `/${locale}/communities/${spaces[0]}/posts/${ids[20]}`);
+      await expect(cards(page).first().getByRole("heading").getByRole("link")).toHaveAttribute("href", `/${locale}/communities/${spaces[0]}/posts/${ids[20]}`);
     } finally { await owner.close(); }
   });
   test(`${locale}: revocation clears displayed cards, rejects stale cursors and refreshes membership-only content`, async ({ context, browser, page }) => {
     const text = feedText[locale], owner = await browser.newContext();
     try {
       const { reader, spaces } = await setup(context, owner);
-      await page.goto(`/${locale}/feed`); await expect(page.locator(".post-card")).toHaveCount(20);
+      await page.goto(`/${locale}`); await expect(cards(page)).toHaveCount(20);
       expect((await write(owner.request, `/api/communities/${spaces[1]}/memberships`, { action: "remove", userId: reader })).status()).toBe(200);
-      await keyboard(page, text.next); await expect(page.getByRole("main").getByRole("alert")).toHaveText(text.restart); await expect(page.locator(".post-card")).toHaveCount(0);
-      await keyboard(page, text.refresh); await expect(page.locator(".post-card")).toHaveCount(12);
+      await keyboard(page, text.next); await expect(feedAlert(page)).toHaveText(text.restart); await expect(cards(page)).toHaveCount(0);
+      await keyboard(page, text.refresh); await expect(cards(page)).toHaveCount(12);
       await expect(page.getByRole("main").getByRole("link", { name: "CE101 مجتمع PRIVATE", exact: true })).toHaveCount(0);
       // Leaving PUBLIC removes it from this feed although ordinary public reads survive.
       expect((await write(context.request, `/api/communities/${spaces[0]}/memberships`, { action: "leave" })).status()).toBe(200);
@@ -120,7 +134,7 @@ test("feed discards delayed parsed bodies after departure and account replacemen
   const owner = await browser.newContext();
   try {
     await setup(context, owner, 1);
-    await page.goto("/en/feed"); await expect(page.locator(".post-card")).toHaveCount(1);
+    await page.goto("/en"); await expect(cards(page)).toHaveCount(1);
     await page.evaluate(() => {
       const target = window as typeof window & { releaseFeed?: () => void; feedHeld?: boolean }, fetchOriginal = window.fetch;
       let release!: () => void; const gate = new Promise<void>(done => { release = done; });
@@ -138,9 +152,9 @@ test("feed discards delayed parsed bodies after departure and account replacemen
     await expect.poll(() => page.evaluate(() => (window as typeof window & { feedHeld?: boolean }).feedHeld)).toBe(true);
     await page.evaluate(() => window.dispatchEvent(new Event("pagehide")));
     await page.evaluate(() => (window as typeof window & { releaseFeed?: () => void }).releaseFeed?.());
-    await expect(page.getByText(feedText.en.paused, { exact: true })).toBeVisible(); await expect(page.locator(".post-card")).toHaveCount(0);
+    await expect(page.getByText(feedText.en.paused, { exact: true })).toBeVisible(); await expect(cards(page)).toHaveCount(0);
     await signIn(context, false);
-    await keyboard(page, feedText.en.refresh); await expect(page.getByRole("main").getByRole("alert")).toHaveText(feedText.en.unavailable); await expect(page.locator(".post-card")).toHaveCount(0);
+    await keyboard(page, feedText.en.refresh); await expect(feedAlert(page)).toHaveText(feedText.en.unavailable); await expect(cards(page)).toHaveCount(0);
     await page.getByRole("link", { name: feedText.en.reopen, exact: true }).click(); await expect(page.getByText(feedText.en.empty, { exact: true })).toBeVisible();
   } finally { await owner.close(); }
 });
@@ -165,41 +179,45 @@ for (const locale of ["en", "ar"] as const) {
     const owner = await browser.newContext(), text = feedText[locale];
     try {
       const { ids, publicPosts, base } = await setupForYou(context, owner);
-      await page.goto(`/${locale}/feed`);
-      await page.getByRole("navigation", { name: text.navigation, exact: true }).getByRole("link", { name: text.forYou, exact: true }).click();
-      await expect(page).toHaveURL(`/${locale}/feed/for-you`);
-      await expect(page.locator(".post-card")).toHaveCount(20);
-      expect(await page.locator(".post-card").evaluateAll(cards => cards.map(card => card.id))).toEqual(ids.slice(0, 20).map(id => `post-${id}`));
+      await page.goto(`/${locale}`);
+      await tabs(page, locale).getByRole("link", { name: homeText[locale].tabForYou, exact: true }).click();
+      await expect(page).toHaveURL(`/${locale}?tab=for-you`);
+      await expect(cards(page)).toHaveCount(20);
+      expect(await cards(page).evaluateAll(items => items.map(item => item.id))).toEqual(ids.slice(0, 20).map(id => `post-${id}`));
       await expect(page.getByText(text.joinedReason, { exact: true })).toHaveCount(20);
       await expect(page.locator("html")).toHaveAttribute("dir", locale === "ar" ? "rtl" : "ltr");
-      await expect(page.locator(".post-card").first().locator("time")).toHaveAttribute("datetime", new Date(base).toISOString());
-      const upvote = page.locator(".post-card").first().getByRole("button", { name: voteText[locale].add, exact: true });
+      await expect(cards(page).first().locator("time")).toHaveAttribute("datetime", new Date(base).toISOString());
+      const upvote = cards(page).first().getByRole("button", { name: voteText[locale].add, exact: true });
+      // Heading, Refresh, then the first card: community, title, vote.
       await page.locator("#feed-results").focus(); await page.keyboard.press("Tab");
-      await expect(page.getByRole("main").getByRole("link", { name: "CE101 مجتمع PUBLIC", exact: true }).first()).toBeFocused();
+      await expect(feed(page).getByRole("button", { name: feedText[locale].refresh, exact: true })).toBeFocused();
+      await page.keyboard.press("Tab");
+      await expect(cards(page).first().getByRole("link", { name: "CE101 مجتمع PUBLIC", exact: true })).toBeFocused();
+      await page.keyboard.press("Tab"); await expect(cards(page).first().getByRole("heading").getByRole("link")).toBeFocused();
       await page.keyboard.press("Tab"); await expect(upvote).toBeFocused(); await page.keyboard.press("Enter");
       await expect(upvote).toHaveAttribute("aria-pressed", "true");
       await page.route("**/api/feed/for-you?*", route => route.fulfill({ status: 503, contentType: "application/json", body: '{"ok":false}' }), { times: 1 });
-      await keyboard(page, text.next); await expect(page.getByRole("main").getByRole("alert")).toHaveText(text.failed);
-      await expect(page.locator(".post-card")).toHaveCount(0); await expect(page.locator("#feed-results")).toBeFocused();
-      await keyboard(page, text.retry); await expect(page.locator(".post-card")).toHaveCount(20);
-      expect(await page.locator(".post-card").evaluateAll(cards => cards.map(card => card.id))).toEqual([...ids.slice(20), ...publicPosts.slice(0, 17)].map(id => `post-${id}`));
+      await keyboard(page, text.next); await expect(feedAlert(page)).toHaveText(text.failed);
+      await expect(cards(page)).toHaveCount(0); await expect(page.locator("#feed-results")).toBeFocused();
+      await keyboard(page, text.retry); await expect(cards(page)).toHaveCount(20);
+      expect(await cards(page).evaluateAll(items => items.map(item => item.id))).toEqual([...ids.slice(20), ...publicPosts.slice(0, 17)].map(id => `post-${id}`));
       await expect(page.getByText(text.publicReason, { exact: true })).toHaveCount(17);
       const publicCard = page.locator(`#post-${publicPosts[0]}`);
       await expect(publicCard.getByRole("button", { name: voteText[locale].add, exact: true })).toBeDisabled();
       await page.setViewportSize({ width: 320, height: 800 });
       expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
-      await page.getByRole("navigation", { name: text.navigation, exact: true }).getByRole("link", { name: text.title, exact: true }).click();
-      await expect(page).toHaveURL(`/${locale}/feed`); await expect(page.locator(".post-card")).toHaveCount(20);
+      await tabs(page, locale).getByRole("link", { name: homeText[locale].tabCommunities, exact: true }).click();
+      await expect(page).toHaveURL(`/${locale}`); await expect(cards(page)).toHaveCount(20);
     } finally { await owner.close(); }
   });
   test(`${locale}: For You cold-start, accessible empty/error/retry, access loss and account changes`, async ({ context, browser, page }) => {
     const owner = await browser.newContext(), text = feedText[locale];
     try {
       const { reader, spaces } = await setupForYou(context, owner);
-      await page.goto(`/${locale}/feed/for-you`); await expect(page.locator(".post-card")).toHaveCount(20);
+      await page.goto(`/${locale}?tab=for-you`); await expect(cards(page)).toHaveCount(20);
       expect((await write(owner.request, `/api/communities/${spaces[1]}/memberships`, { action: "remove", userId: reader })).status()).toBe(200);
-      await keyboard(page, text.next); await expect(page.getByRole("main").getByRole("alert")).toHaveText(text.restart);
-      await expect(page.locator(".post-card")).toHaveCount(0);
+      await keyboard(page, text.next); await expect(feedAlert(page)).toHaveText(text.restart);
+      await expect(cards(page)).toHaveCount(0);
       expect((await write(context.request, `/api/communities/${spaces[0]}/memberships`, { action: "leave" })).status()).toBe(200);
       await keyboard(page, text.refresh); await expect(page.getByText(text.coldStart, { exact: true })).toBeVisible();
       await expect(page.getByRole("main").getByRole("link", { name: text.archive, exact: true })).toHaveAttribute("href", `/${locale}/search?tab=posts`);
@@ -208,13 +226,13 @@ for (const locale of ["en", "ar"] as const) {
       await page.route("**/api/feed/for-you", route => route.fulfill({ status: 200, contentType: "application/json", body: JSON.stringify({ ...valid, items: [], next: null }) }), { times: 1 });
       await keyboard(page, text.refresh); await expect(page.getByText(text.forYouEmpty, { exact: true })).toBeVisible();
       await page.route("**/api/feed/for-you", route => route.fulfill({ status: 403, contentType: "application/json", body: '{"ok":false}' }), { times: 1 });
-      await keyboard(page, text.refresh); await expect(page.getByRole("main").getByRole("alert")).toHaveText(text.unavailable);
-      await page.getByRole("link", { name: text.reopen, exact: true }).click(); await expect(page.locator(".post-card")).toHaveCount(20);
+      await keyboard(page, text.refresh); await expect(feedAlert(page)).toHaveText(text.unavailable);
+      await page.getByRole("link", { name: text.reopen, exact: true }).click(); await expect(cards(page)).toHaveCount(20);
       await signIn(context, false); await keyboard(page, text.refresh);
-      await expect(page.getByRole("main").getByRole("alert")).toHaveText(text.unavailable); await expect(page.locator(".post-card")).toHaveCount(0);
+      await expect(feedAlert(page)).toHaveText(text.unavailable); await expect(cards(page)).toHaveCount(0);
       await page.getByRole("link", { name: text.reopen, exact: true }).click(); await expect(page.getByText(text.coldStart, { exact: true })).toBeVisible();
       expect((await write(context.request, "/api/identity/logout", {})).status()).toBe(200);
-      await keyboard(page, text.refresh); await expect(page.getByRole("main").getByRole("alert")).toHaveText(text.unavailable);
+      await keyboard(page, text.refresh); await expect(feedAlert(page)).toHaveText(text.unavailable);
     } finally { await owner.close(); }
   });
 }
@@ -260,7 +278,7 @@ async function holdEmptyFeedSessionCheck(page: Page) {
 
 test("feed confirms the current session and responds to sign-in and sign-out in a separate tab", async ({ context, page }) => {
   await signIn(context);
-  await page.goto("/en/feed");
+  await page.goto("/en");
   await expect(page.getByText(feedText.en.empty, { exact: true })).toBeVisible();
 
   const response = await context.request.get("/api/feed");
@@ -318,12 +336,12 @@ for (const path of ["feed", "feed/for-you"]) {
       const sessionUrl = "**/api/feed/session";
       await page.route(sessionUrl, route => route.fulfill({ status: 503 }));
       const feedResponse = page.waitForResponse(response => new URL(response.url()).pathname === `/api/${path}`);
-      await page.goto(`/en/${path}`);
+      await page.goto(path === "feed" ? "/en" : "/en?tab=for-you");
       const response = await feedResponse;
       expect(response.status()).toBe(200);
       const { items } = await response.json() as { items: { id: string }[] };
       expect(items.some(item => item.id === ids[1])).toBe(true);
-      await expect(page.getByRole("main").getByRole("alert")).toHaveText(feedText.en.failed);
+      await expect(feedAlert(page)).toHaveText(feedText.en.failed);
       await expect(privateCard).toHaveCount(0);
 
       await page.unroute(sessionUrl);
@@ -339,7 +357,7 @@ for (const path of ["feed", "feed/for-you"]) {
         if (forYou) window.dispatchEvent(new PageTransitionEvent("pageshow", { persisted: true }));
         else window.dispatchEvent(new Event("focus"));
       }, forYou);
-      await expect(page.getByRole("main").getByRole("alert")).toHaveText(feedText.en.unavailable);
+      await expect(feedAlert(page)).toHaveText(feedText.en.unavailable);
       await expect(privateCard).toHaveCount(0);
     } finally { await owner.close(); }
   });
@@ -350,7 +368,7 @@ test("For You discards a pending private response after switching to another vie
   try {
     const { ids } = await setupForYou(context, owner);
     const privateCardId = `post-${ids[1]}`;
-    await page.goto("/en/feed/for-you");
+    await page.goto("/en?tab=for-you");
     await expect(page.locator(`#${privateCardId}`)).toBeVisible();
     const previousResponse = await context.request.get("/api/feed/for-you");
     expect(previousResponse.status()).toBe(200);
@@ -401,12 +419,12 @@ test("For You discards a pending private response after switching to another vie
     const replacement = await replacementResponse.json();
     expect(replacement.viewer).not.toBe(previous.viewer);
     expect(replacement.coldStart).toBe(true);
-    const feeds = page.getByRole("navigation", { name: feedText.en.navigation, exact: true });
-    await feeds.getByRole("link", { name: feedText.en.title, exact: true }).click();
+    const feeds = tabs(page, "en");
+    await feeds.getByRole("link", { name: homeText.en.tabCommunities, exact: true }).click();
     await expect(page.getByText(feedText.en.empty, { exact: true })).toBeVisible();
-    await feeds.getByRole("link", { name: feedText.en.forYou, exact: true }).click();
+    await feeds.getByRole("link", { name: homeText.en.tabForYou, exact: true }).click();
     await expect(page.getByText(feedText.en.coldStart, { exact: true })).toBeVisible();
-    const visible = await page.locator(".post-card").evaluateAll(cards => cards.map(card => card.id));
+    const visible = await cards(page).evaluateAll(items => items.map(item => item.id));
     expect(visible).toHaveLength(20);
 
     // The old JSON resolves even though its fetch was aborted during unmount.
@@ -419,14 +437,14 @@ test("For You discards a pending private response after switching to another vie
     });
     await expect(page.locator(`#${privateCardId}`)).toHaveCount(0);
     expect(await readRace()).toEqual({ held: true, resolved: true, resurfaced: false });
-    expect(await page.locator(".post-card").evaluateAll(cards => cards.map(card => card.id))).toEqual(visible);
+    expect(await cards(page).evaluateAll(items => items.map(item => item.id))).toEqual(visible);
   } finally { await owner.close(); }
 });
 
 test("For You suppresses delayed parsed responses on navigation and departure", async ({ context, browser, page }) => {
   const owner = await browser.newContext();
   try {
-    await setupForYou(context, owner); await page.goto("/en/feed/for-you"); await expect(page.locator(".post-card")).toHaveCount(20);
+    await setupForYou(context, owner); await page.goto("/en?tab=for-you"); await expect(cards(page)).toHaveCount(20);
     const holdParsed = () => page.evaluate(() => {
       const target = window as typeof window & { releaseForYou?: () => void; forYouHeld?: boolean }, original = window.fetch;
       target.forYouHeld = false;
@@ -446,12 +464,12 @@ test("For You suppresses delayed parsed responses on navigation and departure", 
     await expect.poll(() => page.evaluate(() => (window as typeof window & { forYouHeld?: boolean }).forYouHeld)).toBe(true);
     await page.evaluate(() => window.dispatchEvent(new Event("pagehide")));
     await page.evaluate(() => (window as typeof window & { releaseForYou?: () => void }).releaseForYou?.());
-    await expect(page.getByText(feedText.en.paused, { exact: true })).toBeVisible(); await expect(page.locator(".post-card")).toHaveCount(0);
+    await expect(page.getByText(feedText.en.paused, { exact: true })).toBeVisible(); await expect(cards(page)).toHaveCount(0);
     await holdParsed(); await keyboard(page, feedText.en.refresh);
     await expect.poll(() => page.evaluate(() => (window as typeof window & { forYouHeld?: boolean }).forYouHeld)).toBe(true);
-    await page.getByRole("navigation", { name: feedText.en.navigation, exact: true }).getByRole("link", { name: feedText.en.title, exact: true }).click();
+    await tabs(page, "en").getByRole("link", { name: homeText.en.tabCommunities, exact: true }).click();
     await page.evaluate(() => (window as typeof window & { releaseForYou?: () => void }).releaseForYou?.());
-    await expect(page).toHaveURL("/en/feed"); await expect(page.locator(".post-card")).toHaveCount(20);
+    await expect(page).toHaveURL("/en"); await expect(cards(page)).toHaveCount(20);
     await expect(page.getByText(feedText.en.joinedReason, { exact: true })).toHaveCount(0);
     await expect(page.getByText(feedText.en.publicReason, { exact: true })).toHaveCount(0);
   } finally { await owner.close(); }
@@ -466,7 +484,7 @@ for (const locale of ["en", "ar"] as const) {
     try {
       await signIn(context, false);
       const worker = context.serviceWorkers()[0] ?? await context.waitForEvent("serviceworker");
-      const page = context.pages()[0] ?? await context.newPage(); await page.goto(`/${locale}/feed/for-you`);
+      const page = context.pages()[0] ?? await context.newPage(); await page.goto(`/${locale}?tab=for-you`);
       const session = await context.newCDPSession(page);
       try {
         const { windowId } = await session.send("Browser.getWindowForTarget");
@@ -494,3 +512,211 @@ for (const locale of ["en", "ar"] as const) {
     } finally { await context.close(); }
   });
 }
+
+// Home (UI rebuild Stage 2, part c): old feed URLs, composer and side panel.
+async function community(owner: BrowserContext, name: string, visibility: "PUBLIC" | "PRIVATE" = "PUBLIC") {
+  const response = await write(owner.request, "/api/communities", { name, description: "", visibility });
+  expect(response.status()).toBe(201); return (await response.json()).id as string;
+}
+const composer = (page: Page, locale: "en" | "ar") => page.getByRole("region", { name: homeText[locale].composer, exact: true });
+const picker = (page: Page, locale: "en" | "ar") => composer(page, locale).getByRole("combobox", { name: homeText[locale].community, exact: true });
+const optionLabels = (page: Page, locale: "en" | "ar") => picker(page, locale).locator("option").evaluateAll(items => items.map(item => item.textContent));
+
+for (const locale of ["en", "ar"] as const) {
+  test(`${locale}: old feed links open Home's tabs with every query parameter kept; an unknown tab opens plain Home`, async ({ context, page }) => {
+    await signIn(context);
+    const query = new URLSearchParams([["notification", randomUUID()], ["q", "قانون أوم"], ["q", "second"]]).toString();
+    await page.goto(`/${locale}/feed?${query}`);
+    await expect(page).toHaveURL(`/${locale}?${query}`);
+    await expect(tabs(page, locale).getByRole("link", { name: homeText[locale].tabCommunities, exact: true })).toHaveAttribute("aria-current", "page");
+    await page.goto(`/${locale}/feed/for-you?${query}&tab=other`);
+    await expect(page).toHaveURL(`/${locale}?${query}&tab=for-you`);
+    await expect(tabs(page, locale).getByRole("link", { name: homeText[locale].tabForYou, exact: true })).toHaveAttribute("aria-current", "page");
+    for (const tab of ["other", "communities"]) {
+      await page.goto(`/${locale}?tab=${tab}`);
+      await expect(page).toHaveURL(`/${locale}`);
+    }
+  });
+
+  test(`${locale}: the composer lists only my MEMBER communities, offers Announcement only in my own, and never posts twice on retry`, async ({ context, browser, page }) => {
+    const owner = await browser.newContext(), home = homeText[locale], posts = postText[locale];
+    try {
+      const reader = await signIn(context); await signIn(owner);
+      const theirs = await community(owner, `Their public ${randomUUID().slice(0, 6)}`), pending = await community(owner, `Their private ${randomUUID().slice(0, 6)}`, "PRIVATE");
+      const mine = await community(context, `Mine مجتمعي ${randomUUID().slice(0, 6)}`);
+      expect((await write(context.request, `/api/communities/${theirs}/memberships`, { action: "join" })).status()).toBe(200);
+      expect((await write(context.request, `/api/communities/${pending}/memberships`, { action: "join" })).status()).toBe(200);
+      // The endpoint: own MEMBER rows only, exact fields, no-store, no parameters, signed-in only.
+      const listed = await context.request.get("/api/communities/mine");
+      expect(listed.headers()["cache-control"]).toContain("no-store");
+      const body = await listed.json() as { items: { id: string; isOwner: boolean }[] };
+      expect(body.items.map(item => item.id).sort()).toEqual([mine, theirs].sort());
+      expect(body.items.every(item => Object.keys(item).sort().join() === "id,isOwner,name,visibility")).toBe(true);
+      expect(body.items.find(item => item.id === mine)?.isOwner).toBe(true);
+      const ownerList = await owner.request.get("/api/communities/mine");
+      expect(ownerList.status()).toBe(200);
+      expect(JSON.stringify(await ownerList.json())).not.toContain(mine);
+      expect((await context.request.get("/api/communities/mine?after=x")).status()).toBe(400);
+      expect((await write(context.request, "/api/communities/mine", {})).status()).toBe(405);
+      const anonymous = await browser.newContext({ baseURL: origin });
+      try { expect((await anonymous.request.get("/api/communities/mine")).status()).toBe(401); } finally { await anonymous.close(); }
+
+      await page.goto(`/${locale}`);
+      const start = composer(page, locale).getByRole("button", { name: home.startPost, exact: true });
+      await start.focus(); await page.keyboard.press("Enter");
+      await expect(picker(page, locale)).toBeFocused();
+      const labels = await optionLabels(page, locale);
+      expect(labels[0]).toBe(home.chooseCommunity);
+      expect(labels).toHaveLength(3);
+      expect(labels.join()).not.toContain("Their private");
+      const announcement = composer(page, locale).getByRole("radio", { name: posts.types.ANNOUNCEMENT, exact: true });
+      await picker(page, locale).selectOption(theirs);
+      await expect(announcement).toHaveCount(0);
+      await expect(composer(page, locale).getByText(home.announcementHint, { exact: true })).toBeVisible();
+      await picker(page, locale).selectOption(mine);
+      await announcement.check(); await expect(announcement).toBeChecked();
+      // Moving to a community I did not create drops Announcement.
+      await picker(page, locale).selectOption(theirs);
+      await expect(announcement).toHaveCount(0);
+      await expect(composer(page, locale).getByRole("radio", { name: posts.types.QUESTION, exact: true })).toBeChecked();
+      // Cancel returns focus to "Start a post".
+      await composer(page, locale).getByRole("button", { name: home.cancel, exact: true }).click();
+      await expect(start).toBeFocused();
+      // Leaving the page (it may come back from the back/forward cache) closes the form and drops the list.
+      await start.click(); await expect(picker(page, locale)).toBeVisible();
+      await page.evaluate(() => window.dispatchEvent(new Event("pagehide")));
+      await expect(picker(page, locale)).toHaveCount(0);
+      await expect(start).toBeVisible();
+
+      // The first answer is lost after the server saved the post; the retry opens that post.
+      await composer(page, locale).getByRole("button", { name: posts.types.DISCUSSION, exact: true }).click();
+      await picker(page, locale).selectOption(theirs);
+      await expect(composer(page, locale).getByRole("radio", { name: posts.types.DISCUSSION, exact: true })).toBeChecked();
+      const title = `Composer ${randomUUID().slice(0, 8)} نقاش`;
+      await composer(page, locale).getByLabel(posts.postTitle, { exact: true }).fill(title);
+      await composer(page, locale).getByLabel(posts.body, { exact: true }).fill("Synthetic نص");
+      await page.route(`**/api/communities/${theirs}/posts`, async route => { await route.fetch(); await route.fulfill({ status: 503, contentType: "application/json", body: '{"ok":false}' }); }, { times: 1 });
+      const publish = composer(page, locale).getByRole("button", { name: posts.publish, exact: true });
+      await publish.click();
+      await expect(composer(page, locale).getByRole("status").filter({ hasText: home.uncertain })).toBeFocused();
+      // The post may exist in this community, so the choice is locked until Cancel.
+      await expect(picker(page, locale)).toBeDisabled();
+      await publish.click();
+      await expect(page).toHaveURL(new RegExp(`/${locale}/communities/${theirs}/posts/[0-9a-f-]{36}$`));
+      expect(await fixture(async client => Number((await client.query<{ count: string }>(`SELECT count(*) FROM "Post" WHERE title=$1 AND "authorId"=$2 AND type='DISCUSSION'`, [title, reader])).rows[0].count))).toBe(1);
+      // The server still refuses an Announcement in a community I did not create.
+      expect((await write(context.request, `/api/communities/${theirs}/posts`, { requestId: randomUUID(), type: "ANNOUNCEMENT", title: "Not mine", body: "x" })).status()).toBe(403);
+    } finally { await owner.close(); }
+  });
+}
+
+test("the composer's picker is searchable when the list is long, and keeps the chosen community", async ({ context, browser, page }) => {
+  const owner = await browser.newContext(), home = homeText.ar;
+  try {
+    const reader = await signIn(context), creator = await signIn(owner);
+    const ids = Array.from({ length: 9 }, () => randomUUID());
+    const names = ids.map((_, index) => index === 8 ? "هندســة الإشارات Signals" : `Course ${index + 1} مقرر`);
+    await fixture(async client => {
+      await client.query(`INSERT INTO "Community" (id,"ownerId",name,description,visibility) SELECT id, $2::uuid, name, '', 'PUBLIC' FROM unnest($1::uuid[], $3::text[]) AS fixture(id, name)`, [ids, creator, names]);
+      await client.query(`INSERT INTO "CommunityMembership" ("communityId","userId",status) SELECT id, $2::uuid, 'MEMBER' FROM unnest($1::uuid[]) AS id`, [ids, creator]);
+      await client.query(`INSERT INTO "CommunityMembership" ("communityId","userId",status) SELECT id, $2::uuid, 'MEMBER' FROM unnest($1::uuid[]) AS id`, [ids, reader]);
+    });
+    await page.goto("/ar");
+    await composer(page, "ar").getByRole("button", { name: home.startPost, exact: true }).click();
+    const search = composer(page, "ar").getByRole("searchbox", { name: home.findCommunity, exact: true });
+    await expect(search).toBeFocused();
+    expect(await optionLabels(page, "ar")).toHaveLength(10);
+    await search.fill("هَندسة");
+    await expect(composer(page, "ar").getByRole("status").filter({ hasText: home.matches.replace("{count}", (1).toLocaleString("ar")) })).toBeVisible();
+    expect(await optionLabels(page, "ar")).toEqual([home.chooseCommunity, names[8]]);
+    await picker(page, "ar").selectOption(ids[8]);
+    await search.fill("Course");
+    // The chosen community stays listed (and selected) while the search hides it.
+    expect(await optionLabels(page, "ar")).toHaveLength(10);
+    await expect(picker(page, "ar")).toHaveValue(ids[8]);
+    await search.fill("nothing like this");
+    await expect(composer(page, "ar").getByText(home.noMatch, { exact: true })).toBeVisible();
+  } finally { await owner.close(); }
+});
+
+for (const locale of ["en", "ar"] as const) {
+  test(`${locale}: the side panel loads only when wide, shows my latest notifications and lowers the header count`, async ({ context, browser, page }) => {
+    const owner = await browser.newContext(), shell = shellText[locale];
+    try {
+      await signIn(context); await signIn(owner);
+      const space = await community(owner, `Panel ${randomUUID().slice(0, 6)}`);
+      expect((await write(context.request, `/api/communities/${space}/memberships`, { action: "join" })).status()).toBe(200);
+      const title = `Panel announcement ${randomUUID().slice(0, 8)} إعلان`;
+      expect((await write(owner.request, `/api/communities/${space}/posts`, { requestId: randomUUID(), type: "ANNOUNCEMENT", title, body: "Synthetic" })).status()).toBe(201);
+      const listReads: string[] = [];
+      page.on("request", request => { if (new URL(request.url()).pathname === "/api/notifications" && request.method() === "GET") listReads.push(request.url()); });
+      // Narrow: the panel is hidden and nothing is fetched for it.
+      await page.setViewportSize({ width: 1000, height: 800 });
+      await page.goto(`/${locale}`);
+      await expect(cards(page)).toHaveCount(1);
+      const panel = page.getByRole("complementary", { name: homeText[locale].sidePanel, exact: true });
+      await expect(panel).toHaveCount(0);
+      expect(listReads).toEqual([]);
+      // Widening loads it; a failure offers Retry.
+      await page.route("**/api/notifications", route => route.fulfill({ status: 503, contentType: "application/json", body: '{"ok":false}' }), { times: 1 });
+      await page.setViewportSize({ width: 1280, height: 800 });
+      await expect(panel.getByRole("alert")).toContainText(shell.notificationsFailed);
+      await panel.getByRole("button", { name: homeText[locale].retry, exact: true }).click();
+      const item = panel.getByRole("button").filter({ hasText: title });
+      await expect(item).toBeVisible();
+      await expect(item).toContainText(shell.unreadMarker);
+      await expect(panel.getByRole("link", { name: shell.notificationsSeeAll, exact: true })).toHaveAttribute("href", `/${locale}/notifications`);
+      const unreadBell = page.getByRole("banner").getByRole("button", { name: shell.notificationsUnread.replace("{count}", (1).toLocaleString(locale)), exact: true });
+      await expect(unreadBell).toBeVisible();
+      await item.click();
+      await expect(page).toHaveURL(new RegExp(`/${locale}/communities/${space}/posts/[0-9a-f-]{36}\\?notification=`));
+      await expect(page.getByRole("banner").getByRole("button", { name: notificationText[locale].title, exact: true })).toBeVisible();
+      // At 320px the panel stays out of the way and the page fits.
+      await page.goto(`/${locale}`);
+      await page.setViewportSize({ width: 320, height: 800 });
+      await expect(panel).toHaveCount(0);
+      expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
+    } finally { await owner.close(); }
+  });
+}
+
+test("a Home refresh with the same account keeps the feed instead of reloading it", async ({ context, browser, page }) => {
+  const owner = await browser.newContext();
+  try {
+    await setup(context, owner, 3);
+    let feedReads = 0;
+    page.on("request", request => { if (new URL(request.url()).pathname === "/api/feed") feedReads++; });
+    await page.goto("/en"); await expect(cards(page)).toHaveCount(3);
+    expect(feedReads).toBe(1);
+    // Returning to the tab re-renders Home on the server (session refresh) and rechecks the feed's session.
+    const rendered = page.waitForResponse(response => response.request().headers()["rsc"] === "1");
+    const rechecked = page.waitForResponse(response => new URL(response.url()).pathname === "/api/feed/session");
+    await page.evaluate(() => window.dispatchEvent(new Event("focus")));
+    await rendered; expect((await rechecked).status()).toBe(200);
+    await expect(cards(page)).toHaveCount(3);
+    expect(feedReads).toBe(1);
+  } finally { await owner.close(); }
+});
+
+test("Home shows a busy tab while a tab switch renders", async ({ context, page }) => {
+  await signIn(context);
+  await page.goto("/en"); await expect(page.getByText(feedText.en.empty, { exact: true })).toBeVisible();
+  // Hold the server render of the next Home URL until the pending state is checked.
+  const hold = async (pattern: string) => {
+    let release!: () => void;
+    const held = new Promise<void>(done => { release = done; });
+    await page.route(pattern, async route => {
+      if (route.request().headers()["rsc"] !== "1") return route.fallback();
+      await held; await route.fallback();
+    });
+    return () => { release(); return page.unroute(pattern); };
+  };
+  const forYou = tabs(page, "en").getByRole("link", { name: homeText.en.tabForYou, exact: true });
+  const release = await hold("**/en?tab=for-you*");
+  await forYou.click();
+  await expect(forYou.locator("[data-tab-pending]")).toHaveCount(1);
+  await release();
+  await expect(page).toHaveURL("/en?tab=for-you");
+  await expect(forYou).toHaveAttribute("aria-current", "page");
+  await expect(forYou.locator("[data-tab-pending]")).toHaveCount(0);
+});

@@ -3,7 +3,11 @@ import Link from "next/link";
 import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
 import type { Locale } from "@/i18n/locales";
 import { feedText } from "@/i18n/feed";
-import { PostCard } from "../communities/[id]/post-card";
+import { PostSummaryCard } from "../communities/post-summary-card";
+import { Button } from "@/ui/components/button";
+import { EmptyState, ErrorState } from "@/ui/components/state";
+import { Skeleton, SkeletonGroup } from "@/ui/components/skeleton";
+import styles from "./feed.module.css";
 import { onSessionChange } from "@/app/[locale]/session-change";
 import { checkFeedSession } from "./check-session";
 import { feedPageResponse, forYouPageResponse, type FeedPage } from "./data";
@@ -190,24 +194,36 @@ function ViewerFeedList({ locale, viewer, forYou = false }: FeedListProps) {
   useEffect(() => {
     if (state !== "loading" && focusAfterLoad.current) { focusAfterLoad.current = false; heading.current?.focus(); }
   }, [page, state]);
-  return <section aria-labelledby="feed-results" aria-busy={state === "loading"}>
-    <h2 id="feed-results" tabIndex={-1} ref={heading}>{text.results}</h2>
-    {state === "loading" && <p role="status">{text.loading}</p>}
-    {state === "failed" && <><p role="alert">{message}</p><button onClick={() => void load(last.current)}>{text.retry}</button></>}
-    {state === "restart" && <><p role="alert">{text.restart}</p><button onClick={() => void load()}>{text.refresh}</button></>}
-    {state === "unavailable" && <><p role="alert">{text.unavailable}</p><a href={`/${locale}/${path}`}>{text.reopen}</a></>}
-    {state === "paused" && <><p role="status">{text.paused}</p><button onClick={() => void load()}>{text.refresh}</button></>}
+  const home = forYou ? `/${locale}?tab=for-you` : `/${locale}`;
+  const busy = state === "loading";
+  return <section aria-labelledby="feed-results" className={styles.feed}>
+    <div className={styles.feedHeader}>
+      <h2 id="feed-results" tabIndex={-1} ref={heading} className={styles.feedHeading}>{forYou ? text.forYouResults : text.results}</h2>
+      {page && <Button variant="ghost" size="compact" onClick={() => void load()}>{text.refresh}</Button>}
+    </div>
+    {busy && <SkeletonGroup label={text.loading} className={styles.cards}>
+      {[0, 1, 2].map(index => <div key={index} className={styles.skeletonCard}>
+        <Skeleton shape="circle" blockSize="2.75rem" /><Skeleton shape="text" inlineSize="60%" /><Skeleton shape="text" /><Skeleton shape="text" inlineSize="80%" />
+      </div>)}
+    </SkeletonGroup>}
+    {state === "failed" && <ErrorState announce headingLevel={3} title={message} action={<Button variant="secondary" onClick={() => void load(last.current)}>{text.retry}</Button>} />}
+    {state === "restart" && <ErrorState announce headingLevel={3} title={text.restart} action={<Button variant="secondary" onClick={() => void load()}>{text.refresh}</Button>} />}
+    {state === "unavailable" && <ErrorState announce tone="denied" headingLevel={3} title={text.unavailable} action={<a href={home}>{text.reopen}</a>} />}
+    {state === "paused" && <div role="status"><EmptyState headingLevel={3} title={text.paused} action={<Button variant="secondary" onClick={() => void load()}>{text.refresh}</Button>} /></div>}
     {page && <>
-      {page.coldStart && <p role="status">{text.coldStart}</p>}
-      {page.items.length === 0 ? <p role="status">{forYou ? text.forYouEmpty : text.empty}</p> : <ul ref={cards} className="community-list">{page.items.map(post => <li key={post.id}>
-        {post.reason && <p>{post.reason === "joined" ? text.joinedReason : text.publicReason}</p>}
-        <p>{text.community}: <Link prefetch={false} href={`/${locale}/communities/${post.communityId}`}><bdi>{post.communityName}</bdi></Link></p>
-        <PostCard locale={locale} post={post} />
-      </li>)}</ul>}
-      {page.next ? <button onClick={() => void load(page.next!)}>{text.next}</button> : page.items.length > 0 && <p role="status">{text.end}</p>}
-      <p><button onClick={() => void load()}>{text.refresh}</button></p>
+      {page.coldStart && <p role="status" className={styles.notice}>{text.coldStart}</p>}
+      {page.items.length === 0
+        ? <div role="status"><EmptyState headingLevel={3} title={forYou ? text.forYouEmpty : text.empty} /></div>
+        : <ul ref={cards} className={styles.cards}>{page.items.map(post => <li key={post.id}>
+          <PostSummaryCard locale={locale} post={post} community={{ id: post.communityId, name: post.communityName }}
+            note={post.reason ? (post.reason === "joined" ? text.joinedReason : text.publicReason) : undefined} />
+        </li>)}</ul>}
+      {page.next ? <p className={styles.pager}><Button variant="secondary" onClick={() => void load(page.next!)}>{text.next}</Button></p>
+        : page.items.length > 0 && <p role="status" className={styles.end}>{text.end}</p>}
     </>}
-    <p><Link prefetch={false} href={`/${locale}/communities`}>{text.discover}</Link></p>
-    {forYou && <p><Link prefetch={false} href={`/${locale}/search?tab=posts`}>{text.archive}</Link></p>}
+    <p className={styles.links}>
+      <Link prefetch={false} href={`/${locale}/communities`}>{text.discover}</Link>
+      {forYou && <Link prefetch={false} href={`/${locale}/search?tab=posts`}>{text.archive}</Link>}
+    </p>
   </section>;
 }

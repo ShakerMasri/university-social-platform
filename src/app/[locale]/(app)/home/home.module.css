@@ -1,0 +1,130 @@
+/* Home for signed-in users: feed column and, on wide screens, the side panel. */
+.home {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: var(--space-6);
+  align-items: start;
+}
+/* Keep in step with wideQuery in side-panel.tsx. */
+@media (min-width: 75rem) {
+  .home { grid-template-columns: minmax(0, 1fr) 21.25rem; }
+}
+.feedColumn {
+  display: grid;
+  gap: var(--space-5);
+  min-inline-size: 0;
+}
+.sidePanel {
+  display: grid;
+  gap: var(--space-4);
+  min-inline-size: 0;
+}
+@media (max-width: 74.99rem) {
+  .sidePanel { display: none; }
+}
+
+/* Composer */
+.composer {
+  display: grid;
+  gap: var(--space-4);
+  padding: var(--space-5);
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-card);
+}
+@media (max-width: 30rem) {
+  .composer { padding: var(--space-4); }
+}
+.composerStart {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+}
+.startButton {
+  flex: 1;
+  min-inline-size: 0;
+  min-block-size: var(--control-height);
+  padding-inline: var(--space-4);
+  font: inherit;
+  text-align: start;
+  color: var(--color-text-muted);
+  background: var(--color-surface-muted);
+  border: 1px solid var(--color-control-border);
+  border-radius: var(--radius-pill);
+  cursor: pointer;
+}
+.startButton:hover:not(:disabled) {
+  color: var(--color-text);
+  border-color: var(--color-border-strong);
+}
+.quickTypes {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+.quickType {
+  min-block-size: var(--control-height-compact);
+  padding-inline: var(--space-3);
+  font: inherit;
+  font-size: var(--text-md);
+  font-weight: var(--weight-medium);
+  border: 1px solid transparent;
+  border-radius: var(--radius-pill);
+  cursor: pointer;
+}
+.question { color: var(--color-question-text); background: var(--color-question-bg); border-color: var(--color-question-border); }
+.discussion { color: var(--color-discussion-text); background: var(--color-discussion-bg); border-color: var(--color-discussion-border); }
+.resource { color: var(--color-resource-text); background: var(--color-resource-bg); border-color: var(--color-resource-border); }
+.announcement { color: var(--color-announcement-text); background: var(--color-announcement-bg); border-color: var(--color-announcement-border); }
+.composerNote,
+.composerHint,
+.pickerStatus {
+  font-size: var(--text-md);
+  color: var(--color-text-muted);
+}
+.pickerStatus:empty {
+  display: none;
+}
+.composerForm,
+.picker,
+.composerState {
+  display: grid;
+  gap: var(--space-4);
+}
+.composerState > :last-child {
+  justify-self: start;
+}
+.composerFeedback {
+  font-size: var(--text-md);
+  color: var(--color-danger-text);
+}
+.composerFeedback:empty {
+  display: none;
+}
+.composerActions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: var(--space-2);
+}
+
+/* Side panel cards */
+.panelNote {
+  font-size: var(--text-md);
+  color: var(--color-text-muted);
+}
+.panelError {
+  display: grid;
+  gap: var(--space-2);
+  justify-items: start;
+  font-size: var(--text-md);
+  color: var(--color-danger-text);
+}
+.panelFooter {
+  margin-block-start: var(--space-3);
+  font-size: var(--text-md);
+}
+@media (forced-colors: active) {
+  .startButton,
+  .quickType { border-color: ButtonText; }
+}

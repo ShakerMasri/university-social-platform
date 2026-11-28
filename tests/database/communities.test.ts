@@ -6,7 +6,7 @@ import { createLocalDatabase } from "../../src/server/database/client";
 import { normalizeEmail } from "../../src/server/database/validation";
 import { confirmSignIn, logout, requestSignIn, updateOwnProfile } from "../../src/server/identity/service";
 import { digest, newToken } from "../../src/server/identity/policy";
-import { changeMembership, createCommunity, discoverCommunities, listMemberships, readCommunity } from "../../src/server/communities/service";
+import { changeMembership, createCommunity, discoverCommunities, listMemberCommunities, listMemberships, readCommunity } from "../../src/server/communities/service";
 import { assertDatabaseIdentity, databaseUrl, readManifest } from "../../tools/database/targets";
 
 const manifest = readManifest(), name = process.env.M1B_TEST_DATABASE, upgradeName = process.env.M3_UPGRADE_DATABASE;
@@ -144,6 +144,36 @@ describe("M3 real PostgreSQL persistence and authorization", () => {
       expect(await db.communityMembership.count({ where: { communityId: id, userId: member.id } })).toBe(0);
     }
   });
+  it("lists only the viewer's own MEMBER communities, never pending ones, and follows approval, removal and leaving", async () => {
+    const owner = await user(), member = await user(), stranger = await user();
+    const privateSpace = await createCommunity(db, owner.token, input("PRIVATE")), publicSpace = await createCommunity(db, owner.token, input("PUBLIC"));
+    const ids = (result: Awaited<ReturnType<typeof listMemberCommunities>>) => result.items.map((row) => row.id).sort();
+    await changeMembership(db, member.token, publicSpace.id, { action: "join" });
+    await changeMembership(db, member.token, privateSpace.id, { action: "join" }); // PENDING
+    const mine = await listMemberCommunities(db, member.token);
+    expect(mine.items).toEqual([{ id: publicSpace.id, name: input().name, visibility: "PUBLIC", isOwner: false }]);
+    expect(Object.keys(mine)).toEqual(["items"]);
+    expect(ids(await listMemberCommunities(db, owner.token))).toEqual([privateSpace.id, publicSpace.id].sort());
+    expect((await listMemberCommunities(db, owner.token)).items.every((row) => row.isOwner)).toBe(true);
+    expect((await listMemberCommunities(db, stranger.token)).items).toEqual([]);
+    await changeMembership(db, owner.token, privateSpace.id, { action: "approve", userId: member.id });
+    expect(ids(await listMemberCommunities(db, member.token))).toEqual([privateSpace.id, publicSpace.id].sort());
+    await changeMembership(db, owner.token, privateSpace.id, { action: "remove", userId: member.id });
+    await changeMembership(db, member.token, publicSpace.id, { action: "leave" });
+    expect((await listMemberCommunities(db, member.token)).items).toEqual([]);
+    await denied(listMemberCommunities(db, newToken()), 401);
+    await logout(db, member.token);
+    await denied(listMemberCommunities(db, member.token), 401);
+  });
+
+  it("lists every MEMBER community at the membership limit without the pending ones", async () => {
+    const crowded = await user();
+    await seedMembershipBudget(crowded.id, 500);
+    const result = await listMemberCommunities(db, crowded.token);
+    expect(result.items).toHaveLength(250); // the fixture alternates MEMBER and PENDING
+    expect(result.items.every((row) => !row.isOwner)).toBe(true);
+  });
+
   it("rechecks membership after a real lock wait, and rechecks session expiry before committing a waiting write", async () => {
     const owner = await user(), member = await user(), { id } = await createCommunity(db, owner.token, input());
     await changeMembership(db, member.token, id, { action: "join" });

@@ -4,13 +4,11 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import type { Locale } from "@/i18n/locales";
 import { shellText } from "@/i18n/shell";
-import { notificationText } from "@/i18n/notifications";
-import { notificationOpenResponse, notificationPageResponse, type NotificationItem } from "@/app/[locale]/(app)/notifications/content-data";
+import type { NotificationItem } from "@/app/[locale]/(app)/notifications/content-data";
+import { fetchNotificationPage, notificationPreviewSize, openNotification } from "./notification-requests";
+import { NotificationSummaryList } from "./notification-summary-list";
 import styles from "./shell.module.css";
 
-/** How many notifications the header preview shows; the rest are on /notifications. */
-export const notificationPreviewSize = 5;
-const requestTimeoutMs = 15_000;
 
 type PreviewState =
   | { status: "loading" }
@@ -32,7 +30,7 @@ export default function NotificationsPreview({ locale, id, headingId, onUnread, 
   /** Close the preview before navigating. */
   onNavigate: () => void;
 }) {
-  const text = shellText[locale], kinds = notificationText[locale], router = useRouter();
+  const text = shellText[locale], router = useRouter();
   const [preview, setPreview] = useState<PreviewState>({ status: "loading" });
   const [openFailed, setOpenFailed] = useState(false);
 
@@ -40,9 +38,7 @@ export default function NotificationsPreview({ locale, id, headingId, onUnread, 
     const controller = new AbortController();
     (async () => {
       try {
-        const response = await fetch("/api/notifications", { cache: "no-store", signal: AbortSignal.any([controller.signal, AbortSignal.timeout(requestTimeoutMs)]) });
-        if (!response.ok) throw new Error("Notifications unavailable");
-        const page = notificationPageResponse(await response.json());
+        const page = await fetchNotificationPage(controller.signal);
         if (controller.signal.aborted) return;
         onUnread(page.unread);
         setPreview({ status: "ready", items: page.items.slice(0, notificationPreviewSize) });
@@ -58,9 +54,7 @@ export default function NotificationsPreview({ locale, id, headingId, onUnread, 
   async function openItem(notificationId: string) {
     setOpenFailed(false);
     try {
-      const response = await fetch(`/api/notifications/${notificationId}/open`, { method: "POST", headers: { "Content-Type": "application/json" }, body: "{}", cache: "no-store", signal: AbortSignal.timeout(requestTimeoutMs) });
-      if (!response.ok) throw new Error("Notification unavailable");
-      const target = notificationOpenResponse(await response.json(), notificationId);
+      const target = await openNotification(notificationId);
       // The header persists across navigation. The server says whether this
       // request marked the item read; the preview's flag may be stale.
       if (target.markedRead) onOpened();
@@ -80,23 +74,7 @@ export default function NotificationsPreview({ locale, id, headingId, onUnread, 
         {preview.status === "ready" && preview.items.length === 0 && <p className={styles.popoverNote}>{text.notificationsEmpty}</p>}
       </div>
       {preview.status === "ready" && preview.items.length > 0 && (
-        <ul className={styles.previewList}>
-          {preview.items.map((item) => (
-            <li key={item.id}>
-              <button type="button" className={styles.previewItem} onClick={() => void openItem(item.id)}>
-                <span className={styles.previewKind}>
-                  {!item.read && <span className={styles.previewUnread} aria-hidden="true" />}
-                  {item.kind === "ANNOUNCEMENT" ? kinds.announcement : item.kind === "COMMENT" ? kinds.comment : kinds.upvote}
-                  {!item.read && <span className="ui-visually-hidden"> · {text.unreadMarker}</span>}
-                </span>
-                <bdi className={styles.previewTitle}>{item.title}</bdi>
-                <time className={styles.previewTime} dateTime={item.createdAt.toISOString()}>
-                  {item.createdAt.toLocaleString(locale, { dateStyle: "medium", timeStyle: "short" })}
-                </time>
-              </button>
-            </li>
-          ))}
-        </ul>
+        <NotificationSummaryList locale={locale} items={preview.items} onOpen={(itemId) => void openItem(itemId)} />
       )}
       {openFailed && <p className={styles.popoverError} role="alert">{text.notificationsOpenFailed}</p>}
       <p className={styles.popoverFooter}>

@@ -36,6 +36,25 @@
   border-block-end-color: var(--color-accent);
   color: var(--color-accent-text);
 }
+/* Busy mark while the tab's page loads: a pulsing dot (steady with reduced motion). */
+.pending {
+  display: none;
+}
+.pending[data-tab-pending] {
+  display: block;
+  inline-size: 0.5rem;
+  block-size: 0.5rem;
+  border-radius: 50%;
+  background: var(--color-accent);
+  animation: tab-pending 1s ease-in-out infinite;
+}
+@keyframes tab-pending {
+  50% { opacity: 0.35; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .pending[data-tab-pending] { animation: none; }
+}
 @media (forced-colors: active) {
+  .pending[data-tab-pending] { background: Highlight; }
   .tab[aria-current="page"] { border-block-end-color: Highlight; }
 }

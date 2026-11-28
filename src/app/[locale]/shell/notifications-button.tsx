@@ -4,7 +4,7 @@ import type { Locale } from "@/i18n/locales";
 import { shellText, withUnreadCount } from "@/i18n/shell";
 import { notificationText } from "@/i18n/notifications";
 import { unreadCountLimit } from "@/server/notifications/policy";
-import { onNotificationRead, onNotificationsCleared } from "./shell-events";
+import { onNotificationRead, onNotificationsCleared, onUnreadCount } from "./shell-events";
 import { useHydrated } from "@/app/use-hydrated";
 import { BellIcon } from "@/ui/icons";
 import { IconButton } from "@/ui/components/button";
@@ -32,13 +32,15 @@ export function NotificationsButton({ locale, initialUnread }: { locale: Locale;
   // here, so it cannot undo a count the preview set. Client navigation keeps
   // the layout too. So pages say what they changed (shell-events): opening an
   // item lowers the count only when the server marked it read, and "Mark all
-  // read" clears it.
+  // read" clears it. A page that fetched the list (Home's side panel) passes
+  // on the server's count.
   const [source, setSource] = useState(initialUnread);
   if (source !== initialUnread) { setSource(initialUnread); setUnread(initialUnread); }
   // Above the limit the count only means "more", so it stays "99+".
   const decrement = () => setUnread((count) => count && count <= unreadCountLimit ? count - 1 : count);
   useEffect(() => onNotificationRead(decrement), []);
   useEffect(() => onNotificationsCleared(() => setUnread(0)), []);
+  useEffect(() => onUnreadCount(setUnread), []);
 
   function close(returnFocus: boolean) {
     setOpen(false);

@@ -1,5 +1,6 @@
 import Link from "next/link";
 import type { ReactNode } from "react";
+import { TabPending } from "./tab-pending";
 import styles from "./tabs.module.css";
 
 export type TabItem = { href: string; label: string; current: boolean; adornment?: ReactNode };
@@ -23,6 +24,7 @@ export function Tabs({ label, items, prefetch }: {
             <Link href={item.href} prefetch={prefetch} className={styles.tab} aria-current={item.current ? "page" : undefined}>
               {item.label}
               {item.adornment}
+              <TabPending />
             </Link>
           </li>
         ))}

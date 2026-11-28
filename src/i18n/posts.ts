@@ -3,7 +3,7 @@ import type { PostType } from "../server/posts/policy";
 type PostText = { title: string; create: string; type: string; postTitle: string; body: string; link: string;
   publish: string; busy: string; failed: string; invalid: string; conflict: string; rate: string; empty: string;
   next: string; more: string; open: string; back: string; deleted: string; attribution: string; unavailable: string;
-  joinHint: string; linkHint: string; limits: string; types: Record<PostType, string> };
+  joinHint: string; linkHint: string; limits: string; inCommunity: string; resource: string; types: Record<PostType, string> };
 export const postText: Record<Locale, PostText> = {
   en: {
     title: "Posts", create: "Create a post", type: "Post type", postTitle: "Post title", body: "Post text",
@@ -14,6 +14,7 @@ export const postText: Record<Locale, PostText> = {
     joinHint: "Join this community and save your display name to publish. Announcements are reserved for its creator.",
     linkHint: "Optional HTTP or HTTPS link. Links open in a new tab; the platform does not fetch or preview their content.",
     limits: "Title: 1–160 characters. Text: 1–10,000 characters. Resource link: up to 2,048 characters.",
+    inCommunity: "in", resource: "Resource link",
     types: { QUESTION: "Question", DISCUSSION: "Discussion", RESOURCE: "Resource", ANNOUNCEMENT: "Announcement" },
   },
   ar: {
@@ -25,6 +26,7 @@ export const postText: Record<Locale, PostText> = {
     joinHint: "انضم إلى المجتمع واحفظ اسم العرض لتتمكن من النشر. الإعلانات مخصصة لمنشئ المجتمع.",
     linkHint: "رابط اختياري ببروتوكول HTTP أو HTTPS، يفتح في علامة تبويب جديدة. لا تجلب المنصة محتواه ولا تعرض معاينة له.",
     limits: "العنوان: من حرف واحد إلى 160 حرفًا. النص: من حرف واحد إلى 10000 حرف. الرابط: حتى 2048 حرفًا.",
+    inCommunity: "في", resource: "رابط المورد",
     types: { QUESTION: "سؤال", DISCUSSION: "نقاش", RESOURCE: "مورد", ANNOUNCEMENT: "إعلان" },
   },
 };

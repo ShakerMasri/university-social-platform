@@ -25,9 +25,12 @@ test.beforeAll(async () => {
     },
   });
   const files = (Array.isArray(result) ? result : [result]).flatMap(bundle => "output" in bundle ? bundle.output : []);
-  const chunk = files[0];
-  if (files.length !== 1 || chunk?.type !== "chunk") throw new Error("Expected one fixture script");
-  script = chunk.code;
+  // The list's CSS modules come out as one stylesheet asset. Behaviour does not
+  // depend on it, so only the script is served; anything else is unexpected.
+  const chunks = files.filter(file => file.type === "chunk");
+  const others = files.filter(file => file.type !== "chunk");
+  if (chunks.length !== 1 || others.some(file => !file.fileName.endsWith(".css"))) throw new Error("Expected one fixture script");
+  script = chunks[0].code;
 });
 
 async function open(page: Page, path: string) {
@@ -64,7 +67,8 @@ const checkOutcome = (page: Page, outcome: SessionOutcome) =>
 const countChecks = async (page: Page) => (await inspect(page)).requests.filter(request => request.path === sessionPath).length;
 const finishHeldCheck = (page: Page, index: number) =>
   page.evaluate(index => window.feedFixture.release(index), index);
-const alert = (page: Page, message: string) => expect(page.getByRole("alert")).toHaveText(message);
+// An alert holds the message as its heading, plus its action (Retry, Reopen).
+const alert = (page: Page, message: string) => expect(page.getByRole("alert").getByRole("heading")).toHaveText(message);
 const activate = (page: Page, name: string) => page.getByRole("button", { name, exact: true })
   .evaluate(button => (button as HTMLButtonElement).click());
 
@@ -208,14 +212,18 @@ for (const path of ["/en/feed", "/en/feed/for-you"]) {
       test(`keeps keyboard focus at the feed results when invalidation removes the focused card (${locale})`, async ({ page }) => {
         const localized = feedText[locale];
         const localizedPath = `/${locale}${path.slice(3)}`;
+        const forYouPath = path.endsWith("/for-you");
+        // "Reopen" goes to the matching Home tab (the feed is Home now).
+        const homePath = forYouPath ? `/${locale}?tab=for-you` : `/${locale}`;
         await open(page, localizedPath);
         await expect(sentinel(page)).toBeVisible();
-        const heading = page.getByRole("heading", { name: localized.results, exact: true });
-        const cardControl = page.locator(".post-card .comment-action");
+        const heading = page.getByRole("heading", { name: forYouPath ? localized.forYouResults : localized.results, exact: true });
+        const cardControl = page.getByRole("article").first().getByRole("heading").getByRole("link");
         async function tabToCardControl() {
           await heading.focus();
-          await page.keyboard.press("Tab"); // Community link
-          await page.keyboard.press("Tab"); // First card control
+          await page.keyboard.press("Tab"); // Refresh, in the heading row
+          await page.keyboard.press("Tab"); // The card's community link
+          await page.keyboard.press("Tab"); // The card's title link
           await expect(cardControl).toBeFocused();
         }
 
@@ -246,7 +254,7 @@ for (const path of ["/en/feed", "/en/feed/for-you"]) {
         await expect(reopen).toBeVisible();
         await page.keyboard.press("Tab");
         await expect(reopen).toBeFocused();
-        await expect(reopen).toHaveAttribute("href", localizedPath);
+        await expect(reopen).toHaveAttribute("href", homePath);
       });
     }
 

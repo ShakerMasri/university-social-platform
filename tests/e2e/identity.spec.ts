@@ -3,6 +3,7 @@ import { randomUUID } from "node:crypto";
 import { connect } from "node:net";
 import { readFileSync } from "node:fs";
 import { Client } from "pg";
+import { homeText } from "../../src/i18n/home";
 import { identityText } from "../../src/i18n/identity";
 import { shellText } from "../../src/i18n/shell";
 import { dictionaries } from "../../src/i18n/dictionaries";
@@ -353,8 +354,10 @@ for (const locale of ["en", "ar"] as const) {
     await home();
     await expect(signInLinks(page, locale)).toHaveCount(0);
     await expect(accountMenu(page, locale)).toBeVisible();
+    // Home streams its loading state first; read the links once Home itself is there.
+    await expect(page.getByRole("main").getByRole("link", { name: homeText[locale].addName, exact: true })).toBeVisible();
     expect(await page.getByRole("main").getByRole("link").evaluateAll((links) => links.map((link) => link.getAttribute("href"))))
-      .toEqual([`/${locale}/feed`, `/${locale}/feed/for-you`, `/${locale}/communities`]);
+      .toEqual([`/${locale}/profile`, `/${locale}`, `/${locale}?tab=for-you`, `/${locale}/communities`]);
     // Home reads must neither create a profile nor enroll an account in People.
     expect((await fixtureSQL('SELECT EXISTS (SELECT 1 FROM "Profile" p JOIN "User" u ON u.id = p."userId" WHERE u.email = $1) AS present', [email]))[0].present).toBe(false);
     await fits(page);
