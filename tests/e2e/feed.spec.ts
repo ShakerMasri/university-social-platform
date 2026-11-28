@@ -801,30 +801,32 @@ test("a Home refresh with the same account keeps the feed instead of reloading i
   } finally { await owner.close(); }
 });
 
-test("Home shows a busy tab while a tab switch renders", async ({ context, page }) => {
-  await signIn(context);
-  await page.goto("/en"); await expect(page.getByText(feedText.en.empty, { exact: true })).toBeVisible();
-  // Hold the server render of the next Home URL until the pending state is checked.
-  const hold = async (pattern: string) => {
-    let release!: () => void;
-    const held = new Promise<void>(done => { release = done; });
-    await page.route(pattern, async route => {
-      if (route.request().headers()["rsc"] !== "1") return route.fallback();
-      await held; await route.fallback();
-    });
-    return () => { release(); return page.unroute(pattern); };
-  };
-  const forYou = tabs(page, "en").getByRole("link", { name: homeText.en.tabForYou, exact: true });
-  const release = await hold("**/en?tab=for-you*");
-  const announcement = tabs(page, "en").getByRole("status");
-  await expect(announcement).toHaveText("");
-  await forYou.click();
-  await expect(forYou.locator("[data-tab-pending]")).toHaveCount(1);
-  // Screen readers hear that the tab is loading.
-  await expect(announcement).toHaveText(homeText.en.loading);
-  await release();
-  await expect(page).toHaveURL("/en?tab=for-you");
-  await expect(forYou).toHaveAttribute("aria-current", "page");
-  await expect(forYou.locator("[data-tab-pending]")).toHaveCount(0);
-  await expect(announcement).toHaveText("");
-});
+for (const locale of ["en", "ar"] as const) {
+  test(`${locale}: Home announces that the next feed tab is loading`, async ({ context, page }) => {
+    await signIn(context);
+    await page.goto(`/${locale}`); await expect(page.getByText(feedText[locale].empty, { exact: true })).toBeVisible();
+    // Hold the server render of the next Home URL until the pending state is checked.
+    const hold = async (pattern: string) => {
+      let release!: () => void;
+      const held = new Promise<void>(done => { release = done; });
+      await page.route(pattern, async route => {
+        if (route.request().headers()["rsc"] !== "1") return route.fallback();
+        await held; await route.fallback();
+      });
+      return () => { release(); return page.unroute(pattern); };
+    };
+    const forYou = tabs(page, locale).getByRole("link", { name: homeText[locale].tabForYou, exact: true });
+    const release = await hold(`**/${locale}?tab=for-you*`);
+    const announcement = tabs(page, locale).getByRole("status");
+    await expect(announcement).toHaveText("");
+    await forYou.click();
+    await expect(forYou.locator("[data-tab-pending]")).toHaveCount(1);
+    // Screen readers hear that the tab is loading.
+    await expect(announcement).toHaveText(homeText[locale].loading);
+    await release();
+    await expect(page).toHaveURL(`/${locale}?tab=for-you`);
+    await expect(forYou).toHaveAttribute("aria-current", "page");
+    await expect(forYou.locator("[data-tab-pending]")).toHaveCount(0);
+    await expect(announcement).toHaveText("");
+  });
+}
