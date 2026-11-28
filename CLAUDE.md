@@ -34,6 +34,10 @@ For substantial tasks outside these commands, give a short plan with acceptance 
 - `npm run dev` is long-running: start it only when asked, in the background, and stop it with `npm run dev:stop`.
 - Run from `D:\` with an uppercase drive letter. A lowercase `d:\` path makes Vitest load twice and fail with 'failed to find the runner'. If the local database is stopped, `npm run db:resume` restarts it.
 
+## Writing files
+
+- After writing files that contain \u escapes, verify the escapes survived. (`npm test` also fails if a source file contains raw control, replacement, byte-order or bidi control characters.)
+
 ## Git
 
 - Never commit, push, merge or open a PR unless the owner asks in this session. Suggest the branch name and commit message instead.
