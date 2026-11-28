@@ -259,7 +259,7 @@ npm.cmd run build
 npm.cmd run test:e2e
 ```
 
-`test:e2e` starts and stops its own production server at `127.0.0.1:3100`; keep that port free. It checks the shell and that protected flows remain disabled. On Linux, install browsers with `npx playwright install --with-deps chromium`.
+`test:e2e` starts and stops its own production server at `127.0.0.1:3100`; keep that port free. Every browser-test command that uses the default Playwright config (`test:e2e` and the `test:e2e:*` suites) runs `next build` first, so the suites never test an old build; if the build fails, no tests start. The feed component and preview configs are exempt because they build what they serve. It checks the shell and that protected flows remain disabled. On Linux, install browsers with `npx playwright install --with-deps chromium`.
 
 For a local production preview, run `npm.cmd start` after building. This also leaves M2–M3 disabled. GitHub CI runs installation, lint, typecheck, unit tests, build and ordinary browser tests; database and synthetic M2–M3 tests are separate local checks.
 

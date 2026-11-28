@@ -10,7 +10,33 @@ if (!environment.PLAYWRIGHT_BROWSERS_PATH && existsSync(projectCache)) {
   environment.PLAYWRIGHT_BROWSERS_PATH = projectCache;
   console.log("Using project-local Playwright browser cache (.cache/ms-playwright)");
 }
-const result = spawnSync(process.execPath, [resolve("node_modules/@playwright/test/cli.js"), ...process.argv.slice(2)], {
+// The default config serves the existing production build (`next start` or the
+// local identity server), so build first: a suite can never run against old
+// code, whatever was edited, added, renamed or deleted. With the Next.js cache
+// this takes seconds. Only the configs that build what they serve are exempt,
+// matched exactly by path; any other config value builds.
+const forwarded = process.argv.slice(2);
+const samePath = (path: string) => process.platform === "win32" ? resolve(path).toLowerCase() : resolve(path);
+const exemptConfigs = new Set(["playwright.feed-component.config.ts", "playwright.preview.config.ts"].map(samePath));
+function configArgument(): string | undefined {
+  for (const [index, argument] of forwarded.entries()) {
+    if (argument === "--config" || argument === "-c") return forwarded[index + 1];
+    if (argument.startsWith("--config=")) return argument.slice("--config=".length);
+    if (/^-c[^-]/.test(argument)) return argument.slice(2);
+  }
+  return undefined;
+}
+const config = configArgument();
+if (config === undefined || !exemptConfigs.has(samePath(config))) {
+  const build = spawnSync(process.execPath, [resolve("node_modules/next/dist/bin/next"), "build"], {
+    env: { ...environment, NEXT_TELEMETRY_DISABLED: "1" }, stdio: "inherit", windowsHide: true,
+  });
+  if (build.error || build.status !== 0) {
+    console.error("The production build failed, so the browser suites did not start; run npm run build for diagnostics");
+    process.exit(1);
+  }
+}
+const result = spawnSync(process.execPath, [resolve("node_modules/@playwright/test/cli.js"), ...forwarded], {
   env: environment, stdio: "inherit", windowsHide: true,
 });
 if (result.error) console.error("Playwright could not start; check the installed runtime and dependencies");
