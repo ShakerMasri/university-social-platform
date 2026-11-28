@@ -1,6 +1,6 @@
 # UI rebuild — "Clear Campus"
 
-Status: Stage 0 done (2026-11-26); Stage 1 done (2026-11-27, `1cd7eb2`); header count fixes done (2026-11-28, `370567f`, pushed); one review P3 recorded as a known limitation (fix in Stage 8); Stage 2 next · Branch: feat/ui-redesign · Milestone: UI rebuild (after M5-04 closure)
+Status: Stage 0 done (2026-11-26); Stage 1 done (2026-11-27, `1cd7eb2`); header count fixes done (2026-11-28, `370567f`); Stage 2 part (c) done (2026-11-28, `2653bc6`, follow-up `30968b7`, pushed), 3 review P3s open; part (b) next · Branch: feat/ui-redesign · Milestone: UI rebuild (after M5-04 closure)
 
 ## Goal
 
@@ -548,8 +548,8 @@ On sign-in and verify, +9.0 KiB is the theme and language switches, plus the new
 
 Newest first; filled by /handoff and /review-checkpoint.
 
-### 2026-11-28 — Session 5 — Stage 2 part (c): Home feed, composer and side panel (in progress)
-- **State:** uncommitted on `feat/ui-redesign` at `a166325`; `origin/main` had not moved. Review not yet run.
+### 2026-11-28 — Session 5 — Stage 2 part (c): Home feed, composer and side panel
+- **State:** done · branch `feat/ui-redesign` at `c581da2` · commits: `2653bc6` feat(ui): make Home the feed with composer and side panel; `147744e` docs: record Stage 2 part (c) review and checks; `30968b7` fix(ui): keep composer locked after unknown outcomes and announce tab loading (all three pushed); `c581da2` chore: add source text check and escape verification note (local only, not pushed) · uncommitted: this handoff's edits to this plan and `docs/project-brief.md` · `origin/main` had not moved during the session.
 - **Done:**
   - Home (`(app)/page.tsx`) is the feed for verified users: composer, URL tabs (`?tab=for-you`), feed, side panel. Unknown `tab` values redirect to `/[locale]`. `/feed` and `/feed/for-you` redirect to Home keeping every query parameter (`home/home-href.ts`); the old feed page and its loading file are deleted.
   - Feed (`feed/list.tsx`): only the rendering changed (new post card, skeletons, error/empty states, Refresh in the heading row). Scheduler, session rechecks, clearing and late-response handling are unchanged. The per-render random key is gone: the list restarts when the viewer or tab changes, not on every Home refresh. `feed/feed-viewer.ts` holds the viewer-key read the old page did.
@@ -624,7 +624,8 @@ Newest first; filled by /handoff and /review-checkpoint.
   - P3-3 (open): the source check skips any read error (should rethrow unless the file is gone), and detects binaries only by an extension list (`.ttf`, `.otf`, `.avif`, `.mp4`, `.wasm`, `.gz` would be misread if added locally).
   - Residual: NVDA/VoiceOver behaviour of the tab status unverified (Arabic label not checked in a browser); the exempt generated files hold raw bidi/BOM characters (escaping them would remove the exemption); the keying test depends on the focus-triggered refresh; the first commit's plan notes mention the check that lands in the second.
   - Per the owner's instruction (no P1/P2), the follow-up is committed and pushed with these P3s open.
-- **Next step:** owner decides on P3-1 to P3-3; then part (b) in a new session.
+- **Open issues / risks:** P3-1 to P3-3 of the follow-up review (above); NVDA, forced colours, non-Chromium browsers and a manual EN/AR × light/dark pass not done for Home; the tooling commit is not pushed yet.
+- **Next step:** new session. (1) `git fetch`; merge `origin/main` if it moved; (`c581da2` was pushed at the end of session 5.) (2) Fix P3-1 to P3-3 before part (b) (owner approved 2026-11-28): give the search tabs `pendingLabel={archiveText[locale].loading}`, add the 409-after-lock browser test, and make the source check rethrow non-ENOENT read errors and skip files git marks as binary; review, then commit. (3) Start Stage 2 part (b): Communities list, discover and create; community page with membership and requests, reusing `PostSummaryCard`; `searchCommunities` and the Communities tab of `/search` (C1); the denied state with the approved text. Plan it first and show the plan before editing; remember the controlled-clock feed suite if the post card or shared components change.
 
 ### 2026-11-28 — Session 4 — Header count fixes (P3-a, P3-b) and Stage 2 decisions
 - **State:** done · branch `feat/ui-redesign` at `370567f`, pushed to `origin/feat/ui-redesign` (`370567f` fix(ui): keep header unread count accurate after reopen and mark-all) · uncommitted: this plan and `docs/project-brief.md` (handoff notes). `origin/main` had not moved, so no merge.
