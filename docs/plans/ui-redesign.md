@@ -1,6 +1,6 @@
 # UI rebuild — "Clear Campus"
 
-Status: Stage 0 done (2026-11-26); Stage 1 done (2026-11-27, `1cd7eb2`, pushed); two review P3s open; Stage 2 next · Branch: feat/ui-redesign · Milestone: UI rebuild (after M5-04 closure)
+Status: Stage 0 done (2026-11-26); Stage 1 done (2026-11-27, `1cd7eb2`); header count fixes done (2026-11-28, `370567f`, pushed); one review P3 recorded as a known limitation (fix in Stage 8); Stage 2 next · Branch: feat/ui-redesign · Milestone: UI rebuild (after M5-04 closure)
 
 ## Goal
 
@@ -245,9 +245,16 @@ Implementation priority if time runs short: **unified search > share > save > me
   - Counts only for communities where the user is currently MEMBER, recomputed on each read.
   - PENDING and left communities show no count.
   - Existence and counts of private communities are never shown to non-members.
+- **Owner decisions (2026-11-27):**
+  - `CommunityVisit` stores only the last visit and is used only for the "N new" counts. It is never shown to anyone else or used for anything else.
+  - N counts from whichever is later: the last visit, or when the user's current membership began. After leaving and rejoining, posts from the time away must not count as new.
+  - Rows are deleted when the user or the community is deleted.
+  - Deleted or removed posts are not counted.
+  - Checked 2026-11-27: leaving, removal and rejection delete the membership row, and joining creates a new one, so `CommunityMembership.createdAt` is the start of the current membership and needs no schema change. For private communities it is the request time (approval only changes the status), so posts made while a request was pending count as new. Owner decision 2026-11-28: "Yes, count posts made while the request was pending. I can see them once I'm approved, so nothing leaks." Posts have no deleted or removed state today; when post deletion or moderation is added, this count must exclude those posts in the same change. No user or community deletion exists yet; the cascade is still set so the rule holds when it does.
+- **Rule (owner, 2026-11-28):** whenever post deletion or removal is added, the "N new" count must exclude those posts in the same change.
 - **Data:**
-  - New table `CommunityVisit(userId, communityId, lastViewedAt)`, primary key `(userId, communityId)`.
-  - The baseline when no row exists is the membership's `createdAt` (request time for private communities; this is documented).
+  - New table `CommunityVisit(userId, communityId, lastViewedAt)`, primary key `(userId, communityId)`, foreign keys to `User` and `Community` with `ON DELETE CASCADE`.
+  - The baseline is the later of `lastViewedAt` and the start of the current membership (see the owner decisions above; this replaces the earlier "membership `createdAt` when no row exists" rule).
   - `POST /api/communities/[id]/viewed` is a membership-checked upsert with a monotonic `lastViewedAt`, under its own budget.
   - The count query is bounded: at most 10 nav communities, each counting at most 100 rows via a lateral subquery.
 - **Tests:**
@@ -256,6 +263,9 @@ Implementation priority if time runs short: **unified search > share > save > me
     - Removal hides the count.
     - The cap holds.
     - Concurrent marks never move `lastViewedAt` backwards.
+    - Leave and rejoin (public), and removal then approval (private): posts from the time away are not new.
+    - Deleted and removed posts are not counted.
+    - Deleting the user or the community deletes their visit rows.
     - Query plan bounded on a synthetic corpus.
   - Browser:
     - A new post by B increments A's count.
@@ -437,6 +447,7 @@ Each stage is one checkpoint: review, then commit on `feat/ui-redesign`. Main is
 - Steps:
   - Automated accessibility scan, if the owner approves a dev dependency such as axe; otherwise a manual WCAG 2.2 AA checklist.
   - Manual EN/AR × light/dark × 320/768/1360 pass.
+  - Header count after a lost open response (review P3-c, owner decision 2026-11-28): after a failed notification open, fetch the unread count directly so the header corrects itself (a same-value `router.refresh()` does not). Add a browser test with a response dropped after the server commits.
   - Keyboard-only and NVDA pass by the owner.
   - Small usability test with real participants. Record methods and results; never invent them.
 - Checks to run: the full CI gate plus all `test:e2e:*` suites.
@@ -525,6 +536,31 @@ On sign-in and verify, +9.0 KiB is the theme and language switches, plus the new
 ## Progress log
 
 Newest first; filled by /handoff and /review-checkpoint.
+
+### 2026-11-28 — Session 4 — Header count fixes (P3-a, P3-b) and Stage 2 decisions
+- **State:** done · branch `feat/ui-redesign` at `370567f`, pushed to `origin/feat/ui-redesign` (`370567f` fix(ui): keep header unread count accurate after reopen and mark-all) · uncommitted: this plan and `docs/project-brief.md` (handoff notes). `origin/main` had not moved, so no merge.
+- **Done:**
+  - P3-b: `notificationTarget` (`src/server/notifications/service.ts`) returns `markedRead`, true only when this request changed the record from unread to read (from the `updateMany` count). Every existing field is kept, and the field is computed only after the access check, so inaccessible and unknown ids keep the same 404 and change nothing. One client parser, `notificationOpenResponse` (`notifications/content-data.ts`), is used by the list (`notifications-list.tsx`) and the header preview (`shell/notifications-preview.tsx`); both lower the header count only when `markedRead` is true.
+  - P3-a: a successful "Mark all as read" sends `announceNotificationsCleared` (`shell/shell-events.ts`), and the header (`shell/notifications-button.tsx`) sets its count to 0. The header comment now explains why a same-value refresh cannot reset the count.
+  - Tests: unit tests for the cleared event and the open-response parser; database assertions (unread -> marked, already read -> not marked, viewing never marks, hidden unread and other-user ids give the same 404 and stay unread, unknown id 404); browser tests in `shell.spec.ts` (EN/AR): reopening a read item after Back keeps the count; mark-all clears a count learned from the preview.
+  - C4: owner decisions, the schema check and the deletion rule recorded (see C4).
+- **Decisions:**
+  - Count fixes: "Yes, go ahead with the count fixes."
+  - CommunityVisit: "stores the last visit, used only for 'N new' counts ... Count from whichever is later: my last visit or when I joined. If I leave and rejoin, posts from while I was away must not show as new ... Delete the rows when the user or the community is deleted. Never show them to anyone else or use them for anything else ... Don't count deleted or removed posts."
+  - Pending requests: "Yes, count posts made while the request was pending. I can see them once I'm approved, so nothing leaks."
+  - "Whenever post deletion or removal is added, the 'N new' count must exclude those posts in the same change." Stage 2 starts in a new session.
+- **Checks:**
+  - `npm run lint` -> passed; `npm run typecheck` -> passed; `npm test` -> 510 passed, 1 skipped
+  - `npm run db:test` -> 179 passed, 18 skipped (gated evidence suites)
+  - `npm run build` -> succeeded
+  - `npm run test:e2e:shell` -> 48 passed, 1 skipped. The first run used a stale build from before the fix and failed exactly the 4 new tests, which shows they reproduce both bugs.
+  - `npm run test:e2e:identity` -> empty 1/1, main 208 passed + 2 skipped, archive 18/18, messaging 40/40, feed 18/18. Logged errors all trace to deliberate fault tests, as in session 3.
+  - not run: `npm run test:e2e` (CI suite), NVDA, manual EN/AR screen-reader check of the header label after mark-all.
+- **Review (`checkpoint-reviewer`, 2026-11-28, uncommitted scope):** no P1, no P2, 1 P3. Confirmed `markedRead` is computed only after the access check, every field is kept, concurrent opens give `true` to only one request, and mark-all announces only after a successful response. Reviewer ran lint, typecheck and unit tests (passed); no database or browser suites. Committed and pushed per the owner's instruction (no P1/P2).
+  - P3-c (open): if the server marks an item read but the browser never gets a usable answer (timeout or abort after commit, unparsable response), the header stays one too high; a retry gets `markedRead: false`. Too high, never too low; nothing leaks. Suggested fix: after an open failure, fetch the count directly (a same-value `router.refresh()` would not correct it); or record it as a known limitation.
+  - Residual: whether Back shows the outdated list depends on the Next.js client cache; if it reloads the list, the Back test still passes but no longer exercises the bug. A notification that arrives between the mark-all commit and the refresh can leave the header at 0 when the refresh returns the header's last rendered value (existing header update logic). The cleared event reaches only the same tab.
+- **Open issues / risks:** P3-c is a known limitation (owner decision 2026-11-28: "Record it as a known limitation and add the fix to the Stage 8 polish list. Don't fix it now."); the fix is listed under Stage 8.
+- **Next step:** new session, Stage 2. Start with the `CommunityVisit` migration as specified in C4 (owner decisions recorded there; no further schema questions), and show the generated migration with `db:review` before applying it.
 
 ### 2026-11-27 — Session 3 — Stage 1 test rewrites, walkthrough, review
 - **State:** done · branch `feat/ui-redesign` at `1cd7eb2`, pushed to `origin/feat/ui-redesign` (`c595291` docs: add replies format rule; `1cd7eb2` feat(ui): add Stage 1 app shell, unified search and entry pages; the push also carried session 2's `5d45817` tooling fix, which was committed but not yet pushed) · uncommitted: this handoff's edits to this plan and `docs/project-brief.md`.
