@@ -5,8 +5,7 @@ import { useRouter } from "next/navigation";
 import type { Locale } from "@/i18n/locales";
 import { shellText } from "@/i18n/shell";
 import { notificationText } from "@/i18n/notifications";
-import { communityId } from "@/server/communities/policy";
-import { notificationPageResponse, type NotificationItem } from "@/app/[locale]/(app)/notifications/content-data";
+import { notificationOpenResponse, notificationPageResponse, type NotificationItem } from "@/app/[locale]/(app)/notifications/content-data";
 import styles from "./shell.module.css";
 
 /** How many notifications the header preview shows; the rest are on /notifications. */
@@ -28,7 +27,7 @@ export default function NotificationsPreview({ locale, id, headingId, onUnread, 
   locale: Locale; id: string; headingId: string;
   /** The current unread count from the server. */
   onUnread: (count: number) => void;
-  /** An unread item was opened (and marked read). */
+  /** Opening an item marked it read (as the server reported). */
   onOpened: () => void;
   /** Close the preview before navigating. */
   onNavigate: () => void;
@@ -56,17 +55,17 @@ export default function NotificationsPreview({ locale, id, headingId, onUnread, 
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  async function openItem({ id: notificationId, read }: NotificationItem) {
+  async function openItem(notificationId: string) {
     setOpenFailed(false);
     try {
       const response = await fetch(`/api/notifications/${notificationId}/open`, { method: "POST", headers: { "Content-Type": "application/json" }, body: "{}", cache: "no-store", signal: AbortSignal.timeout(requestTimeoutMs) });
       if (!response.ok) throw new Error("Notification unavailable");
-      const row = await response.json() as Record<string, unknown>;
-      if (row.ok !== true || communityId(row.id) !== notificationId) throw new Error("Invalid destination");
-      // The header persists across navigation; opening marked this one read.
-      if (!read) onOpened();
+      const target = notificationOpenResponse(await response.json(), notificationId);
+      // The header persists across navigation. The server says whether this
+      // request marked the item read; the preview's flag may be stale.
+      if (target.markedRead) onOpened();
       onNavigate();
-      router.push(`/${locale}/communities/${communityId(row.communityId)}/posts/${communityId(row.postId)}?notification=${notificationId}`);
+      router.push(`/${locale}/communities/${target.communityId}/posts/${target.postId}?notification=${notificationId}`);
     } catch {
       setOpenFailed(true);
     }
@@ -84,7 +83,7 @@ export default function NotificationsPreview({ locale, id, headingId, onUnread, 
         <ul className={styles.previewList}>
           {preview.items.map((item) => (
             <li key={item.id}>
-              <button type="button" className={styles.previewItem} onClick={() => void openItem(item)}>
+              <button type="button" className={styles.previewItem} onClick={() => void openItem(item.id)}>
                 <span className={styles.previewKind}>
                   {!item.read && <span className={styles.previewUnread} aria-hidden="true" />}
                   {item.kind === "ANNOUNCEMENT" ? kinds.announcement : item.kind === "COMMENT" ? kinds.comment : kinds.upvote}

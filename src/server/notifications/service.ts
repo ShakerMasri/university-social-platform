@@ -57,6 +57,9 @@ export function countUnreadNotifications(db: PrismaClient, token: unknown) {
 
 // Both opening and the eventual linked page reauthorize this owner-only record.
 // A normal public post URL retains its ordinary public-content rules.
+// markedRead says whether this call changed the record from unread to read, so
+// a client lowers its unread count only once. It is reported only after the
+// access check passes; an inaccessible or unknown id is the same 404 as before.
 export function notificationTarget(db: PrismaClient, token: unknown, value: unknown, markRead = false) {
   const id = communityId(value);
   const run = async (tx: Prisma.TransactionClient, userId: string) => {
@@ -66,11 +69,13 @@ export function notificationTarget(db: PrismaClient, token: unknown, value: unkn
       comment: { select: { rootId: true } },
     } });
     if (!row) throw new CommunityError(404);
+    let markedRead = false;
     if (markRead) {
       const [clock] = await tx.$queryRaw<{ now: Date }[]>`SELECT clock_timestamp() AS now`;
-      await tx.notification.updateMany({ where: { id, recipientId: userId, readAt: null }, data: { readAt: clock.now } });
+      const { count } = await tx.notification.updateMany({ where: { id, recipientId: userId, readAt: null }, data: { readAt: clock.now } });
+      markedRead = count === 1;
     }
-    return { id: row.id, communityId: row.post.communityId, postId: row.postId, commentId: row.commentId, rootId: row.comment?.rootId ?? row.commentId };
+    return { id: row.id, communityId: row.post.communityId, postId: row.postId, commentId: row.commentId, rootId: row.comment?.rootId ?? row.commentId, markedRead };
   };
   return markRead ? mutating(db, token, run, false, "m3-notification-write") : authorized(db, token, run);
 }

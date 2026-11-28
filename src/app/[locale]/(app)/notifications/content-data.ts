@@ -16,3 +16,14 @@ export function notificationPageResponse(value: unknown) {
   });
   return { items, next: page.next === null ? null : communityId(page.next), unread: page.unread as number, scope: page.scope };
 }
+
+/**
+ * The open endpoint's answer for `expectedId`: where to go, and whether this
+ * request marked the notification read (so the header lowers its count once).
+ */
+export function notificationOpenResponse(value: unknown, expectedId: string) {
+  if (!value || typeof value !== "object") throw new Error("Invalid destination");
+  const row = value as Record<string, unknown>;
+  if (row.ok !== true || communityId(row.id) !== expectedId || typeof row.markedRead !== "boolean") throw new Error("Invalid destination");
+  return { communityId: communityId(row.communityId), postId: communityId(row.postId), markedRead: row.markedRead };
+}

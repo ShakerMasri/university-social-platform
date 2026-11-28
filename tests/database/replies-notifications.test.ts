@@ -67,13 +67,20 @@ describe("reply threads and atomic notification delivery", () => {
     expect(before.unread).toBe(2); expect(before.items).toHaveLength(2);
     const read = await notificationTarget(db, member.token, before.items[0].id, true);
     expect(read.communityId).toBe(space.id); expect([first.id, second.id]).toContain(read.postId);
+    expect(read.markedRead).toBe(true); // unread -> marked by this request
     const readAt = (await db.notification.findUniqueOrThrow({ where: { id: read.id } })).readAt;
-    await notificationTarget(db, member.token, read.id, true);
+    expect((await notificationTarget(db, member.token, read.id, true)).markedRead).toBe(false); // already read -> not marked
+    expect((await notificationTarget(db, member.token, before.items[1].id)).markedRead).toBe(false); // viewing never marks
+    expect((await db.notification.findUniqueOrThrow({ where: { id: before.items[1].id } })).readAt).toBeNull();
     expect((await db.notification.findUniqueOrThrow({ where: { id: read.id } })).readAt).toEqual(readAt);
     await changeMembership(db, owner.token, space.id, { action: "remove", userId: member.id });
     expect(await listNotifications(db, member.token)).toMatchObject({ items: [], unread: 0, next: null });
     await deny(notificationTarget(db, member.token, read.id), 404);
     await deny(notificationTarget(db, member.token, read.id, true), 404);
+    // A hidden unread record answers exactly like a hidden read one and stays unread.
+    const hiddenUnread = before.items[1].id;
+    await deny(notificationTarget(db, member.token, hiddenUnread, true), 404);
+    expect((await db.notification.findUniqueOrThrow({ where: { id: hiddenUnread } })).readAt).toBeNull();
     await markAllNotificationsRead(db, member.token); // Hidden unread record stays unread.
     const missed = await announce(); expect(await db.notification.count({ where: { postId: missed.id } })).toBe(0);
     await changeMembership(db, member.token, space.id, { action: "join" });
@@ -129,6 +136,8 @@ describe("reply threads and atomic notification delivery", () => {
     const mine = (await listNotifications(db, member.token)).items[0];
     expect(Object.keys(mine).sort()).toEqual(["createdAt", "id", "kind", "read", "title"]);
     await deny(notificationTarget(db, stranger.token, mine.id, true), 404);
+    expect((await db.notification.findUniqueOrThrow({ where: { id: mine.id } })).readAt).toBeNull();
+    await deny(notificationTarget(db, member.token, randomUUID(), true), 404); // unknown id: same 404
     await deny(listNotifications(db, stranger.token, mine.id), 404);
     await deny(notificationTarget(db, newToken(), mine.id, true), 401);
     await deny(markAllNotificationsRead(db, newToken()), 401);

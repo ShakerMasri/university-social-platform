@@ -6,7 +6,7 @@
 const notificationReadEvent = "usp:notification-read";
 const displayNameEvent = "usp:display-name";
 
-/** An unread notification was just marked read by opening it. */
+/** Opening a notification just marked it read (the server said so). */
 export function announceNotificationRead() {
   window.dispatchEvent(new Event(notificationReadEvent));
 }
@@ -14,6 +14,18 @@ export function announceNotificationRead() {
 export function onNotificationRead(listener: () => void) {
   window.addEventListener(notificationReadEvent, listener);
   return () => window.removeEventListener(notificationReadEvent, listener);
+}
+
+const notificationsClearedEvent = "usp:notifications-cleared";
+
+/** Every notification the user can see was just marked read. */
+export function announceNotificationsCleared() {
+  window.dispatchEvent(new Event(notificationsClearedEvent));
+}
+
+export function onNotificationsCleared(listener: () => void) {
+  window.addEventListener(notificationsClearedEvent, listener);
+  return () => window.removeEventListener(notificationsClearedEvent, listener);
 }
 
 /** The signed-in user saved a new display name. */

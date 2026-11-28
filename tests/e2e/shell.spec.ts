@@ -190,6 +190,56 @@ for (const locale of locales) {
     } finally { await other.close(); }
   });
 
+  test(`${locale}: the header count drops once per notification, even from an outdated list`, async ({ context, page, browser }) => {
+    await signIn(context);
+    const other = await browser.newContext({ baseURL: origin });
+    try {
+      await signIn(other, "Synthetic مجيب");
+      const first = `Reopen ${randomUUID().slice(0, 8)}`, second = `Reopen ${randomUUID().slice(0, 8)}`;
+      await commentNotification(context, other, first); await commentNotification(context, other, second);
+      const bell = (count: number) => page.getByRole("banner").getByRole("button", { name: text.notificationsUnread.replace("{count}", count.toLocaleString(locale)), exact: true });
+      const openButton = (title: string) => page.locator("article").filter({ hasText: title }).getByRole("button", { name: notificationText[locale].open, exact: true });
+      await page.goto(`/${locale}/communities`);
+      await expect(bell(2)).toBeVisible();
+      await openNotificationsFromShell(page, locale);
+      await expect(page).toHaveURL(new RegExp(`/${locale}/notifications$`));
+      await openButton(first).click();
+      await expect(page).toHaveURL(/\?notification=/);
+      await expect(bell(1)).toBeVisible();
+      // Back may show the list as it was; opening the same item again must not lower the count.
+      await page.goBack();
+      await expect(page).toHaveURL(new RegExp(`/${locale}/notifications$`));
+      await openButton(first).click();
+      await expect(page).toHaveURL(/\?notification=/);
+      await expect(bell(1)).toBeVisible();
+      // The server agrees after a full load.
+      await page.reload();
+      await expect(bell(1)).toBeVisible();
+    } finally { await other.close(); }
+  });
+
+  test(`${locale}: "Mark all as read" clears a count the header learned from its preview`, async ({ context, page, browser }) => {
+    await signIn(context);
+    const other = await browser.newContext({ baseURL: origin });
+    try {
+      await signIn(other, "Synthetic مجيب");
+      // The header renders with no unread notifications, then one arrives.
+      await page.goto(`/${locale}/communities`);
+      const quietBell = page.getByRole("banner").getByRole("button", { name: uiText[locale].notifications, exact: true });
+      await expect(quietBell).toBeVisible();
+      await commentNotification(context, other, `Mark all ${randomUUID().slice(0, 8)}`);
+      // Opening the preview updates the header to 1 without re-rendering the layout.
+      await quietBell.click();
+      await expect(page.getByRole("banner").getByRole("button", { name: text.notificationsUnread.replace("{count}", (1).toLocaleString(locale)), exact: true })).toBeVisible();
+      await page.getByRole("link", { name: text.notificationsSeeAll, exact: true }).click();
+      await expect(page).toHaveURL(new RegExp(`/${locale}/notifications$`));
+      // The server's count is 0 again, the same as the header's last render.
+      await page.getByRole("button", { name: notificationText[locale].markAll, exact: true }).click();
+      await expect(page.getByRole("status").filter({ hasText: notificationText[locale].marked })).toBeVisible();
+      await expect(quietBell).toBeVisible();
+    } finally { await other.close(); }
+  });
+
   test(`${locale}: notifications preview shows a failure and keeps See all`, async ({ context, page }) => {
     await signIn(context);
     await page.goto(`/${locale}/communities`);

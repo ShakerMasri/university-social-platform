@@ -4,7 +4,7 @@ import type { Locale } from "@/i18n/locales";
 import { shellText, withUnreadCount } from "@/i18n/shell";
 import { notificationText } from "@/i18n/notifications";
 import { unreadCountLimit } from "@/server/notifications/policy";
-import { onNotificationRead } from "./shell-events";
+import { onNotificationRead, onNotificationsCleared } from "./shell-events";
 import { useHydrated } from "@/app/use-hydrated";
 import { BellIcon } from "@/ui/icons";
 import { IconButton } from "@/ui/components/button";
@@ -27,14 +27,18 @@ export function NotificationsButton({ locale, initialUnread }: { locale: Locale;
   const [unread, setUnread] = useState(initialUnread);
   const rootRef = useRef<HTMLDivElement>(null);
 
-  // The shared layout renders again only on a full load or router.refresh(),
-  // which bring a fresh count. Client navigation keeps it, so pages that mark
-  // a notification read say so (shell-events).
+  // The server count arrives on a full load and on router.refresh(), but a
+  // refresh that returns the same number as the last render changes nothing
+  // here, so it cannot undo a count the preview set. Client navigation keeps
+  // the layout too. So pages say what they changed (shell-events): opening an
+  // item lowers the count only when the server marked it read, and "Mark all
+  // read" clears it.
   const [source, setSource] = useState(initialUnread);
   if (source !== initialUnread) { setSource(initialUnread); setUnread(initialUnread); }
   // Above the limit the count only means "more", so it stays "99+".
   const decrement = () => setUnread((count) => count && count <= unreadCountLimit ? count - 1 : count);
   useEffect(() => onNotificationRead(decrement), []);
+  useEffect(() => onNotificationsCleared(() => setUnread(0)), []);
 
   function close(returnFocus: boolean) {
     setOpen(false);
