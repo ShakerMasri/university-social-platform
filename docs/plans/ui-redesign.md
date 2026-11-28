@@ -390,6 +390,15 @@ Each stage is one checkpoint: review, then commit on `feat/ui-redesign`. Main is
 - Done when: a user can sign in, onboard and move around the whole app in the new shell, even though inner pages are still unstyled.
 
 ### Stage 2 — Home, feed, communities (+ new counts, community search)
+- **Split (owner, 2026-11-28):** three parts, each with its own review and commit, in this order: (c) Home feed and side panel; (b) Communities pages, community search and the "no access" page; (a) "N new" data and counts. Pages are built so the counts can be added later without reworking them.
+- **Part (c) plan, approved 2026-11-28:**
+  - Home is the feed for verified users: composer, tabs "Your communities" / "For you" (`/[locale]?tab=for-you`), post cards. Anonymous landing and the unavailable state stay. An unknown `tab` value redirects to `/[locale]`.
+  - `/feed` and `/feed/for-you` redirect to Home and keep every query parameter (owner: "so old notification links land in the right place"); `/feed/for-you` sets `tab=for-you`.
+  - The feed's scheduler, session rechecks, clearing and late-response handling are unchanged; only the rendering is rebuilt, and every feed security test is kept. The feed remounts when the viewer or tab changes, not on every Home refresh.
+  - New post card (initials avatar, author, community, time, type badge, title, excerpt), reused by part (b). The vote control stays as it is until the Stage 3 vote display decision. The replies icon is hidden until Stage 3 adds its count (owner: "An icon with no number looks broken."). Save and share come in Stage 3.
+  - Composer: community picker of the viewer's MEMBER communities, four type chips, title, body, resource link. Announcement only in communities the viewer created (the server rule is unchanged). Without a display name the composer asks for one first. Retries never create a duplicate. The picker is searchable when the list is long.
+  - New read-only server function and route for the viewer's communities (owner: "Only list communities where I'm currently a member, never pending ones, and only my own data"), capped at 500, with whether the viewer created each one. Reused later by the nav and the "N new" counts.
+  - Side panel on wide screens: latest 5 notifications and "See all", with loading, empty and error states; a stack of cards. Not loaded while hidden on narrow screens; loaded if the window is later widened. Opening an item lowers the header count only when the server marked it read.
 - Steps:
   - Home feed tabs and composer (decisions 1 and 6), keeping the existing feed scheduler and session revalidation behavior.
   - Communities list, discover and create; community page with membership and requests.
@@ -401,6 +410,7 @@ Each stage is one checkpoint: review, then commit on `feat/ui-redesign`. Main is
   - Unit tests.
   - `db:test` and `db:test:feed`, plus the new database tests.
   - Rewritten `feed`, `communities` and `posts` browser suites.
+  - The controlled-clock feed component suite (see "Standard check for any feed change" in the verification plan).
   - The C4 tests.
   - `db:review` for the migration.
 - Done when: AC 1, 4 and 5 hold for these pages, and the feed revalidation cases still pass.
@@ -473,6 +483,7 @@ Stage 1 deleted the harness CSS (`globals.css`). The owner approved keeping [leg
 - **Unit (Vitest):** input validation, URL builders, theme and cookie parsing, count capping.
 - **Database (disposable PostgreSQL):** the two migrations, save and visit constraints, concurrency, community search normalization and bounds, all access-removal cases.
 - **Browser (Playwright, Chromium):** every rewritten suite, plus the C1–C4 and C6 security cases, the redirects, no-flash, RTL and zoom.
+- **Standard check for any feed change (owner, 2026-11-28):** whenever a change touches the feed list (`feed/list.tsx`), anything it imports (the post card, vote control, shared UI components, feed i18n) or the feed session APIs, run the controlled-clock component suite, `npm run test:e2e -- --config=playwright.feed-component.config.ts`, as well as `npm run test:e2e:feed`, and record both results. It is the only evidence for the 25 s recheck, the 30 s freshness limit, card clearing, late responses and focus recovery. Never skip it; a setup failure counts as a failure.
 - **Manual:** EN/AR, both themes, mobile widths, NVDA, usability sessions.
 - **Remains unverified:** non-Chromium browsers (unless added), real email delivery, production load and scale, AI answer quality (none generated), deployment.
 
@@ -536,6 +547,62 @@ On sign-in and verify, +9.0 KiB is the theme and language switches, plus the new
 ## Progress log
 
 Newest first; filled by /handoff and /review-checkpoint.
+
+### 2026-11-28 — Session 5 — Stage 2 part (c): Home feed, composer and side panel (in progress)
+- **State:** uncommitted on `feat/ui-redesign` at `a166325`; `origin/main` had not moved. Review not yet run.
+- **Done:**
+  - Home (`(app)/page.tsx`) is the feed for verified users: composer, URL tabs (`?tab=for-you`), feed, side panel. Unknown `tab` values redirect to `/[locale]`. `/feed` and `/feed/for-you` redirect to Home keeping every query parameter (`home/home-href.ts`); the old feed page and its loading file are deleted.
+  - Feed (`feed/list.tsx`): only the rendering changed (new post card, skeletons, error/empty states, Refresh in the heading row). Scheduler, session rechecks, clearing and late-response handling are unchanged. The per-render random key is gone: the list restarts when the viewer or tab changes, not on every Home refresh. `feed/feed-viewer.ts` holds the viewer-key read the old page did.
+  - New post card (`communities/post-summary-card.tsx`): initials avatar, author, "in community", time, type badge, title link, excerpt (`src/ui/excerpt.ts`), resource link, existing vote control. No replies icon (owner decision).
+  - Composer (`home/composer.tsx`, form lazy-loaded from `home/composer-form.tsx`): community picker from the new `GET /api/communities/mine` (`listMemberCommunities`: own MEMBER rows only, capped at the membership limit, id/name/visibility/isOwner), sorted per locale, searchable above 8 communities (search folding shared with the archive via `server/archive/normalize.ts`). Announcement only where the viewer is the creator; switching away resets the type. Same retry key behaviour as the old form. Without a display name it links to Profile.
+  - Side panel (`home/side-panel.tsx`, card lazy-loaded from `home/recent-notifications.tsx`): renders and loads only at ≥ 75rem, and loads when the window is widened later. Latest 5, loading/empty/error with Retry, session-changed state; clears on page hide or session change; reloads on return when older than 25 s. Opening an item lowers the header count only when the server marked it read; the panel passes the server's unread count to the header (new shell event). The header preview and the panel share the request helpers and list component.
+  - `membershipLimit` (500) is now one constant in `communities/policy.ts`, used by the existing caps.
+  - Unused strings removed (old start page and feed page titles).
+  - Local tooling: the first feed run found the project database container stopped (`db:resume` restarted it) and left a manifest entry for a test database that was never created. After checking that no such database existed, that single entry was removed; the manifest was backed up first (`.cache/m1b/manifest.backup-2026-11-28.json`).
+- **Checks:**
+  - `npm run lint` and `npm run typecheck` -> passed; `npm test` -> 532 passed, 1 skipped
+  - `npm run db:test` -> 181 passed, 18 skipped (2 new: own MEMBER list across pending, approval, removal, leaving, other users, sign-out; 250 MEMBER rows at the 500 limit); `npm run db:test:feed` -> 19/19
+  - `npm run build` -> succeeded
+  - `npm run test:e2e:feed` -> 26/26 (rewritten feed cases on Home; new: redirects keep query parameters, composer member-only list and Announcement rule, no duplicate on a lost response, endpoint access cases, searchable picker in Arabic, side panel wide-only loading, failure/Retry, header count, Home refresh keeps the feed). It first failed one case: with a community chosen, a search with no matches said "1 match". Fixed (the kept selection is no longer counted) and the English wording changed to "Matching communities: N."
+  - Before the lazy split: `test:e2e:identity` -> empty 1/1, main 208 passed + 2 skipped, archive 18/18, messaging 40/40, feed 26/26; `test:e2e:shell` 48 passed, 1 skipped; `test:e2e:zoom` 2/2; `test:e2e` 18/18; `test:e2e:components` 12/12. After the split, `test:e2e:feed` 26/26 again.
+  - not run: NVDA, forced colours, non-Chromium browsers, manual EN/AR × light/dark pass.
+- **Client JS (AC 10):** Home 159.3 KiB gzip (Stage 1: 148.3; first build of this part: 163.0 before lazy-loading the composer form and the panel card). Reason for the growth: Home now carries what `/feed` carried (the feed list with its session scheduler, post cards and vote control; `/feed` was 143.7 at the Stage 0 baseline before the shell) plus the collapsed composer and the panel switch. Other routes unchanged (largest other route: community page 157.3).
+- **Review (`checkpoint-reviewer`, 2026-11-28, uncommitted scope):** no P1, 1 P2, 6 P3. Reviewer ran lint, typecheck and unit tests (passed on Node 24.21.0); no database or browser suites.
+  - P2-1: the feed revalidation component suite (`tests/feed-component/revalidation.spec.ts`, controlled-clock evidence for the scheduler) now fails at setup: the list imports CSS modules, so the Vite fixture build emits a CSS asset as well as the script. Its card and Tab-order selectors and its whole-alert text match are also stale. It was not run this session.
+  - P3-1: the open composer is not keyed by viewer and does not close on page hide, so an account switch followed by a back/forward-cache restore could keep the previous account's community list (depends on the browser caching the page).
+  - P3-2: after an unknown-outcome failure, switching the picker to another community and submitting creates a second post (the submission key includes the community).
+  - P3-3: the picker search's `aria-controls` points at the status line, not the select.
+  - P3-4: Home has no loading state for tab switches (the old `/feed` loading file was deleted).
+  - P3-5: the moved normalizer uses literal combining marks instead of `\u` escapes (same bytes).
+  - P3-6: the excerpt comment says "user-perceived characters" but counts code points.
+  - Residual: a panel fetch can land after a header-side change and push a stale count; after a session change the panel reloads on the next focus after 25 s (no cross-user leak); card avatars are coloured by name, the composer's by account; card times use the browser time zone (hydration risk if part (b) server-renders the card); no rate budget on the new GET, like other community reads.
+  - Status: the owner chose to fix all seven (below).
+- **Owner decisions on the review (2026-11-28):** fix the feed suite and run it; fix all six P3s, with the community locked after an unknown-outcome failure; "For the Arabic text, check whether any user-visible strings were damaged, not just that file. Check every file moved or touched this stage and confirm they're saved as UTF-8." Re-review the fixes, then commit and push if there is no P1 or P2. Add the controlled-clock feed suite to the standard checks for any feed change (done: verification plan and Stage 2 checks).
+- **Fixes:**
+  - P2-1: the component suite serves only the script from the Vite build (the stylesheet asset is ignored; any other extra output still fails setup), matches alerts by their heading, uses the new Tab order (heading, Refresh, community, title) and the For you heading, and expects "Reopen" to go to the Home tab. Result: 40/40.
+  - P3-1: Home keys the composer by account, and the composer closes (dropping the list) on page hide as well as on a session change.
+  - P3-2: after a failure with an unknown outcome (no answer, a 5xx, or an unreadable success), the community picker and its search are locked and a new message explains why (EN/AR); any other refusal unlocks it. Cancel starts over.
+  - P3-3: the search field's `aria-controls` names the select.
+  - P3-4: tabs show a pending dot while their page loads (`useLinkStatus`, in the shared Tabs component, so the search tabs get it too). Home moved into a `(home)` route group (same URL) with its own loading boundary for navigation from other pages. A Next.js loading file does not appear when only the query changes, which is why the tab indicator is needed. Holding a whole response in a test does not model streaming, so the boundary has no dedicated browser test; the identity suite showed it streaming on real navigation (below).
+  - P3-5: the normalizer's regex uses `\u` escapes again, byte-identical to the original line. Cause: this session's file-writing tool turns `\u` escapes into the characters, which also put a literal U+FFFD in the excerpt test (restored).
+  - P3-6: the excerpt counts graphemes with `Intl.Segmenter`; a new test keeps an emoji sequence and an Arabic letter with its marks whole.
+- **Encoding audit (all 49 changed, moved or new files):** every file is valid UTF-8 without a BOM, with no U+FFFD, control or bidi characters. Flags checked by hand: a zero-width joiner inside the emoji-sequence test (intended); tatweel and fatha in Arabic test data that exercises search folding (intended); harakat in Arabic UI strings (correct spelling). Every quoted string in the five touched i18n files was compared with HEAD: all existing strings are byte-identical; the only differences are the new Home strings and the removed unused ones. The moved session-refresh file is unchanged and keeps the CRLF endings it had at HEAD.
+- **Checks after fixes:**
+  - `npm run lint` and `npm run typecheck` -> passed; `npm test` -> 533 passed, 1 skipped
+  - `npm run db:test` -> 181 passed, 18 skipped; `npm run db:test:feed` -> 19/19; `npm run build` -> succeeded
+  - controlled-clock feed component suite -> 40/40
+  - `npm run test:e2e:feed` -> 27/27 (new: composer closes on page hide, picker locked after a lost response, busy tab during a slow switch)
+  - `npm run test:e2e:identity` -> empty 1/1, main 208 passed + 2 skipped, archive 18/18, messaging 40/40, feed 27/27. The first run after the fixes failed both locales of the identity Home case: it read the links while Home's new loading state was still streaming (evidence that the boundary appears on real navigation); the test now waits for Home's content. Logged errors per group match the earlier run in number (10 and 6) and all come from the deliberate fault tests; within the first group the mix moved from feed/communities API failures to header viewer failures, depending on which request meets the revoked database role
+  - `test:e2e:shell` -> 48 passed, 1 skipped; `test:e2e:zoom` -> 2/2; `test:e2e` -> 18/18; `test:e2e:components` -> 12/12
+  - Client JS: Home 160.3 KiB gzip (+1.0 for the loading boundary and tab indicator); other routes unchanged.
+  - not run: NVDA, forced colours, non-Chromium browsers (Safari's back/forward cache for P3-1), manual EN/AR × light/dark pass.
+- **Re-review of the fixes (`checkpoint-reviewer`, 2026-11-28):** no P1, no P2, 3 P3. Confirmed P2-1 and P3-1 to P3-6 as described (component suite not weakened; normalizer line byte-identical; encoding audit spot-checked against HEAD). Reviewer ran lint, typecheck and unit tests (passed); no database or browser suites.
+  - P3-A (open): a 429 (or 403/404) on the retry unlocks the picker, but it proves nothing about the earlier unknown-outcome attempt (the rate budget is reserved before the submission key is checked). After that, switching community and publishing could still create a second post. Fix: keep the lock on 429; clear it only on 409 (the earlier post exists), 401, or 403/404 with the list reloaded; correct the comment.
+  - P3-B (open): the Home loading boundary's comment wrongly says it covers tab switches, and its label "Loading your feed…" also shows to signed-out visitors (the boundary wraps the landing page). Fix: correct the comment; use a neutral EN/AR "Loading…" label.
+  - P3-C (open): browser tests cover only the 503 lock path; not the network/timeout or unreadable-2xx paths, the locked search box, unlocking, Cancel resetting the lock, or keying by account; the Arabic excerpt test rebuilds its expected value with the same Segmenter.
+  - Residual: nothing is announced to screen readers while a tab switch renders (the dot is decorative; needs an NVDA check); forced colours and a real Safari/Firefox back/forward-cache restore unchecked; earlier residuals unchanged.
+  - Per the owner's instruction (no P1/P2), part (c) is committed and pushed with these three P3s open.
+- **Next step:** owner decides on P3-A to P3-C (recommended: fix all three as a small follow-up before part (b)); then part (b): Communities pages, community search and the "no access" page.
 
 ### 2026-11-28 — Session 4 — Header count fixes (P3-a, P3-b) and Stage 2 decisions
 - **State:** done · branch `feat/ui-redesign` at `370567f`, pushed to `origin/feat/ui-redesign` (`370567f` fix(ui): keep header unread count accurate after reopen and mark-all) · uncommitted: this plan and `docs/project-brief.md` (handoff notes). `origin/main` had not moved, so no merge.
