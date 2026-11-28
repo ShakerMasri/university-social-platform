@@ -1,6 +1,6 @@
 # UI rebuild — "Clear Campus"
 
-Status: Stage 0 done (2026-11-26); Stage 1 done (2026-11-27, `1cd7eb2`); header count fixes done (2026-11-28, `370567f`); Stage 2 part (c) done (2026-11-28, `2653bc6`, follow-up `30968b7`, pushed), follow-up review P3s fixed (2026-11-28, session 6); 2 build-step P3s open; part (b) next · Branch: feat/ui-redesign · Milestone: UI rebuild (after M5-04 closure)
+Status: Stage 0 done (2026-11-26); Stage 1 done (2026-11-27, `1cd7eb2`); header count fixes done (2026-11-28, `370567f`); Stage 2 part (c) done (2026-11-28, `2653bc6`, follow-up `30968b7`, pushed), follow-up review P3s, source check and build step done (2026-11-28, session 6, `45cd9fb`, pushed); part (b) next · Branch: feat/ui-redesign · Milestone: UI rebuild (after M5-04 closure)
 
 ## Goal
 
@@ -550,8 +550,8 @@ On sign-in and verify, +9.0 KiB is the theme and language switches, plus the new
 Newest first; filled by /handoff and /review-checkpoint.
 
 ### 2026-11-28 — Session 6 — Follow-up review P3-1 to P3-3, source check and build step
-- **State:** committed and pushed on `feat/ui-redesign` (base `91abb37`): a UI fix commit, a tooling commit and this plan update; `origin/main` had not moved (fetched at the start).
-- **Done (uncommitted):**
+- **State:** done · branch `feat/ui-redesign` at `45cd9fb`, pushed · uncommitted: this handoff's edits to this plan and `docs/project-brief.md` · commits: `c69d32b` fix(ui): announce search tab loading and clarify the post conflict message; `0905036` chore: require valid UTF-8 in the source check and build before browser suites; `8bd9506` docs(plan): record search tab, conflict message and build step reviews; `45cd9fb` chore: refuse browser-suite rebuilds while a local server is running · `origin/main` had not moved (fetched at the start).
+- **Done (first pass; later items below supersede the source-check and build-guard parts):**
   - P3-1: the search tabs pass `pendingLabel={archiveText[locale].loading}` ("Searching…" / "جارٍ البحث…"). New Arabic browser test: holds the People tab's render, checks the pending mark and status text, then that both clear.
   - P3-2: new browser test for the 409 branch after a lock: the first post is saved but its answer is lost (503) and the picker locks; an edited retry under the same key gets the real server's 409 and unlocks; the next submit uses a renewed key and publishes the edited text as a second post (database: exactly the two titles). No product code changed.
   - P3-3: the source check rethrows read errors other than ENOENT, and skips files git marks `w/-text` instead of using an extension list.
@@ -584,6 +584,23 @@ Newest first; filled by /handoff and /review-checkpoint.
   - P3-1 (open): the launcher builds `.next` without checking for a running preview, dev server, manual QA session or another suite, which README and `previewPreflight` forbid; a running `preview:local` or pinned manual Feed QA session would have its build replaced. Suggested fix: refuse before building while `.cache/m2-preview.json`, `.cache/m2-preview-check.json`, `.cache/m2-browser.json` or `.cache/manual-qa.json` exists (this would also block suites while `npm run dev` runs, as README already asks).
   - P3-2 (open): README and the launcher comment say the preview config builds what it serves; in production mode (`test:preview:local`) it serves the existing build, so it can still test an old build (README's earlier "build first" line is right). Also, README's "It checks the shell…" sentence now follows the exemption sentence. Suggested fix: reword both, or exempt the preview config only for the development check.
   - Residual: NVDA; no English browser test for the search pending label; full identity suite not run; CI builds twice; manual EN/AR × light/dark review of the new 409 text not done.
+- **Owner decisions after the final re-review (2026-11-28):** fix both build-step P3s as one small commit and push; "lint, typecheck and unit tests plus one browser suite run are enough. No re-review needed unless the change grows." Then hand off; part (b) starts in a new session. Before the part (b) commit: run the full identity suite, a screen-reader check of the new announcement and an EN/AR light/dark look at the new message; and "run the feed suite repeatedly with test:e2e:focus (at least 5 runs), save which test fails if any, and fix it if it's the composer error focus bug coming back."
+- **Build-step fixes (`45cd9fb`):**
+  - P3-1: before building, `tools/testing/run-playwright.mts` refuses while `.cache/m2-preview.json`, `.cache/m2-preview-check.json`, `.cache/m2-browser.json` or `.cache/manual-qa.json` exists, naming the files and the stop commands (`dev:stop`, `preview:stop`, `qa:feed:windows:stop`). Like `previewPreflight`, this also blocks suites while `npm run dev` runs.
+  - P3-2: README and the launcher comment now say the feed component suite needs no app build and `test:preview:local` serves the existing build (build before it). README's "It checks the shell…" sentence is back next to the `test:e2e` sentence. The preview config stays exempt from the launcher's build.
+  - Local state: a stale `.cache/m2-preview.json` from 2026-11-26 (its recorded process was gone, nothing listening on 3000/3100/3200/3201) was cleared with `npm run dev:stop` ("Owned local interactive server stopped; development data retained").
+- **Checks (build-step fixes):**
+  - `npm run lint`, `npm run typecheck` -> passed; `npm test` -> 538 passed, 1 skipped
+  - refusal probe: with a placeholder `.cache/manual-qa.json`, the launcher exited 1 with the message; file removed afterwards
+  - `npm run test:e2e` -> 18/18
+  - `npm run test:e2e:feed` -> first run 29 passed, 1 failed (one `toBeFocused()` assertion; the test name was not captured); rerun -> 30/30
+  - not run: re-review (owner: not needed), full identity suite, NVDA, forced colours, non-Chromium browsers, manual EN/AR × light/dark look at the new 409 message
+- **Open issues / risks:**
+  - Possible flaky focus assertion in the feed suite (above), unidentified. Session 5 fixed a composer focus race of this kind.
+  - `test:e2e:focus` cannot run the feed spec as things stand: in `playwright.config.ts` every authenticated group except `feed` ignores `feed.spec.ts`, and the focus group is treated like the main group (earlier today a focus run with `search.spec.ts` reported "No tests found" for the same reason). Running the feed suite repeatedly needs either `npm run test:e2e:feed` run 5 times, or a small config change so the focus group can select `feed.spec.ts` (with any feed-group setup it needs). Owner to choose.
+  - Required before the part (b) commit (owner): full `test:e2e:identity`; NVDA check of the Home and search tab announcements (EN and AR); manual EN/AR × light/dark look at the new 409 message; the repeated feed runs above.
+  - Recorded, not fixed: no English browser test for the search pending label; possible double announcement with the search page's loading state on slow networks; CI builds twice; plain `test:e2e` registers no control file, so two plain runs at once are not detected.
+- **Next step:** new session. (1) `git fetch`; merge `origin/main` if it moved. (2) Ask the owner how to repeat the feed suite (see Open issues), run it at least 5 times, save the name and error of any failing test, and fix it if it is the composer error-focus bug returning. (3) Plan Stage 2 part (b) (Communities list, discover and create; community page with membership and requests reusing `PostSummaryCard`; `searchCommunities` and the Communities tab of `/search` (C1); the denied state with the approved text) and show the plan before editing. Before the part (b) commit, complete the required checks listed under Open issues.
 
 ### 2026-11-28 — Session 5 — Stage 2 part (c): Home feed, composer and side panel
 - **State:** done · branch `feat/ui-redesign` at `c581da2` · commits: `2653bc6` feat(ui): make Home the feed with composer and side panel; `147744e` docs: record Stage 2 part (c) review and checks; `30968b7` fix(ui): keep composer locked after unknown outcomes and announce tab loading (all three pushed); `c581da2` chore: add source text check and escape verification note (local only, not pushed) · uncommitted: this handoff's edits to this plan and `docs/project-brief.md` · `origin/main` had not moved during the session.
